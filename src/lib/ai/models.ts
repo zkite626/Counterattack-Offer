@@ -1,0 +1,55 @@
+import type { BuiltinModel } from '@/types/ai';
+
+// 内置模型配置列表
+export const BUILTIN_MODELS: BuiltinModel[] = [
+  {
+    id: 'deepseek-chat',
+    name: 'DeepSeek Chat',
+    provider: 'deepseek',
+    baseUrl: 'https://api.deepseek.com',
+    model: 'deepseek-chat',
+    description: '高性价比中文大模型，推荐使用',
+    icon: '/images/models/deepseek.svg',
+    requiresApiKey: true,
+  },
+  {
+    id: 'deepseek-reasoner',
+    name: 'DeepSeek Reasoner',
+    provider: 'deepseek',
+    baseUrl: 'https://api.deepseek.com',
+    model: 'deepseek-reasoner',
+    description: '深度推理模型，适合复杂分析',
+    icon: '/images/models/deepseek.svg',
+    requiresApiKey: true,
+  },
+  {
+    id: 'gpt-4o-mini',
+    name: 'GPT-4o Mini',
+    provider: 'openai',
+    baseUrl: 'https://api.openai.com',
+    model: 'gpt-4o-mini',
+    description: 'OpenAI 轻量模型',
+    icon: '/images/models/openai.svg',
+    requiresApiKey: true,
+  },
+  {
+    id: 'glm-4-flash',
+    name: 'GLM-4 Flash',
+    provider: 'zhipu',
+    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+    model: 'glm-4-flash',
+    description: '智谱免费模型',
+    icon: '/images/models/zhipu.svg',
+    requiresApiKey: true,
+  },
+  {
+    id: 'qwen-turbo',
+    name: '通义千问 Turbo',
+    provider: 'alibaba',
+    baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    model: 'qwen-turbo',
+    description: '阿里云通义千问',
+    icon: '/images/models/qwen.svg',
+    requiresApiKey: true,
+  },
+];
