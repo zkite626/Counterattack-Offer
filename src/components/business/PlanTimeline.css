@@ -1,0 +1,74 @@
+/* ── PlanTimeline 能力补齐计划组件 ── */
+
+.plan-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* 任务列表 */
+.plan-timeline__task-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.plan-timeline__task {
+  position: relative;
+  padding-left: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  line-height: var(--leading-relaxed);
+}
+
+.plan-timeline__task::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-gray-300);
+}
+
+[data-theme="dark"] .plan-timeline__task::before {
+  background: var(--color-gray-600);
+}
+
+/* 推荐产出清单 */
+.plan-timeline__outputs {
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.plan-timeline__outputs-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.plan-timeline__checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.plan-timeline__check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  line-height: var(--leading-relaxed);
+}
+
+.plan-timeline__check-icon {
+  flex-shrink: 0;
+  color: var(--color-primary-500);
+  font-size: var(--text-base);
+}

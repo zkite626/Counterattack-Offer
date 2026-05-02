@@ -1,0 +1,30 @@
+/* ── Plan 能力补齐计划页面 ── */
+
+.plan-page__goal-card {
+  margin-bottom: var(--space-5);
+}
+
+.plan-page__goal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.plan-page__goal-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-top: var(--space-1);
+}
+
+.plan-page__goal-role {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.plan-page__goal-desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+}

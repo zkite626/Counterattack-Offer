@@ -1,0 +1,129 @@
+/* ── Timeline 垂直时间轴 ── */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline__item {
+  display: flex;
+  gap: var(--space-4);
+  animation: slideUp 0.4s ease backwards;
+}
+
+/* 标记区域 */
+.timeline__marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 36px;
+}
+
+.timeline__marker-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-gray-100);
+  border: 2px solid var(--color-gray-300);
+  font-size: var(--text-sm);
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+[data-theme="dark"] .timeline__marker-dot {
+  background: var(--color-gray-800);
+  border-color: var(--color-gray-600);
+}
+
+.timeline__marker-line {
+  width: 2px;
+  flex: 1;
+  min-height: var(--space-4);
+  background: var(--color-gray-200);
+}
+
+[data-theme="dark"] .timeline__marker-line {
+  background: var(--color-gray-700);
+}
+
+/* 颜色变体 */
+.timeline__item--green .timeline__marker-dot {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: var(--color-success-500);
+}
+
+.timeline__item--blue .timeline__marker-dot {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3B82F6;
+}
+
+.timeline__item--purple .timeline__marker-dot {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: #8B5CF6;
+}
+
+/* 内容区域 */
+.timeline__content {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: var(--space-5);
+}
+
+.timeline__label {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.timeline__item--green .timeline__label {
+  color: var(--color-success-500);
+}
+
+.timeline__item--blue .timeline__label {
+  color: #3B82F6;
+}
+
+.timeline__item--purple .timeline__label {
+  color: #8B5CF6;
+}
+
+.timeline__body {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  line-height: var(--leading-relaxed);
+}
+
+/* 水平模式 */
+.timeline--horizontal {
+  flex-direction: row;
+  overflow-x: auto;
+  padding-bottom: var(--space-4);
+}
+
+.timeline--horizontal .timeline__item {
+  flex-direction: column;
+  align-items: center;
+  min-width: 200px;
+}
+
+.timeline--horizontal .timeline__marker {
+  flex-direction: row;
+  width: auto;
+}
+
+.timeline--horizontal .timeline__marker-line {
+  width: auto;
+  height: 2px;
+  min-height: unset;
+  min-width: var(--space-4);
+  flex: 1;
+}
+
+.timeline--horizontal .timeline__content {
+  text-align: center;
+}
