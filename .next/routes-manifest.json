@@ -42,16 +42,40 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
+      "page": "/api/ai/analyze-job",
+      "regex": "^/api/ai/analyze\\-job(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/ai/analyze\\-job(?:/)?$"
+    },
+    {
       "page": "/api/ai/chat",
       "regex": "^/api/ai/chat(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/ai/chat(?:/)?$"
     },
     {
+      "page": "/api/ai/diagnose",
+      "regex": "^/api/ai/diagnose(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/ai/diagnose(?:/)?$"
+    },
+    {
+      "page": "/api/ai/match",
+      "regex": "^/api/ai/match(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/ai/match(?:/)?$"
+    },
+    {
       "page": "/api/ai/test-connection",
       "regex": "^/api/ai/test\\-connection(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/ai/test\\-connection(?:/)?$"
+    },
+    {
+      "page": "/api/ai/translate",
+      "regex": "^/api/ai/translate(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/ai/translate(?:/)?$"
     },
     {
       "page": "/api/auth/login",
@@ -78,16 +102,34 @@
       "namedRegex": "^/api/auth/register(?:/)?$"
     },
     {
+      "page": "/diagnosis",
+      "regex": "^/diagnosis(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/diagnosis(?:/)?$"
+    },
+    {
       "page": "/favicon.ico",
       "regex": "^/favicon\\.ico(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/favicon\\.ico(?:/)?$"
     },
     {
+      "page": "/job",
+      "regex": "^/job(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/job(?:/)?$"
+    },
+    {
       "page": "/login",
       "regex": "^/login(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/match",
+      "regex": "^/match(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/match(?:/)?$"
     },
     {
       "page": "/profile",
@@ -106,6 +148,12 @@
       "regex": "^/settings(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/settings(?:/)?$"
+    },
+    {
+      "page": "/translation",
+      "regex": "^/translation(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/translation(?:/)?$"
     }
   ],
   "dataRoutes": [],

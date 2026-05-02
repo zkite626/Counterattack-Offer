@@ -189,6 +189,12 @@
   background: rgba(239, 68, 68, 0.1);
 }
 
+/* ── StepNav ── */
+.dashboard__stepnav {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
 /* ── Body ── */
 .dashboard__body {
   display: flex;

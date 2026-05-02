@@ -4,6 +4,7 @@ import { type ReactNode, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import StepNav from "@/components/layout/StepNav";
 import "./dashboard.css";
 
 const NAV_ITEMS = [
@@ -86,6 +87,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
+
+      {/* StepNav */}
+      <div className="dashboard__stepnav">
+        <StepNav />
+      </div>
 
       <div className="dashboard__body">
         {/* Sidebar */}

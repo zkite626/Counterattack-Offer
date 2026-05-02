@@ -1,0 +1,40 @@
+.skeleton {
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton--text {
+  border-radius: var(--radius-sm);
+}
+
+.skeleton--rect {
+  border-radius: var(--radius-md);
+}
+
+.skeleton--circle {
+  border-radius: var(--radius-full);
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

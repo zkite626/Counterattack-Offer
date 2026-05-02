@@ -1,0 +1,1 @@
+.radar-chart{justify-content:center;align-items:center;display:inline-flex}.radar-chart__area{transition:all .6s cubic-bezier(.4,0,.2,1)}.radar-chart__label{fill:var(--color-text-secondary);font-size:12px;font-family:var(--font-family)}
