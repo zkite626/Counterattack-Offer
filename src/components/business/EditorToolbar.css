@@ -1,0 +1,265 @@
+/* ── EditorToolbar 工具栏 ── */
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  min-height: 48px;
+  flex-wrap: wrap;
+}
+
+.editor-toolbar__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  flex: 1;
+}
+
+.editor-toolbar__back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.editor-toolbar__back-btn:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.editor-toolbar__title-input {
+  border: none;
+  background: transparent;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  min-width: 120px;
+  flex: 1;
+  max-width: 240px;
+  transition: background var(--transition-fast);
+}
+
+.editor-toolbar__title-input:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.editor-toolbar__title-input:focus {
+  outline: none;
+  background: var(--color-bg-tertiary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.editor-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.editor-toolbar__btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  height: 32px;
+}
+
+.editor-toolbar__btn:hover {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-gray-300);
+}
+
+.editor-toolbar__btn--primary {
+  background: var(--color-primary-500);
+  color: white;
+  border-color: var(--color-primary-500);
+}
+
+.editor-toolbar__btn--primary:hover {
+  background: var(--color-primary-600);
+  border-color: var(--color-primary-600);
+}
+
+.editor-toolbar__btn--accent {
+  background: var(--color-accent-500);
+  color: white;
+  border-color: var(--color-accent-500);
+}
+
+.editor-toolbar__btn--accent:hover {
+  background: var(--color-accent-600);
+  border-color: var(--color-accent-600);
+}
+
+.editor-toolbar__color-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.editor-toolbar__select {
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: var(--text-xs);
+  color: var(--color-text-primary);
+  height: 32px;
+  cursor: pointer;
+}
+
+.editor-toolbar__range-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.editor-toolbar__range {
+  width: 60px;
+  accent-color: var(--color-primary-500);
+}
+
+/* 颜色选择下拉 */
+.editor-toolbar__dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-3);
+  z-index: 100;
+  animation: scaleIn 0.15s ease;
+}
+
+.editor-toolbar__color-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.editor-toolbar__color-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.editor-toolbar__color-btn:hover {
+  transform: scale(1.1);
+}
+
+.editor-toolbar__color-btn--active {
+  border-color: var(--color-text-primary);
+  box-shadow: 0 0 0 2px var(--color-bg);
+}
+
+/* 模板选择弹窗 */
+.editor-toolbar__template-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 639px) {
+  .editor-toolbar__template-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.editor-toolbar__template-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.editor-toolbar__template-card:hover {
+  border-color: var(--color-primary-400);
+  background: var(--color-primary-50);
+}
+
+[data-theme="dark"] .editor-toolbar__template-card:hover {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.editor-toolbar__template-card--active {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-50);
+}
+
+.editor-toolbar__template-preview {
+  width: 100%;
+  aspect-ratio: 210 / 297;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.editor-toolbar__template-placeholder {
+  font-size: 2rem;
+  font-weight: var(--font-bold);
+  color: var(--color-text-tertiary);
+}
+
+.editor-toolbar__template-name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.editor-toolbar__template-desc {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+/* 打印时隐藏工具栏 */
+@media print {
+  .editor-toolbar {
+    display: none !important;
+  }
+}

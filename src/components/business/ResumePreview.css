@@ -1,0 +1,71 @@
+/* ── ResumePreview A4 预览 ── */
+
+.resume-preview {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-4);
+  background: var(--color-bg-tertiary);
+  display: flex;
+  justify-content: center;
+}
+
+.resume-preview__paper-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.resume-preview__paper {
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast);
+}
+
+.resume-preview__paper:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.resume-preview__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm);
+}
+
+/* 分页线 */
+.resume-preview__page-break {
+  width: 100%;
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  padding: var(--space-2) 0;
+  border-top: 1px dashed var(--color-border);
+  margin-top: var(--space-2);
+}
+
+/* 打印时只显示预览区 */
+@media print {
+  .resume-preview {
+    padding: 0;
+    background: #fff;
+    overflow: visible;
+  }
+
+  .resume-preview__paper {
+    box-shadow: none;
+    transform: none !important;
+    width: 210mm !important;
+    min-height: 297mm;
+  }
+
+  .resume-preview__page-break {
+    display: none;
+  }
+}

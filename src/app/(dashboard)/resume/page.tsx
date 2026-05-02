@@ -127,6 +127,9 @@ export default function ResumePage() {
         <Button size="lg" onClick={() => router.push("/interview")}>
           下一步：面试训练
         </Button>
+        <Button variant="secondary" onClick={() => router.push("/resume-builder")}>
+          用 AI 结果创建简历
+        </Button>
         <Button variant="secondary" onClick={runOptimize}>
           重新生成
         </Button>

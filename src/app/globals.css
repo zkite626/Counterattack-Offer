@@ -259,3 +259,58 @@ input, button, textarea, select {
 [data-theme="dark"] ::-webkit-scrollbar-thumb {
   background: var(--color-gray-600);
 }
+
+/* ── 简历打印样式 ── */
+@media print {
+  /* A4 页面设置 */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  /* 隐藏所有非预览元素 */
+  body > div > div > header,
+  body > div > div > .dashboard__header,
+  body > div > div > .dashboard__stepnav,
+  body > div > div > .dashboard__body > aside,
+  .dashboard__sidebar,
+  .dashboard__overlay,
+  .editor-toolbar,
+  .editor-workspace__toolbar,
+  .editor-workspace__mobile-tabs,
+  .editor-workspace__nav,
+  .editor-workspace__editor {
+    display: none !important;
+  }
+
+  /* 预览区全屏显示 */
+  .editor-workspace__preview {
+    flex: 1;
+    border: none;
+    overflow: visible;
+  }
+
+  .resume-preview {
+    padding: 0;
+    background: white;
+    overflow: visible;
+  }
+
+  .resume-preview__paper {
+    box-shadow: none !important;
+    transform: none !important;
+    width: 210mm !important;
+    min-height: 297mm;
+    margin: 0;
+  }
+
+  .resume-preview__page-break {
+    display: none;
+  }
+
+  /* 打印时强制白色背景 */
+  .resume-tpl {
+    color: #111827 !important;
+    background: #fff !important;
+  }
+}

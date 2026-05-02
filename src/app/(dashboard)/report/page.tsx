@@ -10,6 +10,7 @@ import ScoreRing from "@/components/ui/ScoreRing";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Timeline from "@/components/ui/Timeline";
 import type { FlowStep } from "@/types";
+import { useRouter } from "next/navigation";
 import "../shared-page.css";
 import "./report.css";
 
@@ -18,6 +19,7 @@ const ALL_STEPS: FlowStep[] = [
 ];
 
 export default function ReportPage() {
+  const router = useRouter();
   const { state, getCompletionPercentage } = useJobFlow();
   const { activeModel } = useAI();
   const [reportMarkdown, setReportMarkdown] = useState("");
@@ -214,7 +216,20 @@ export default function ReportPage() {
         </Card>
       )}
 
-      {/* 8. AI 综合建议 */}
+      {/* 8. 生成简历入口 */}
+      {state.studentProfile && (
+        <Card className="report-page__section">
+          <h3 className="report-page__section-title">📝 生成简历</h3>
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginBottom: "var(--space-4)" }}>
+            基于 AI 分析结果一键创建简历，支持多模板编辑和 PDF 导出
+          </p>
+          <Button onClick={() => router.push("/resume-builder")}>
+            进入简历创建器
+          </Button>
+        </Card>
+      )}
+
+      {/* 9. AI 综合建议 */}
       <Card className="report-page__section">
         <h3 className="report-page__section-title">🤖 AI 综合建议</h3>
         {!reportMarkdown && !reportLoading && !reportError && (

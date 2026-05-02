@@ -29,6 +29,19 @@ export type {
   AIServiceError,
 } from "./ai";
 
+export type {
+  ResumeBasicInfo,
+  ResumeCustomField,
+  ResumeEducation,
+  ResumeExperience,
+  ResumeProject,
+  ResumeSection,
+  ResumeGlobalSettings,
+  ResumeTemplate,
+  ResumeBuilderData,
+} from "./resume-builder";
+export { DEFAULT_RESUME_SECTIONS, DEFAULT_GLOBAL_SETTINGS } from "./resume-builder";
+
 export type FlowStep =
   | "profile"
   | "diagnosis"

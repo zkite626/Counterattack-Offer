@@ -1,0 +1,163 @@
+/* ── 简历模板通用样式 ── */
+
+/* 模板容器 */
+.resume-tpl {
+  color: var(--resume-text, #111827);
+  background: #fff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 基本信息区 */
+.resume-section__basic {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.resume-section__name {
+  font-size: 1.6em;
+  font-weight: 700;
+  margin: 0 0 4px;
+  letter-spacing: 0.05em;
+}
+
+.resume-section__title {
+  font-size: 1em;
+  margin: 0 0 8px;
+  opacity: 0.85;
+}
+
+.resume-section__contact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.85em;
+  color: #6B7280;
+}
+
+.resume-section__contact span + span::before {
+  content: " | ";
+  margin-right: 8px;
+  color: #D1D5DB;
+}
+
+/* Section 标题 — 经典模板 */
+.resume-section__heading {
+  font-size: 1.1em;
+  font-weight: 600;
+  padding-bottom: 6px;
+  margin: 20px 0 12px;
+  border-bottom: 2px solid #111827;
+}
+
+.resume-section__heading-icon {
+  margin-right: 6px;
+  font-size: 0.95em;
+}
+
+/* Section 标题 — 现代模板 */
+.resume-section__heading--modern {
+  border-bottom: none;
+  padding-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.resume-section__heading-bar {
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Section 标题 — 应届生模板 */
+.resume-section__heading--fresh {
+  border-bottom: none;
+  padding: 6px 12px;
+  margin: 20px 0 12px;
+  border-left: 4px solid #059669;
+  border-radius: 4px;
+}
+
+/* 条目 */
+.resume-section__item {
+  margin-bottom: 12px;
+}
+
+.resume-section__item:last-child {
+  margin-bottom: 0;
+}
+
+.resume-section__item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.resume-section__item-title {
+  font-weight: 600;
+  font-size: 1em;
+}
+
+.resume-section__item-date {
+  font-size: 0.85em;
+  color: #6B7280;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.resume-section__item-sub {
+  font-size: 0.9em;
+  color: #4B5563;
+  margin-top: 2px;
+}
+
+.resume-section__item-link {
+  font-size: 0.8em;
+  color: #6366F1;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.resume-section__item-desc {
+  font-size: 0.9em;
+  color: #374151;
+  line-height: 1.6;
+  margin: 6px 0 0;
+  white-space: pre-line;
+}
+
+/* 技能区 */
+.resume-section__skills-text {
+  font-size: 0.9em;
+  color: #374151;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-line;
+}
+
+/* 自我评价 */
+.resume-section__self-eval-text {
+  font-size: 0.9em;
+  color: #374151;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-line;
+}
+
+/* 应届生模板强调区域 */
+.resume-tpl__education-emphasis .resume-section__item {
+  margin-bottom: 16px;
+}
+
+.resume-tpl__projects-emphasis .resume-section__item {
+  margin-bottom: 16px;
+}
+
+.resume-tpl__projects-emphasis .resume-section__item-desc {
+  font-size: 0.95em;
+}

@@ -1,0 +1,165 @@
+/* ── 编辑工作台 ── */
+
+.editor-workspace {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 56px);
+  margin: calc(-1 * var(--space-6));
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .editor-workspace {
+    height: calc(100vh - 56px);
+    margin: calc(-1 * var(--space-4));
+  }
+}
+
+.editor-workspace__toolbar {
+  flex-shrink: 0;
+}
+
+.editor-workspace__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm);
+}
+
+/* 移动端 Tab */
+.editor-workspace__mobile-tabs {
+  display: none;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+@media (max-width: 1023px) {
+  .editor-workspace__mobile-tabs {
+    display: flex;
+  }
+}
+
+.editor-workspace__mobile-tab {
+  flex: 1;
+  padding: var(--space-3);
+  border: none;
+  background: none;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  position: relative;
+  transition: color var(--transition-fast);
+}
+
+.editor-workspace__mobile-tab--active {
+  color: var(--color-primary-600);
+}
+
+.editor-workspace__mobile-tab--active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: var(--space-4);
+  right: var(--space-4);
+  height: 2px;
+  background: var(--color-primary-500);
+  border-radius: 1px;
+}
+
+/* 三栏布局 */
+.editor-workspace__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 左栏：模块导航 */
+.editor-workspace__nav {
+  width: 200px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--color-border);
+  background: var(--color-surface);
+  overflow-y: auto;
+  padding: var(--space-3) 0;
+}
+
+@media (max-width: 1023px) {
+  .editor-workspace__nav {
+    display: none;
+  }
+
+  .editor-workspace__nav--open {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+/* 中栏：编辑面板 */
+.editor-workspace__editor {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  background: var(--color-bg-secondary);
+}
+
+@media (max-width: 1023px) {
+  .editor-workspace__editor--hidden-mobile {
+    display: none;
+  }
+}
+
+/* 右栏：A4 预览 */
+.editor-workspace__preview {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  border-left: 1px solid var(--color-border);
+}
+
+@media (max-width: 1023px) {
+  .editor-workspace__preview--hidden-mobile {
+    display: none;
+  }
+}
+
+/* 桌面端三栏默认比例 */
+@media (min-width: 1024px) {
+  .editor-workspace__editor {
+    flex: 1.2;
+  }
+
+  .editor-workspace__preview {
+    flex: 1;
+  }
+}
+
+/* 大屏时进一步优化 */
+@media (min-width: 1440px) {
+  .editor-workspace__nav {
+    width: 240px;
+  }
+}
+
+/* 打印时隐藏编辑器 */
+@media print {
+  .editor-workspace__toolbar,
+  .editor-workspace__mobile-tabs,
+  .editor-workspace__nav,
+  .editor-workspace__editor {
+    display: none !important;
+  }
+
+  .editor-workspace__preview {
+    border: none;
+    flex: 1;
+  }
+}

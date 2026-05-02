@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { path: "/job", label: "JD解析", icon: "💼" },
   { path: "/match", label: "人岗匹配", icon: "🎯" },
   { path: "/resume", label: "简历优化", icon: "📄" },
+  { path: "/resume-builder", label: "简历创建器", icon: "📃" },
   { path: "/interview", label: "面试训练", icon: "🎤" },
   { path: "/plan", label: "能力计划", icon: "📅" },
   { path: "/report", label: "汇总报告", icon: "📋" },
@@ -118,7 +119,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 key={item.path}
                 href={item.path}
                 className={`dashboard__nav-item ${
-                  pathname === item.path ? "dashboard__nav-item--active" : ""
+                  pathname === item.path || (item.path === "/resume-builder" && pathname.startsWith("/resume-builder/"))
+                    ? "dashboard__nav-item--active"
+                    : ""
                 }`}
                 onClick={() => setSidebarOpen(false)}
               >
