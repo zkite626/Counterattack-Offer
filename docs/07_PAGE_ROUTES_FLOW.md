@@ -17,6 +17,8 @@
 | 8 | 能力计划 | `/plan` | Dashboard | ✅ | 时间轴 |
 | 9 | 汇总报告 | `/report` | Dashboard | ✅ | 完整报告 |
 | S | 模型设置 | `/settings` | Dashboard | ✅ | 模型管理 |
+| R1 | 简历列表 | `/resume-builder` | Dashboard | ✅ | 多简历管理（新建/删除/复制） |
+| R2 | 简历编辑 | `/resume-builder/[id]` | Dashboard | ✅ | 三栏编辑器（导航+编辑+预览） |
 
 ## 7.2 步骤导航
 
@@ -67,6 +69,8 @@ Logo + 逆袭Offer
 🎤 AI面试追问
 📅 突围行动计划
 📋 求职报告
+──────────────
+📄 简历创建器
 ──────────────
 ⚙️ 模型设置
 👤 个人信息

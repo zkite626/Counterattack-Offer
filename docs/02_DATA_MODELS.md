@@ -4,6 +4,10 @@
 
 所有 TypeScript 类型定义，存放在 `src/types/` 目录下。
 
+类型文件：`auth.ts`, `ai.ts`, `student.ts`, `job.ts`, `resume-builder.ts`, `index.ts`
+
+> 简历创建器类型详见 `types/resume-builder.ts` 和 `docs/17_RESUME_BUILDER_DESIGN.md`。
+
 ---
 
 ## 2.1 认证相关 (`types/auth.ts`)

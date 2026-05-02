@@ -8,6 +8,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Tag from "@/components/ui/Tag";
 import Skeleton from "@/components/ui/Skeleton";
+import Icon from "@/components/ui/Icon";
 import type { ExperienceTranslation } from "@/types";
 import "../shared-page.css";
 
@@ -155,7 +156,7 @@ export default function TranslationPage() {
 
             {/* Authenticity note */}
             <div className="biz-page__auth-note">
-              <span className="biz-page__auth-icon">⚠️</span>
+              <Icon name="warning" size="1.25em" className="biz-page__auth-icon" />
               {t.authenticityNote}
             </div>
           </Card>

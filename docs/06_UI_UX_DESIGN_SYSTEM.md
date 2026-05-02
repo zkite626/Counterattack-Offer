@@ -325,23 +325,29 @@ Header 右上角提供三态切换：☀️ 亮色 / 🌙 暗色 / 🖥️ 跟�
 
 ---
 
-## 6.6 Google Fonts 引入
+## 6.6 字体加载
 
-```html
-<!-- layout.tsx head -->
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet" />
-```
+字体通过 `@font-face` 在 `globals.css` 中声明，全部本地托管于 `public/fonts/` 目录。
+
+| 字体 | 字重 | 文件 |
+|------|------|------|
+| Inter | 400/500/600/700 | `inter-{400,500,600,700}.woff2`（各 ~24KB） |
+| Noto Sans SC | 400/700 | `noto-sans-sc-{400,700}.woff2`（各 ~1.1MB） |
+| Outfit | 600/700 | `outfit-{600,700}.woff2`（各 ~14KB） |
+
+Noto Sans SC 声明了 `unicode-range` 限定 CJK + Latin 范围，浏览器按需加载。中文字重 500 由浏览器自动插值生成。
 
 ---
 
 ## 6.7 图标方案
 
-使用 Unicode Emoji + SVG 自定义图标。不引入图标库，减少依赖。
+使用 IconFont SVG Sprite 系统，通过 `Icon` + `IconSprite` 组件统一管理图标。
 
 | 用途 | 方案 |
 |------|------|
-| 导航图标 | 内联SVG |
+| 通用图标 | `<Icon name="xxx" />` 组件 + SVG Sprite |
 | 步骤图标 | Emoji (📝✅📊💼🎯📄🎤📅📋) |
 | 状态图标 | Emoji (✅❌⚠️💡🔒) |
-| 模型图标 | SVG 文件 (`/images/models/`) |
+| SVG Sprite | `components/ui/IconSprite.tsx`（页面加载时注入） |
+
+相关组件：`components/ui/Icon.tsx`, `components/ui/IconSprite.tsx`, `components/ui/Icon.css`

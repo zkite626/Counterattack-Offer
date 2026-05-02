@@ -2,25 +2,27 @@
 
 import { useRouter } from "next/navigation";
 import { useJobFlow } from "@/contexts/JobFlowContext";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import type { FlowStep } from "@/types";
 import "./StepNav.css";
 
 interface StepItem {
   key: FlowStep;
   label: string;
-  icon: string;
+  icon: IconName;
 }
 
 const STEPS: StepItem[] = [
-  { key: "profile", label: "信息", icon: "📝" },
-  { key: "diagnosis", label: "画像", icon: "🔍" },
-  { key: "translation", label: "转译", icon: "🔄" },
-  { key: "job", label: "JD", icon: "💼" },
-  { key: "match", label: "匹配", icon: "📊" },
-  { key: "resume", label: "简历", icon: "📄" },
-  { key: "interview", label: "面试", icon: "🎤" },
-  { key: "plan", label: "计划", icon: "📅" },
-  { key: "report", label: "报告", icon: "📋" },
+  { key: "profile", label: "信息", icon: "user" },
+  { key: "diagnosis", label: "画像", icon: "search" },
+  { key: "translation", label: "转译", icon: "translate" },
+  { key: "job", label: "JD", icon: "job" },
+  { key: "match", label: "匹配", icon: "match" },
+  { key: "resume", label: "简历", icon: "resume" },
+  { key: "interview", label: "面试", icon: "interview" },
+  { key: "plan", label: "计划", icon: "plan" },
+  { key: "report", label: "报告", icon: "report" },
 ];
 
 const STEP_ROUTES: Record<FlowStep, string> = {
@@ -77,7 +79,7 @@ export default function StepNav() {
                 title={step.label}
               >
                 <span className="step-nav__icon">
-                  {status === "completed" ? "✅" : step.icon}
+                  <Icon name={status === "completed" ? "check-circle" : step.icon} size="1.125em" />
                 </span>
                 <span className="step-nav__label">{step.label}</span>
               </button>

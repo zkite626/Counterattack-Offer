@@ -8,6 +8,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Tag from "@/components/ui/Tag";
 import Skeleton from "@/components/ui/Skeleton";
+import Icon from "@/components/ui/Icon";
 import InterviewChat from "@/components/business/InterviewChat";
 import type { InterviewSimulation } from "@/types";
 import "../shared-page.css";
@@ -136,13 +137,13 @@ export default function InterviewPage() {
           className={`interview-page__mode-btn ${mode === "card" ? "interview-page__mode-btn--active" : ""}`}
           onClick={() => setMode("card")}
         >
-          📋 卡片模式
+          <Icon name="clipboard" size="1.125em" /> 卡片模式
         </button>
         <button
           className={`interview-page__mode-btn ${mode === "chat" ? "interview-page__mode-btn--active" : ""}`}
           onClick={() => setMode("chat")}
         >
-          💬 对话模式
+          <Icon name="chat" size="1.125em" /> 对话模式
         </button>
       </div>
 

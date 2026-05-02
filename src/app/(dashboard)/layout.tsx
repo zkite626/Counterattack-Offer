@@ -3,22 +3,24 @@
 import { type ReactNode, useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import StepNav from "@/components/layout/StepNav";
 import "./dashboard.css";
 
-const NAV_ITEMS = [
-  { path: "/profile", label: "个人信息", icon: "📝" },
-  { path: "/diagnosis", label: "画像诊断", icon: "📊" },
-  { path: "/translation", label: "经历转译", icon: "🔄" },
-  { path: "/job", label: "JD解析", icon: "💼" },
-  { path: "/match", label: "人岗匹配", icon: "🎯" },
-  { path: "/resume", label: "简历优化", icon: "📄" },
-  { path: "/resume-builder", label: "简历创建器", icon: "📃" },
-  { path: "/interview", label: "面试训练", icon: "🎤" },
-  { path: "/plan", label: "能力计划", icon: "📅" },
-  { path: "/report", label: "汇总报告", icon: "📋" },
-  { path: "/settings", label: "模型管理", icon: "⚙️" },
+const NAV_ITEMS: { path: string; label: string; icon: IconName }[] = [
+  { path: "/profile", label: "个人信息", icon: "user" },
+  { path: "/diagnosis", label: "画像诊断", icon: "diagnosis" },
+  { path: "/translation", label: "经历转译", icon: "translate" },
+  { path: "/job", label: "JD解析", icon: "job" },
+  { path: "/match", label: "人岗匹配", icon: "match" },
+  { path: "/resume", label: "简历优化", icon: "resume" },
+  { path: "/resume-builder", label: "简历创建器", icon: "resume-builder" },
+  { path: "/interview", label: "面试训练", icon: "interview" },
+  { path: "/plan", label: "能力计划", icon: "plan" },
+  { path: "/report", label: "汇总报告", icon: "report" },
+  { path: "/settings", label: "模型管理", icon: "settings" },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -45,7 +47,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       {/* Demo 模式 Banner */}
       {isDemo && showDemoBanner && (
         <div className="demo-banner">
-          <span className="demo-banner__icon">⚡</span>
+          <Icon name="lightning" size="1.25em" className="demo-banner__icon" />
           <span>正在使用 Demo 模式，数据为模拟案例 — 体验完整 AI 求职流程</span>
           <button className="demo-banner__close" onClick={() => setShowDemoBanner(false)} aria-label="关闭提示">×</button>
         </div>
@@ -59,10 +61,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="切换侧边栏"
           >
-            ☰
+            <Icon name="menu" size="1.25em" />
           </button>
           <div className="dashboard__brand">
-            <span className="dashboard__logo">🚀</span>
+            <picture>
+              <source srcSet="/logo-square.webp" type="image/webp" />
+              <img src="/logo-square.png" alt="逆袭Offer" width={32} height={32} className="dashboard__logo" />
+            </picture>
             <span className="dashboard__app-name">逆袭Offer</span>
           </div>
         </div>
@@ -125,7 +130,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 }`}
                 onClick={() => setSidebarOpen(false)}
               >
-                <span className="dashboard__nav-icon">{item.icon}</span>
+                <Icon name={item.icon} size="1.25em" className="dashboard__nav-icon" />
                 <span className="dashboard__nav-label">{item.label}</span>
               </a>
             ))}

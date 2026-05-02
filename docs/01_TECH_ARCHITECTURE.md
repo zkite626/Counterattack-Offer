@@ -7,7 +7,7 @@ Browser (React Pages + Context + CSS Variables + localStorage)
         │  HTTP / SSE
         ▼
 Next.js Server (API Routes)
-├── Auth Middleware (JWT验证)
+├── Auth Proxy (JWT验证，proxy.ts)
 ├── AI Service (OpenAI兼容协议)
 ├── Prompt Engine (模板加载+注入)
 └── Repository Layer (Memory → DB预留)
@@ -38,12 +38,17 @@ src/app/
 │   ├── interview/page.tsx     # 面试训练页
 │   ├── plan/page.tsx          # 能力计划页
 │   ├── report/page.tsx        # 汇总报告页
-│   └── settings/page.tsx      # 模型管理页
+│   ├── settings/page.tsx      # 模型管理页
+│   └── resume-builder/        # 简历创建器
+│       ├── page.tsx           # 简历列表页
+│       └── [id]/page.tsx      # 编辑工作台页
 └── api/
     ├── auth/
     │   ├── login/route.ts
     │   ├── register/route.ts
-    │   └── me/route.ts
+    │   ├── me/route.ts
+    │   ├── logout/route.ts
+    │   └── demo/route.ts
     └── ai/
         ├── chat/route.ts          # 通用AI调用(流式)
         ├── diagnose/route.ts
@@ -53,7 +58,8 @@ src/app/
         ├── optimize-resume/route.ts
         ├── interview/route.ts
         ├── plan/route.ts
-        └── report/route.ts
+        ├── report/route.ts
+        └── test-connection/route.ts
 ```
 
 ## 1.3 Route Group 说明
@@ -73,15 +79,21 @@ src/app/
 | 功能页 | CSR | 依赖用户输入和AI实时响应 |
 | API Routes | Server | 保护API Key |
 
-## 1.5 中间件流
+## 1.5 路由保护（proxy.ts）
+
+原 `middleware.ts` 已重构为 `src/proxy.ts`，导出 `proxy` 函数：
 
 ```
-Request → middleware.ts
-  ├── /api/ai/* → 验证JWT Token → 通过/401
+Request → proxy.ts (proxy 函数)
+  ├── /api/ai/* → 验证JWT Token → 注入 x-user-id 头 → 通过/401
   ├── /(dashboard)/* → 验证JWT Cookie → 通过/重定向登录
-  ├── /(auth)/* → 已登录则重定向Dashboard
+  ├── /(auth)/* → 已登录则重定向 /profile
   └── 其他 → 放行
 ```
+
+受保护路径：`/profile`, `/diagnosis`, `/translation`, `/job`, `/match`, `/resume`, `/resume-builder`, `/interview`, `/plan`, `/report`, `/settings`
+
+认证页面：`/login`, `/register`
 
 ## 1.6 数据流
 
@@ -126,12 +138,12 @@ class DatabaseUserRepository implements IUserRepository { ... }
 
 | 依赖 | 用途 | 必须 |
 |------|------|------|
-| next ^15.x | 全栈框架 | ✅ |
+| next ^16.x | 全栈框架 | ✅ |
 | react ^19.x | UI库 | ✅ |
 | typescript ^5.x | 类型安全 | ✅ |
-| jose ^5.x | JWT签发/验证 | ✅ |
-| bcryptjs ^2.x | 密码哈希 | ✅ |
-| uuid ^9.x | 唯一ID | ✅ |
+| jose ^6.x | JWT签发/验证 | ✅ |
+| bcryptjs ^3.x | 密码哈希 | ✅ |
+| uuid ^14.x | 唯一ID | ✅ |
 
 ## 1.10 环境变量
 

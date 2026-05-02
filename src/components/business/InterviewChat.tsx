@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useAI } from "@/contexts/AIContext";
 import { useStreamResponse } from "@/lib/ai/stream";
+import Icon from "@/components/ui/Icon";
 import type { InterviewMessage } from "@/types";
 import "./InterviewChat.css";
 
@@ -99,7 +100,7 @@ export default function InterviewChat({ jobTitle }: InterviewChatProps) {
       <div className="interview-chat__messages">
         {messages.length === 0 && (
           <div className="interview-chat__empty">
-            <span className="interview-chat__empty-icon">🎤</span>
+            <span className="interview-chat__empty-icon"><Icon name="mic" size="2rem" /></span>
             <p>开始模拟面试对话</p>
             <p className="interview-chat__empty-hint">输入你的回答，AI 面试官会继续追问</p>
           </div>
@@ -111,7 +112,7 @@ export default function InterviewChat({ jobTitle }: InterviewChatProps) {
             className={`interview-chat__bubble interview-chat__bubble--${msg.role}`}
           >
             <div className="interview-chat__avatar">
-              {msg.role === "interviewer" ? "🤖" : "👤"}
+              {msg.role === "interviewer" ? <Icon name="sparkle" size="1.25em" /> : <Icon name="user" size="1.25em" />}
             </div>
             <div className="interview-chat__msg-content">
               <div className="interview-chat__msg-role">
@@ -125,7 +126,7 @@ export default function InterviewChat({ jobTitle }: InterviewChatProps) {
         {/* 流式输出中 */}
         {streamLoading && streamContent && (
           <div className="interview-chat__bubble interview-chat__bubble--interviewer">
-            <div className="interview-chat__avatar">🤖</div>
+            <div className="interview-chat__avatar"><Icon name="sparkle" size="1.25em" /></div>
             <div className="interview-chat__msg-content">
               <div className="interview-chat__msg-role">面试官</div>
               <div className="interview-chat__msg-text">
@@ -138,7 +139,7 @@ export default function InterviewChat({ jobTitle }: InterviewChatProps) {
 
         {streamLoading && !streamContent && (
           <div className="interview-chat__bubble interview-chat__bubble--interviewer">
-            <div className="interview-chat__avatar">🤖</div>
+            <div className="interview-chat__avatar"><Icon name="sparkle" size="1.25em" /></div>
             <div className="interview-chat__msg-content">
               <div className="interview-chat__msg-role">面试官</div>
               <div className="interview-chat__typing">

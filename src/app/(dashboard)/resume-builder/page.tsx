@@ -6,6 +6,7 @@ import { useJobFlow } from "@/contexts/JobFlowContext";
 import { buildResumeFromAIResults } from "@/lib/utils/resume-builder";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
 import "../shared-page.css";
 import "./resume-builder.css";
 
@@ -76,7 +77,7 @@ export default function ResumeBuilderListPage() {
 
       {resumeList.length === 0 ? (
         <div className="resume-builder-list__empty">
-          <div className="resume-builder-list__empty-icon">📝</div>
+          <div className="resume-builder-list__empty-icon"><Icon name="resume" size="3rem" /></div>
           <p className="resume-builder-list__empty-text">还没有简历，开始创建你的第一份简历吧</p>
           <Button onClick={handleCreateBlank}>新建空白简历</Button>
         </div>

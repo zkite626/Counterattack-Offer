@@ -10,6 +10,7 @@ const protectedPaths = [
   "/job",
   "/match",
   "/resume",
+  "/resume-builder",
   "/interview",
   "/plan",
   "/report",
@@ -19,7 +20,7 @@ const protectedPaths = [
 // 已登录用户应重定向的认证页面路径
 const authPaths = ["/login", "/register"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("token")?.value;
 
@@ -78,11 +79,14 @@ export const config = {
   matcher: [
     "/api/ai/:path*",
     "/profile",
+    "/profile/:path*",
     "/diagnosis",
     "/translation",
     "/job",
     "/match",
     "/resume",
+    "/resume-builder",
+    "/resume-builder/:path*",
     "/interview",
     "/plan",
     "/report",

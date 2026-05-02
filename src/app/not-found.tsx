@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Icon from "@/components/ui/Icon";
 
 export default function NotFoundPage() {
   const router = useRouter();
@@ -8,7 +9,7 @@ export default function NotFoundPage() {
   return (
     <div className="error-fallback">
       <div className="error-fallback__container">
-        <div className="error-fallback__icon">🔍</div>
+        <div className="error-fallback__icon"><Icon name="compass" size="3rem" /></div>
         <h2 className="error-fallback__title">页面未找到</h2>
         <p className="error-fallback__message">
           抱歉，您访问的页面不存在或已被移除。

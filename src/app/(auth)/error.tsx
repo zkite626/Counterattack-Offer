@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Icon from "@/components/ui/Icon";
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -14,7 +15,9 @@ export default function AuthError({ error, reset }: ErrorPageProps) {
 
   return (
     <div style={{ textAlign: "center", padding: "2rem" }}>
-      <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>⚠️</div>
+      <div style={{ fontSize: "3rem", marginBottom: "1rem", color: "var(--color-warning-500)" }}>
+        <Icon name="triangle-warning" size="3rem" />
+      </div>
       <h2 style={{ marginBottom: "0.5rem" }}>认证页面出现错误</h2>
       <p style={{ color: "var(--color-text-secondary)", marginBottom: "1.5rem" }}>
         请尝试重新加载页面。

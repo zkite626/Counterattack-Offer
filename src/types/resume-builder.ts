@@ -110,12 +110,12 @@ export interface ResumeBuilderData {
 
 // 默认模块配置
 export const DEFAULT_RESUME_SECTIONS: ResumeSection[] = [
-  { id: 'basic', title: '基本信息', icon: '👤', enabled: true, order: 0 },
-  { id: 'education', title: '教育经历', icon: '🎓', enabled: true, order: 1 },
-  { id: 'experience', title: '实习/工作经历', icon: '💼', enabled: true, order: 2 },
-  { id: 'projects', title: '项目经历', icon: '🚀', enabled: true, order: 3 },
-  { id: 'skills', title: '专业技能', icon: '⚡', enabled: true, order: 4 },
-  { id: 'selfEvaluation', title: '自我评价', icon: '💬', enabled: false, order: 5 },
+  { id: 'basic', title: '基本信息', icon: 'user', enabled: true, order: 0 },
+  { id: 'education', title: '教育经历', icon: 'flag', enabled: true, order: 1 },
+  { id: 'experience', title: '实习/工作经历', icon: 'briefcase', enabled: true, order: 2 },
+  { id: 'projects', title: '项目经历', icon: 'rocket', enabled: true, order: 3 },
+  { id: 'skills', title: '专业技能', icon: 'lightning', enabled: true, order: 4 },
+  { id: 'selfEvaluation', title: '自我评价', icon: 'chat', enabled: false, order: 5 },
 ];
 
 // 默认全局设置

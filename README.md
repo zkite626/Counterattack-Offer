@@ -13,7 +13,7 @@
 | 5 | 可信简历优化 | AI 对比优化前后，生成更专业的简历内容 |
 | 6 | 面试 + 能力计划 | 模拟面试追问对话 + 7/14/30 天能力提升计划 |
 
-**附加功能：** 汇总报告 · 一键 Demo 体验 · 暗色模式 · 响应式布局
+**附加功能：** 汇总报告 · 一键 Demo 体验 · 暗色模式 · 响应式布局 · 简历创建器（多模板 + PDF 导出）
 
 ## 技术栈
 
@@ -22,7 +22,7 @@
 | 框架 | Next.js 16 (App Router) + React 19 + TypeScript |
 | 认证 | JWT (jose) — HttpOnly Cookie，无数据库依赖 |
 | AI | OpenAI 兼容协议，支持 DeepSeek / OpenAI / 智谱 / 阿里云 |
-| 样式 | Vanilla CSS + CSS Variables + BEM 命名 |
+| 样式 | Vanilla CSS + CSS Variables + BEM 命名 + IconFont SVG Sprite |
 | 状态 | React Context + useReducer，持久化至 localStorage |
 | 部署 | Vercel / Docker |
 
@@ -30,7 +30,7 @@
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/yourname/counterattack-offer.git
+git clone https://github.com/zkite626/counterattack-offer.git
 cd counterattack-offer
 
 # 2. 安装依赖
@@ -87,30 +87,53 @@ DEFAULT_AI_API_KEY=
 
 ```
 src/
-├── app/                    # Next.js App Router
+├── proxy.ts                # 路由保护（认证 + API 代理）
+├── app/
 │   ├── (auth)/             # 登录/注册路由组
 │   ├── (dashboard)/        # 工作台路由组（需登录）
+│   │   ├── profile/        # 个人画像
+│   │   ├── diagnosis/      # AI 诊断
+│   │   ├── translation/    # 经历转译
+│   │   ├── job/            # JD 解析
+│   │   ├── match/          # 人岗匹配
+│   │   ├── resume/         # 简历优化
+│   │   ├── resume-builder/ # 简历创建器（多模板 + PDF 导出）
+│   │   ├── interview/      # 面试训练
+│   │   ├── plan/           # 能力计划
+│   │   ├── report/         # 汇总报告
+│   │   └── settings/       # 模型管理
 │   ├── api/
 │   │   ├── auth/           # 认证 API（登录/注册/登出/Demo）
 │   │   └── ai/             # AI 服务 API（10 个端点）
 │   ├── globals.css         # Design Token 系统
-│   ├── layout.tsx          # 根布局
+│   ├── layout.tsx          # 根布局（字体、metadata、Providers）
 │   ├── providers.tsx       # Context Provider 组合
 │   └── page.tsx            # 首页
 ├── components/
-│   ├── ui/                 # 基础 UI 组件（Button/Card/Input/Modal/Tag/Skeleton...）
+│   ├── ui/                 # 基础 UI 组件（Button/Card/Input/Modal/Tag/Skeleton/Icon/IconSprite...）
 │   ├── layout/             # 布局组件（StepNav/ThemeToggle）
-│   └── business/           # 业务组件（InterviewChat/PlanTimeline/ResumeCompare）
-├── contexts/               # React Context（Auth/Theme/AI/JobFlow）
-├── hooks/                  # 自定义 Hooks
+│   ├── business/           # 业务组件（InterviewChat/PlanTimeline/ResumeCompare/ResumePreview...）
+│   └── resume-templates/   # 简历模板系统（classic/modern/fresh-grad）
+├── contexts/               # React Context（Auth/Theme/AI/JobFlow/ResumeBuilder）
+├── hooks/                  # 自定义 Hooks（useAI/useResumeBuilder...）
 ├── lib/
-│   ├── ai/                 # AI 客户端 + 模型配置
+│   ├── ai/                 # AI 客户端 + 模型配置 + 流式处理
 │   ├── auth/               # JWT + Cookie 工具
 │   ├── repository/         # 数据访问层（内存实现）
-│   └── utils/              # 加密等工具函数
-├── prompts/                # AI Prompt 模板
+│   └── utils/              # 加密 + 简历构建工具
+├── prompts/                # AI Prompt 模板（8 个场景）
 ├── types/                  # TypeScript 类型定义
 └── data/                   # Demo 模拟数据
+
+public/
+├── favicon.ico             # 品牌 Favicon
+├── logo-square.png         # 方形 Logo（用于侧边栏、Apple Touch Icon）
+├── logo-wide.png           # 横版 Logo（用于首页、登录页）
+└── fonts/                  # 本地字体文件（Inter/Noto Sans SC/Outfit）
+
+docs/
+├── 00~17_*.md              # 设计文档（18 篇）
+└── codex_prompts/          # 开发提示词（Wave 1~8）
 ```
 
 ## Demo 演示流程
@@ -118,11 +141,21 @@ src/
 1. 访问首页 → 点击「一键体验 Demo」
 2. 自动创建临时账户，跳转至「个人信息」页（已预填李同学数据）
 3. 按侧边栏顺序依次体验：画像诊断 → 经历转译 → JD 解析 → 人岗匹配 → 简历优化 → 面试训练 → 能力计划 → 汇总报告
-4. 每一步均可触发 AI 生成（需配置 API Key）
+4. 进入「简历创建器」可从 AI 结果一键生成简历，选择模板并导出 PDF
+5. 每一步均可触发 AI 生成（需配置 API Key）
 
-## 参赛信息
+## 开发 Wave 记录
 
-本项目参加字节跳动「扣子空间·AI 求职」主题赛，定位为面向低经验大学生的 AI 求职陪跑 Web MVP。
+| Wave | 内容 | 状态 |
+|------|------|------|
+| Wave 1 | 项目骨架 + 设计系统 + JWT 认证 | 完成 |
+| Wave 2 | AI 服务层 + 模型管理 | 完成 |
+| Wave 3 | 核心业务页面（上半） | 完成 |
+| Wave 4 | 核心业务页面（下半） | 完成 |
+| Wave 5 | 首页 + Demo 模式 + 动画打磨 | 完成 |
+| Wave 6 | 测试 + 部署 + 性能优化 | 完成 |
+| Wave 7 | 简历创建器（多模板 + PDF 导出） | 完成 |
+| Wave 8 | 全站视觉升级 + 图标体系统一 + 国内资源替换 + Bug 修复 | 完成 |
 
 ## License
 

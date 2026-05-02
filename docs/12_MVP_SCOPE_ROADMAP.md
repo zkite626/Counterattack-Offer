@@ -11,6 +11,7 @@
 | Wave 5 | 首页 + 演示模式 + 打磨 | 精美首页，一键演示 | 视觉惊艳，Demo 流畅 |
 | Wave 6 | 测试 + 部署 + 优化 | 上线可用 | Lighthouse>85, 无Bug |
 | Wave 7 | 简历创建器 | 编辑+预览+导出简历 | 三栏编辑器，3个模板，AI预填充，PDF导出 |
+| Wave 8 | 全站视觉升级 | Emoji→IconFont、国内资源、样式统一 | 全站无emoji图标、本地字体、暗色/响应式完美 |
 
 ---
 
@@ -180,10 +181,10 @@
 | # | 任务 | 输出文件 |
 |---|------|----------|
 | 7.1 | 简历构建器类型定义 | `types/resume-builder.ts` |
-| 7.2 | ResumeBuilderContext + Hook | `contexts/ResumeBuilderContext.tsx` |
-| 7.3 | 模板系统（经典/现代/应届生） | `components/resume-templates/` |
+| 7.2 | ResumeBuilderContext + Hook | `contexts/ResumeBuilderContext.tsx`, `hooks/useResumeBuilder.ts` |
+| 7.3 | 模板系统（经典/现代/应届生） | `components/resume-templates/registry.ts`, `classic/`, `modern/`, `fresh-grad/`, `templates.css` |
 | 7.4 | 模块导航组件 SectionNavigator | `components/business/SectionNavigator.tsx` |
-| 7.5 | 编辑面板 SectionEditor（6个子面板） | `components/business/SectionEditor.tsx` |
+| 7.5 | 编辑面板 SectionEditor（6个子面板） | `components/business/SectionEditor.tsx`, `editor-panels/*.tsx` |
 | 7.6 | A4 预览组件 ResumePreview | `components/business/ResumePreview.tsx` |
 | 7.7 | 工具栏 EditorToolbar | `components/business/EditorToolbar.tsx` |
 | 7.8 | 简历列表页 | `app/(dashboard)/resume-builder/page.tsx` |
@@ -200,4 +201,45 @@
 - PDF 导出正确
 - 数据 localStorage 持久化
 - 响应式布局正常
+
+---
+
+## 12.9 Wave 8 — 全站视觉升级 + 图标体系统一 + 国内资源替换
+
+### 目标
+彻底移除所有 emoji 图标、统一全站视觉风格、替换为国内可用资源、修复 Next.js 16 构建警告、品牌资源就位。
+
+### 设计文档
+详见 `docs/codex_prompts/wave8_prompt.md`。
+
+### 任务清单
+
+| # | 任务 | 说明 |
+|---|------|------|
+| 8.1 | Logo 和 Favicon 资源迁移 | 品牌资源移入 `public/`，更新 layout.tsx metadata |
+| 8.2 | Google Fonts 替换为国内 CDN | 本地字体 woff2 托管到 `public/fonts/`，移除 Google CDN 链接 |
+| 8.3 | 全面替换 Emoji 为 IconFont 图标 | 首页/侧边栏/StepNav/功能页/认证页/错误页 全部替换 |
+| 8.4 | 新增缺失的 IconSprite 图标 | 补充 fire/award/book/chat/handshake/puzzle 等图标 |
+| 8.5 | 全站样式统一 | 卡片/按钮/间距/排版/空状态/Loading 统一规范 |
+| 8.6 | 首页视觉增强 | Logo 展示、痛点卡片色条、步骤流连线、功能卡片渐变 |
+| 8.7 | Dashboard 侧边栏视觉优化 | Logo、导航项图标、当前页高亮、移动端动画 |
+| 8.8 | 功能页面逐页美化 | 10+ 个功能页逐一检查并优化（参照统一样式规范） |
+| 8.9 | 认证页面美化 | 登录/注册页 Logo + 输入框图标 + Loading 态 |
+| 8.10 | 错误和空状态页面美化 | 404/Error/Loading 页面统一品牌风格 |
+| 8.11 | 暗色模式全面适配 | 所有新增样式验证暗色模式 |
+| 8.12 | 响应式全面检查 | 375px ~ 1536px 全断点验证 |
+| 8.13 | 修复 middleware 弃用警告 | `middleware.ts` → `proxy.ts`，导出函数名 `proxy` |
+| 8.14 | 构建验证 | `npm run build` 无报错/警告，逐页验证亮色/暗色/响应式 |
+
+### 验收标准
+- 全站无 emoji 作为图标使用，所有图标通过 `<Icon>` 组件渲染
+- IconSprite 中的图标覆盖所有使用场景
+- 所有页面卡片、按钮、间距、排版风格统一
+- Google Fonts 替换为本地字体，国内可正常加载
+- `/favicon.ico` 和 `/logo-square.png`、`/logo-wide.png` 在 `public/` 下正确引用
+- 侧边栏和首页正确展示品牌 Logo
+- `npm run build` 无 middleware 弃用警告
+- 暗色模式下所有图标、卡片、背景正常
+- 响应式在 375px ~ 1536px 范围内正常
+- Lighthouse Performance > 90, Accessibility > 95
 

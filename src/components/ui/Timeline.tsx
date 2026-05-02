@@ -1,13 +1,15 @@
 "use client";
 
 import { type ReactNode } from "react";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import "./Timeline.css";
 
 export interface TimelineItem {
   label: string;
   content: ReactNode;
   color?: "green" | "blue" | "purple" | "default";
-  icon?: string;
+  icon?: IconName;
 }
 
 interface TimelineProps {
@@ -37,7 +39,7 @@ export default function Timeline({
         >
           <div className="timeline__marker">
             <span className="timeline__marker-dot">
-              {item.icon ?? ""}
+              {item.icon ? <Icon name={item.icon} size="1em" /> : ""}
             </span>
             {index < items.length - 1 && <div className="timeline__marker-line" />}
           </div>

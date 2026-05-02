@@ -18,7 +18,7 @@
 
 | 层级 | 技术选择 | 说明 |
 |------|----------|------|
-| 框架 | Next.js 15 (App Router) | 全栈框架，前后端一体 |
+| 框架 | Next.js 16 (App Router) | 全栈框架，前后端一体 |
 | 语言 | TypeScript | 全栈类型安全 |
 | 样式 | Vanilla CSS (CSS Variables) | 最大灵活性，Design Token 驱动 |
 | 认证 | JWT (jose 库) | 轻量级，无数据库依赖 |

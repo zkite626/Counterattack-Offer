@@ -169,13 +169,16 @@ function decryptApiKey(encrypted: string): string;
 1. **System Prompt**：角色定义 + 输出规则 + JSON Schema
 2. **User Prompt**：用户数据注入
 
-### 变量注入
+### 变量注入 (`lib/ai/prompts.ts`)
 
 ```typescript
+// lib/ai/prompts.ts
 function buildPrompt(template: string, variables: Record<string, string>): string {
   return template.replace(/\{\{(\w+)\}\}/g, (_, key) => variables[key] || '');
 }
 ```
+
+> `lib/ai/` 目录文件：`client.ts`（AIClient 类）、`models.ts`（内置模型）、`prompts.ts`（模板工具）、`stream.ts`（SSE 解析 + useStreamResponse Hook）。
 
 ### 模块 Prompt 映射
 
@@ -242,6 +245,11 @@ export async function POST(request: Request) {
 ---
 
 ## 4.7 流式响应（SSE）
+
+SSE 解析和前端消费由 `lib/ai/stream.ts` 提供：
+
+- `createSSEStream(response)` — 将 fetch Response 转为 ReadableStream 文本
+- `useStreamResponse()` — React Hook，提供 `startStream/stopStream/content/error` 状态
 
 面试对话模块支持流式响应：
 

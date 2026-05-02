@@ -24,10 +24,10 @@ MVP 阶段采用无数据库 JWT 认证方案，用户信息存储在服务端�
 
 认证验证:
   请求到达
-    → middleware.ts 检查路径
+    → proxy.ts 检查路径
       → 读取 Cookie 中的 token
         → jose 验证 JWT 签名和有效期
-          → 通过：注入 userId 到请求
+          → 通过：注入 userId 到请求 (x-user-id header)
           → 失败：返回 401 或重定向登录页
 ```
 
@@ -67,28 +67,34 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
 
 ---
 
-## 5.3 中间件 (`middleware.ts`)
+## 5.3 路由保护 (`proxy.ts`)
+
+原 `middleware.ts` 已重构为 `src/proxy.ts`，导出 `proxy` 函数。
 
 ```typescript
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 
-// 需要认证的路径
-const protectedPaths = ['/profile', '/diagnosis', '/translation', '/job',
-  '/match', '/resume', '/interview', '/plan', '/report', '/settings'];
+// 需要认证的 Dashboard 页面路径
+const protectedPaths = [
+  '/profile', '/diagnosis', '/translation', '/job',
+  '/match', '/resume', '/resume-builder', '/interview',
+  '/plan', '/report', '/settings',
+];
 
+// 已登录用户应重定向的认证页面路径
 const authPaths = ['/login', '/register'];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('token')?.value;
 
-  // AI API 路由保护
+  // 1. AI API 路由保护
   if (pathname.startsWith('/api/ai/')) {
     if (!token) {
       return NextResponse.json(
-        { success: false, error: { code: 'AUTH_TOKEN_INVALID', message: '未登录' } },
+        { success: false, error: { code: 'AUTH_TOKEN_MISSING', message: '未登录' } },
         { status: 401 }
       );
     }
@@ -99,13 +105,13 @@ export async function middleware(request: NextRequest) {
         { status: 401 }
       );
     }
-    // 注入用户ID到请求头
+    // 注入用户ID到请求头，供下游使用
     const headers = new Headers(request.headers);
     headers.set('x-user-id', payload.sub);
     return NextResponse.next({ headers });
   }
 
-  // Dashboard 页面保护
+  // 2. Dashboard 页面保护
   if (protectedPaths.some(p => pathname.startsWith(p))) {
     if (!token) {
       return NextResponse.redirect(new URL('/login', request.url));
@@ -116,7 +122,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 已登录用户访问登录页 → 重定向到Dashboard
+  // 3. 已登录用户访问登录/注册页 → 重定向到 profile
   if (authPaths.some(p => pathname.startsWith(p))) {
     if (token) {
       const payload = await verifyToken(token);
@@ -130,11 +136,18 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/ai/:path*', '/profile', '/diagnosis', '/translation',
-    '/job', '/match', '/resume', '/interview', '/plan', '/report',
-    '/settings', '/login', '/register'],
+  matcher: [
+    '/api/ai/:path*',
+    '/profile', '/profile/:path*',
+    '/diagnosis', '/translation', '/job', '/match', '/resume',
+    '/resume-builder', '/resume-builder/:path*',
+    '/interview', '/plan', '/report', '/settings',
+    '/login', '/register',
+  ],
 };
 ```
+
+> **与原 middleware.ts 的区别**：函数名从 `middleware` 改为 `proxy`；新增 `/resume-builder` 受保护路径；matcher 增加 `:path*` 通配子路由。
 
 ---
 
@@ -241,4 +254,4 @@ const REMEMBER_ME_COOKIE_OPTIONS = {
 4. 修改工厂函数返回数据库实现
 5. 迁移环境变量中的管理员到数据库
 
-**不需要修改**：JWT 逻辑、中间件、API Route、前端代码。
+**不需要修改**：JWT 逻辑、proxy.ts 路由保护、API Route、前端代码。

@@ -7,6 +7,7 @@ import { useAI } from "@/contexts/AIContext";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Skeleton from "@/components/ui/Skeleton";
+import Icon from "@/components/ui/Icon";
 import PlanTimeline from "@/components/business/PlanTimeline";
 import type { ImprovementPlan } from "@/types";
 import "../shared-page.css";
@@ -108,7 +109,7 @@ export default function PlanPage() {
       {/* 目标岗位 + 总目标 */}
       <Card className="plan-page__goal-card">
         <div className="plan-page__goal-header">
-          <span className="plan-page__goal-icon">🎯</span>
+          <Icon name="target" size="2rem" className="plan-page__goal-icon" />
           <div>
             <h3 className="plan-page__goal-role">{plan.targetRole}</h3>
             <p className="plan-page__goal-desc">{plan.goal}</p>

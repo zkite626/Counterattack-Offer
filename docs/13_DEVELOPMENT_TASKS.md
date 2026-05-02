@@ -147,3 +147,27 @@
 ### TASK-6.1 ~ 6.7
 
 参见 `docs/12_MVP_SCOPE_ROADMAP.md` Wave 6 任务清单。
+
+---
+
+## Wave 7 — 简历创建器
+
+### TASK-7.1 ~ 7.12
+
+参见 `docs/12_MVP_SCOPE_ROADMAP.md` Wave 7 任务清单。
+- 类型定义：`types/resume-builder.ts`
+- 设计文档：`docs/17_RESUME_BUILDER_DESIGN.md`
+- 组件规格：`docs/08_COMPONENT_SPECIFICATION.md` §8.3（SectionNavigator/SectionEditor/ResumePreview/EditorToolbar）
+- 状态管理：`docs/10_STATE_MANAGEMENT.md` §10.6（ResumeBuilderContext）
+
+---
+
+## Wave 8 — 全站视觉升级 + 图标体系统一 + 国内资源替换
+
+### TASK-8.1 ~ 8.14
+
+参见 `docs/12_MVP_SCOPE_ROADMAP.md` Wave 8 任务清单。
+- 设计提示词：`docs/codex_prompts/wave8_prompt.md`
+- 组件参考：`docs/08_COMPONENT_SPECIFICATION.md`（Icon / IconSprite）
+- 设计系统参考：`docs/06_UI_UX_DESIGN_SYSTEM.md`
+- 架构参考：`docs/01_TECH_ARCHITECTURE.md`（proxy.ts 路由保护）

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Icon from "@/components/ui/Icon";
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -15,7 +16,7 @@ export default function DashboardError({ error, reset }: ErrorPageProps) {
   return (
     <div className="error-fallback">
       <div className="error-fallback__container">
-        <div className="error-fallback__icon">⚠️</div>
+        <div className="error-fallback__icon"><Icon name="triangle-warning" size="3rem" /></div>
         <h2 className="error-fallback__title">页面出现了问题</h2>
         <p className="error-fallback__message">
           抱歉，该功能页面加载时遇到错误。请尝试重试或前往其他页面。

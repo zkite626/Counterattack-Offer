@@ -2,14 +2,16 @@
 
 ## 10.1 架构概览
 
-使用 React Context + useReducer，分为四个独立 Context：
+使用 React Context + useReducer，分为五个独立 Context：
 
 ```
-Providers 嵌套顺序:
-  ThemeProvider        ← 主题状态
-    AuthProvider       ← 认证状态
-      AIProvider       ← AI模型配置
-        JobFlowProvider ← 求职流程数据
+Providers 嵌套顺序（见 providers.tsx）:
+  ThemeProvider            ← 主题状态
+    ErrorBoundary          ← 错误边界
+      AuthProvider         ← 认证状态
+        AIProvider         ← AI模型配置
+          JobFlowProvider  ← 求职流程数据
+            ResumeBuilderProvider ← 简历创建器数据
 ```
 
 ---
@@ -174,7 +176,64 @@ function canAccessStep(state: JobFlowState, step: FlowStep): boolean {
 
 ---
 
-## 10.6 Hooks
+## 10.6 ResumeBuilderContext
+
+### State
+
+```typescript
+interface ResumeBuilderState {
+  resumes: ResumeBuilderData[];  // 所有简历
+  activeResumeId: string | null; // 当前编辑的简历ID
+  activeSection: string;         // 当前编辑的模块
+  isLoading: boolean;
+}
+```
+
+### 主要 Actions
+
+| Action | 说明 |
+|--------|------|
+| `CREATE_RESUME` | 新建空白简历 |
+| `DELETE_RESUME` | 删除简历 |
+| `DUPLICATE_RESUME` | 复制简历 |
+| `SET_ACTIVE_RESUME` | 切换当前编辑的简历 |
+| `SET_ACTIVE_SECTION` | 切换当前编辑的模块 |
+| `UPDATE_BASIC_INFO` | 更新基本信息 |
+| `ADD/UPDATE/DELETE_EDUCATION` | 教育经历 CRUD |
+| `ADD/UPDATE/DELETE_EXPERIENCE` | 实习经历 CRUD |
+| `ADD/UPDATE/DELETE_PROJECT` | 项目经历 CRUD |
+| `UPDATE_SKILLS` | 更新技能标签 |
+| `UPDATE_SELF_EVALUATION` | 更新自我评价 |
+| `REORDER_SECTIONS` | 模块排序 |
+| `TOGGLE_SECTION` | 模块显隐 |
+| `SET_TEMPLATE` | 切换模板 |
+| `UPDATE_GLOBAL_SETTINGS` | 全局排版设置 |
+| `LOAD_FROM_AI` | 从 AI 分析结果加载 |
+
+### 持久化
+
+- 存储位置：`localStorage('nixi-resume-builder')`
+- 1500ms 防抖保存，避免频繁写入
+- 页面刷新恢复
+
+### 暴露方法
+
+```typescript
+interface ResumeBuilderContextValue {
+  state: ResumeBuilderState;
+  dispatch: Dispatch<ResumeBuilderAction>;
+  createResume: (name?: string) => string;
+  deleteResume: (id: string) => void;
+  duplicateResume: (id: string) => void;
+  setActiveResume: (id: string) => void;
+  loadFromAI: (data: ResumeBuilderData) => void;
+  activeResume: ResumeBuilderData | null;
+}
+```
+
+---
+
+## 10.7 Hooks
 
 ### useAuth
 
@@ -203,9 +262,16 @@ function useJobFlow(): JobFlowContextValue;
 // 用法：const { state, dispatch, canAccessStep } = useJobFlow();
 ```
 
+### useResumeBuilder
+
+```typescript
+function useResumeBuilder(): ResumeBuilderContextValue;
+// 用法：const { state, activeResume, createResume, deleteResume } = useResumeBuilder();
+```
+
 ---
 
-## 10.7 数据流示例
+## 10.8 数据流示例
 
 ```
 用户点击"生成AI画像"

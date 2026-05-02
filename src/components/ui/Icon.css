@@ -1,0 +1,8 @@
+/* ── Icon 组件基础样式 ── */
+
+.icon {
+  display: inline-block;
+  vertical-align: -0.125em;
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}

@@ -96,6 +96,23 @@
 
 ---
 
+### POST `/api/auth/demo`
+
+创建演示账户并自动登录。无需请求参数。
+
+**Response 201:**
+```json
+{
+  "success": true,
+  "data": {
+    "user": { "id": "uuid", "email": "demo-xxx@demo.com", "name": "演示用户" },
+    "token": "jwt-token-string"
+  }
+}
+```
+
+---
+
 ## 3.2 AI API
 
 所有 AI API 需要 JWT 认证。模型配置通过请求 Header 传递：
@@ -302,6 +319,32 @@ X-AI-API-Key: sk-xxx (加密后)
 ```
 
 **Response:** SSE 流式响应
+
+---
+
+### POST `/api/ai/test-connection`
+
+测试 AI 模型连接是否可用。
+
+**Request Body:**
+```json
+{
+  "baseUrl": "https://api.deepseek.com",
+  "model": "deepseek-chat",
+  "apiKey": "sk-xxx"
+}
+```
+
+**Response 200:**
+```json
+{
+  "success": true,
+  "data": { "message": "连接成功", "model": "deepseek-chat", "latency": 1234 }
+}
+```
+
+**Response 401:** API Key 无效
+**Response 502:** AI 服务不可用
 
 ---
 

@@ -1,12 +1,13 @@
 "use client";
 
 import { useTheme } from "@/contexts/ThemeContext";
+import Icon from "@/components/ui/Icon";
 import "./ThemeToggle.css";
 
 const themes = [
-  { value: "light" as const, icon: "☀️", label: "亮色模式" },
-  { value: "dark" as const, icon: "🌙", label: "暗色模式" },
-  { value: "system" as const, icon: "🖥️", label: "跟随系统" },
+  { value: "light" as const, icon: "sun" as const, label: "亮色模式" },
+  { value: "dark" as const, icon: "moon" as const, label: "暗色模式" },
+  { value: "system" as const, icon: "monitor" as const, label: "跟随系统" },
 ];
 
 export default function ThemeToggle() {
@@ -25,7 +26,7 @@ export default function ThemeToggle() {
           aria-pressed={theme === t.value}
           title={t.label}
         >
-          {t.icon}
+          <Icon name={t.icon} size="1.125em" />
         </button>
       ))}
     </div>

@@ -9,6 +9,7 @@ import Tag from "@/components/ui/Tag";
 import ScoreRing from "@/components/ui/ScoreRing";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Timeline from "@/components/ui/Timeline";
+import Icon from "@/components/ui/Icon";
 import type { FlowStep } from "@/types";
 import { useRouter } from "next/navigation";
 import "../shared-page.css";
@@ -86,7 +87,7 @@ export default function ReportPage() {
         {
           label: "7天冲刺",
           color: "green" as const,
-          icon: "🏃",
+          icon: "run" as const,
           content: (
             <ul className="report-page__mini-list">
               {state.improvementPlan.sevenDayPlan.slice(0, 3).map((t, i) => <li key={i}>{t}</li>)}
@@ -96,7 +97,7 @@ export default function ReportPage() {
         {
           label: "14天提升",
           color: "blue" as const,
-          icon: "📈",
+          icon: "trending" as const,
           content: (
             <ul className="report-page__mini-list">
               {state.improvementPlan.fourteenDayPlan.slice(0, 3).map((t, i) => <li key={i}>{t}</li>)}
@@ -106,7 +107,7 @@ export default function ReportPage() {
         {
           label: "30天突破",
           color: "purple" as const,
-          icon: "🚀",
+          icon: "rocket" as const,
           content: (
             <ul className="report-page__mini-list">
               {state.improvementPlan.thirtyDayPlan.slice(0, 3).map((t, i) => <li key={i}>{t}</li>)}
@@ -135,7 +136,7 @@ export default function ReportPage() {
       {/* 1. 求职画像摘要 */}
       {state.careerDiagnosis && (
         <Card className="report-page__section">
-          <h3 className="report-page__section-title">📊 求职画像摘要</h3>
+          <h3 className="report-page__section-title"><Icon name="diagnosis" size="1.25em" /> 求职画像摘要</h3>
           <Tag size="md">{state.careerDiagnosis.studentType}</Tag>
           <p className="report-page__summary">{state.careerDiagnosis.summary}</p>
         </Card>
@@ -144,7 +145,7 @@ export default function ReportPage() {
       {/* 2. 适配岗位方向 */}
       {state.careerDiagnosis?.recommendedRoles && (
         <Card className="report-page__section">
-          <h3 className="report-page__section-title">💼 适配岗位方向</h3>
+          <h3 className="report-page__section-title"><Icon name="briefcase" size="1.25em" /> 适配岗位方向</h3>
           <div className="report-page__roles-grid">
             {state.careerDiagnosis.recommendedRoles.map((role, i) => (
               <div key={i} className="report-page__role-item">
@@ -159,7 +160,7 @@ export default function ReportPage() {
       {/* 3. 隐藏能力发现 */}
       {uniqueTags.length > 0 && (
         <Card className="report-page__section">
-          <h3 className="report-page__section-title">🔍 隐藏能力发现</h3>
+          <h3 className="report-page__section-title"><Icon name="search" size="1.25em" /> 隐藏能力发现</h3>
           <div className="report-page__tag-cloud">
             {uniqueTags.map((tag, i) => (
               <Tag key={i} variant="success" size="md">{tag}</Tag>
@@ -171,7 +172,7 @@ export default function ReportPage() {
       {/* 4. 目标岗位匹配度 */}
       {state.matchReport && (
         <Card className="report-page__section">
-          <h3 className="report-page__section-title">🎯 目标岗位匹配度</h3>
+          <h3 className="report-page__section-title"><Icon name="target" size="1.25em" /> 目标岗位匹配度</h3>
           <div className="report-page__match-overview">
             <ScoreRing score={state.matchReport.overallMatchScore} size={100} strokeWidth={6} label="匹配分" />
           </div>
@@ -188,7 +189,7 @@ export default function ReportPage() {
       {/* 5. 简历优化重点 */}
       {resumeItems.length > 0 && (
         <Card className="report-page__section">
-          <h3 className="report-page__section-title">📄 简历优化重点</h3>
+          <h3 className="report-page__section-title"><Icon name="document" size="1.25em" /> 简历优化重点</h3>
           {resumeItems.map((item, i) => (
             <div key={i} className="report-page__resume-item">
               <div className="report-page__resume-before">{item.before}</div>
@@ -201,7 +202,7 @@ export default function ReportPage() {
       {/* 6. 面试准备重点 */}
       {interviewQuestions.length > 0 && (
         <Card className="report-page__section">
-          <h3 className="report-page__section-title">🎤 面试准备重点</h3>
+          <h3 className="report-page__section-title"><Icon name="mic" size="1.25em" /> 面试准备重点</h3>
           <ol className="report-page__question-list">
             {interviewQuestions.map((q, i) => <li key={i}>{q}</li>)}
           </ol>
@@ -211,7 +212,7 @@ export default function ReportPage() {
       {/* 7. 30天行动计划 */}
       {planItems.length > 0 && (
         <Card className="report-page__section">
-          <h3 className="report-page__section-title">📅 30天行动计划</h3>
+          <h3 className="report-page__section-title"><Icon name="plan" size="1.25em" /> 30天行动计划</h3>
           <Timeline items={planItems} />
         </Card>
       )}
@@ -219,7 +220,7 @@ export default function ReportPage() {
       {/* 8. 生成简历入口 */}
       {state.studentProfile && (
         <Card className="report-page__section">
-          <h3 className="report-page__section-title">📝 生成简历</h3>
+          <h3 className="report-page__section-title"><Icon name="resume-builder" size="1.25em" /> 生成简历</h3>
           <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginBottom: "var(--space-4)" }}>
             基于 AI 分析结果一键创建简历，支持多模板编辑和 PDF 导出
           </p>
@@ -231,7 +232,7 @@ export default function ReportPage() {
 
       {/* 9. AI 综合建议 */}
       <Card className="report-page__section">
-        <h3 className="report-page__section-title">🤖 AI 综合建议</h3>
+        <h3 className="report-page__section-title"><Icon name="sparkle" size="1.25em" /> AI 综合建议</h3>
         {!reportMarkdown && !reportLoading && !reportError && (
           <div className="report-page__generate-prompt">
             <p>点击下方按钮，AI 将整合所有数据生成综合建议报告</p>

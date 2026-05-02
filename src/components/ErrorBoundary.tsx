@@ -1,6 +1,7 @@
 "use client";
 
 import { Component, type ReactNode, type ErrorInfo } from "react";
+import Icon from "@/components/ui/Icon";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -46,7 +47,7 @@ export default class ErrorBoundary extends Component<
       return (
         <div className="error-fallback">
           <div className="error-fallback__container">
-            <div className="error-fallback__icon">⚠️</div>
+            <div className="error-fallback__icon"><Icon name="triangle-warning" size="3rem" /></div>
             <h2 className="error-fallback__title">页面出现了问题</h2>
             <p className="error-fallback__message">
               抱歉，页面加载时遇到了意外错误。请尝试刷新页面或返回上一页。

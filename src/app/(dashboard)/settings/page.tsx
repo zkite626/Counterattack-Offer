@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Modal from "@/components/ui/Modal";
 import Tag from "@/components/ui/Tag";
+import Icon from "@/components/ui/Icon";
 import "./settings.css";
 
 // 提供商显示信息
@@ -357,7 +358,7 @@ function ModelCard({
       {/* API Key 区域 */}
       {!hasKey && !showKeyInput && (
         <div className="settings__key-warning">
-          <span className="settings__key-warning-icon">⚠</span>
+          <Icon name="warning" size="1.125em" className="settings__key-warning-icon" />
           <span>未配置 API Key</span>
           <Button
             variant="ghost"
