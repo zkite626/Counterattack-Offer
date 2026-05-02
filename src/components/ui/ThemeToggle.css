@@ -1,0 +1,35 @@
+/* ── ThemeToggle 组件样式 ── */
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+}
+
+.theme-toggle__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  transition: all var(--transition-fast);
+  padding: 0;
+}
+
+.theme-toggle__btn:hover {
+  background: var(--color-surface-hover);
+}
+
+.theme-toggle__btn--active {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}

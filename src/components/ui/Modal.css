@@ -1,0 +1,71 @@
+/* ── Modal 组件样式 ── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+  padding: var(--space-4);
+}
+
+.modal {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
+  animation: scaleIn 0.25s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 100%;
+}
+
+/* 尺寸 */
+.modal--sm { max-width: 400px; }
+.modal--md { max-width: 560px; }
+.modal--lg { max-width: 720px; }
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6) var(--space-6) var(--space-4);
+}
+
+.modal__title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xl);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  padding: 0;
+  line-height: 1;
+}
+
+.modal__close:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.modal__body {
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}

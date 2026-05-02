@@ -1,0 +1,3 @@
+module.exports=[90430,a=>{"use strict";var b=a.i(7997);a.s(["default",0,function({children:a}){return(0,b.jsxs)("div",{className:"auth-layout",children:[(0,b.jsx)("div",{className:"auth-layout__bg"}),(0,b.jsxs)("div",{className:"auth-layout__content",children:[(0,b.jsxs)("div",{className:"auth-layout__brand",children:[(0,b.jsx)("span",{className:"auth-layout__logo",children:"🚀"}),(0,b.jsx)("h1",{className:"auth-layout__title",children:"逆袭Offer"}),(0,b.jsx)("p",{className:"auth-layout__subtitle",children:"AI 求职突围智能体"})]}),a]})]})}])},67782,a=>{a.n(a.i(90430))}];
+
+//# sourceMappingURL=src_app_%28auth%29_layout_tsx_0v6764i._.js.map

@@ -1,4 +1,4 @@
-# Wave 7 Codex 提示词 — 简历创建器（Resume Builder）
+# Wave 7 开发提示词 — 简历创建器（Resume Builder）
 
 ```
 你是一个资深全栈工程师，正在为《逆袭Offer》Web MVP 新增简历创建器功能。

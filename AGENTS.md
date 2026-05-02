@@ -14,7 +14,7 @@
 - `docs/01_TECH_ARCHITECTURE.md` — 技术架构
 - `docs/02_DATA_MODELS.md` — 数据模型（TypeScript 类型）
 - `docs/06_UI_UX_DESIGN_SYSTEM.md` — 设计系统（CSS Variables）
-- 当前 Wave 对应的 `docs/codex_prompts/waveN_prompt.md`
+- 当前 Wave 对应的 `docs/prompts/waveN_prompt.md`
 
 ## 3. 目录规范
 
