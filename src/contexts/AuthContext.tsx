@@ -8,7 +8,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import type { User, AuthResponse } from "@/types/auth";
+import type { User } from "@/types/auth";
 
 interface AuthContextValue {
   user: User | null;

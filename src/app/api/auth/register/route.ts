@@ -56,14 +56,7 @@ export async function POST(request: Request) {
       { success: true, data: { user, token } },
       { status: 201 }
     );
-    // 通过 response.cookies 设置
-    response.cookies.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 7 * 24 * 60 * 60,
-    });
+    setAuthCookie(response.cookies, token);
 
     return response;
   } catch (error) {

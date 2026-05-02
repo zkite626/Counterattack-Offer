@@ -36,7 +36,6 @@ export default function RadarChart({
 
   const gridLevels = [0.25, 0.5, 0.75, 1];
   const dataPoints = dimensions.map((d, i) => getPoint(i, d.value));
-  const dataPath = dataPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
 
   return (
     <div className={["radar-chart", className].filter(Boolean).join(" ")}>

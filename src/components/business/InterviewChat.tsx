@@ -15,7 +15,7 @@ export default function InterviewChat({ jobTitle }: InterviewChatProps) {
   const [messages, setMessages] = useState<InterviewMessage[]>([]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { content: streamContent, isLoading: streamLoading, startStream, stopStream } = useStreamResponse();
+  const { content: streamContent, isLoading: streamLoading, startStream } = useStreamResponse();
 
   // 自动滚动到底部
   useEffect(() => {

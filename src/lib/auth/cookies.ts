@@ -1,5 +1,3 @@
-import { type ResponseCookies } from "next/dist/compiled/@edge-runtime/cookies";
-
 const COOKIE_NAME = "token";
 
 const COOKIE_OPTIONS = {

@@ -134,7 +134,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
       setModels((prev) => prev.filter((m) => m.id !== id));
       // 如果删除的是当前激活模型，切换到第一个
       if (id === activeModelId) {
-        setActiveModelIdState((prev) => {
+        setActiveModelIdState(() => {
           const remaining = models.filter((m) => m.id !== id);
           return remaining[0]?.id ?? "";
         });
