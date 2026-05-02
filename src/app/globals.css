@@ -181,6 +181,25 @@
   to { background-position: 200% 0; }
 }
 
+/* ── 页面切换过渡 ── */
+.page-enter {
+  animation: pageEnter 0.3s ease-out;
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 按钮 hover 微上浮 + glow ── */
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn--primary:hover:not(:disabled) {
+  box-shadow: var(--shadow-glow), 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
 /* ── 全局基础样式 ── */
 * {
   box-sizing: border-box;

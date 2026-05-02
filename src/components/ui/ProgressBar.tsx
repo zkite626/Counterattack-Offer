@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, useRef } from "react";
 import "./ProgressBar.css";
 
 interface ProgressBarProps {
@@ -20,20 +21,41 @@ export default function ProgressBar({
   className = "",
 }: ProgressBarProps) {
   const clamped = Math.max(0, Math.min(100, value));
+  const [visible, setVisible] = useState(!animated);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // IntersectionObserver 触发动画
+  useEffect(() => {
+    if (!animated) return;
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.unobserve(el);
+        }
+      },
+      { threshold: 0.2 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [animated]);
 
   return (
-    <div className={["progress-bar", className].filter(Boolean).join(" ")}>
+    <div ref={ref} className={["progress-bar", className].filter(Boolean).join(" ")}>
       {label && <div className="progress-bar__label">{label}</div>}
       <div className="progress-bar__track">
         <div
           className={[
             "progress-bar__fill",
-            animated && "progress-bar__fill--animated",
+            visible && "progress-bar__fill--animated",
           ]
             .filter(Boolean)
             .join(" ")}
           style={{
-            width: `${clamped}%`,
+            width: visible ? `${clamped}%` : "0%",
             backgroundColor: color,
           }}
         />

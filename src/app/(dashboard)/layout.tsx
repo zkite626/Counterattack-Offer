@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import ThemeToggle from "@/components/ui/ThemeToggle";
@@ -26,6 +26,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
+  const [showDemoBanner, setShowDemoBanner] = useState(true);
+
+  // 检测 Demo 模式
+  useEffect(() => {
+    setIsDemo(sessionStorage.getItem("isDemoMode") === "true");
+  }, []);
 
   async function handleLogout() {
     await logout();
@@ -33,7 +40,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="dashboard">
+    <div className={`dashboard${isDemo && showDemoBanner ? " dashboard--demo-banner" : ""}`}>
+      {/* Demo 模式 Banner */}
+      {isDemo && showDemoBanner && (
+        <div className="demo-banner">
+          <span className="demo-banner__icon">⚡</span>
+          <span>正在使用 Demo 模式，数据为模拟案例 — 体验完整 AI 求职流程</span>
+          <button className="demo-banner__close" onClick={() => setShowDemoBanner(false)} aria-label="关闭提示">×</button>
+        </div>
+      )}
+
       {/* Header */}
       <header className="dashboard__header">
         <div className="dashboard__header-left">

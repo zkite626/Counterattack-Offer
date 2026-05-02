@@ -10,6 +10,7 @@
   font-weight: var(--font-medium);
   line-height: 1;
   white-space: nowrap;
+  animation: scaleIn 0.3s var(--transition-spring);
 }
 
 /* 颜色变体 */

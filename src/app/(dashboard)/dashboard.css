@@ -7,6 +7,19 @@
   background: var(--color-bg-secondary);
 }
 
+/* Demo 模式 Banner 占位 */
+.dashboard--demo-banner {
+  padding-top: 36px;
+}
+
+.dashboard--demo-banner .demo-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+}
+
 /* ── Header ── */
 .dashboard__header {
   position: sticky;
