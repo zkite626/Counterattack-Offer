@@ -20,7 +20,7 @@ const protectedPaths = [
 // 已登录用户应重定向的认证页面路径
 const authPaths = ["/login", "/register"];
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("token")?.value;
 

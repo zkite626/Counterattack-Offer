@@ -6,9 +6,6 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
   },
 
-  /* 压缩响应 */
-  compress: true,
-
   /* 生产环境移除 X-Powered-By 头 */
   poweredByHeader: false,
 
