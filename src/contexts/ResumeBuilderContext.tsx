@@ -79,6 +79,7 @@ function createEmptyResume(templateId: string, title?: string): ResumeBuilderDat
       email: "",
       phone: "",
       location: "",
+      photo: undefined,
       customFields: [],
     },
     education: [],

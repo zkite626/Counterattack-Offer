@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { useJobFlow } from "@/contexts/JobFlowContext";
 import { useInView } from "@/hooks/useIntersectionObserver";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
@@ -58,8 +59,7 @@ function HomeNav({ isDemo, onDemoClick }: { isDemo: boolean; onDemoClick: () => 
         <ThemeToggle />
         {isAuthenticated ? (
           <button
-            className="home-hero__btn-primary"
-            style={{ padding: "var(--space-2) var(--space-5)", fontSize: "var(--text-sm)" }}
+            className="home-nav__btn home-nav__btn--primary"
             onClick={() => router.push("/profile")}
           >
             进入工作台
@@ -67,16 +67,14 @@ function HomeNav({ isDemo, onDemoClick }: { isDemo: boolean; onDemoClick: () => 
         ) : (
           <>
             <button
-              className="home-hero__btn-demo"
-              style={{ padding: "var(--space-2) var(--space-4)", fontSize: "var(--text-sm)", borderWidth: 1 }}
+              className="home-nav__btn home-nav__btn--demo"
               onClick={onDemoClick}
               disabled={isDemo}
             >
               {isDemo ? "正在进入..." : "Demo 体验"}
             </button>
             <button
-              className="home-hero__btn-primary"
-              style={{ padding: "var(--space-2) var(--space-5)", fontSize: "var(--text-sm)" }}
+              className="home-nav__btn home-nav__btn--primary"
               onClick={() => router.push("/login")}
             >
               登录
@@ -153,17 +151,18 @@ function FeatureCard({ icon, title, desc, link, index }: { icon: IconName; title
 export default function HomePage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const { loadDemoCase } = useJobFlow();
   const [isDemoLoading, setIsDemoLoading] = useState(false);
 
-  // Demo 模式 — 自动创建临时账户并登录
+  // Demo 模式 — 创建临时账户 + 预填充所有 AI 数据
   const handleDemo = useCallback(async () => {
     setIsDemoLoading(true);
     try {
       const res = await fetch("/api/auth/demo", { method: "POST", credentials: "include" });
       const data = await res.json();
       if (data.success) {
-        // 存储 Demo 标记
         sessionStorage.setItem("isDemoMode", "true");
+        loadDemoCase();
         router.push("/profile");
       } else {
         console.error("Demo 创建失败:", data.error?.message);
@@ -173,7 +172,7 @@ export default function HomePage() {
     } finally {
       setIsDemoLoading(false);
     }
-  }, [router]);
+  }, [router, loadDemoCase]);
 
   // 平滑滚动到指定 Section
   const scrollToSection = useCallback((id: string) => {
@@ -202,10 +201,9 @@ export default function HomePage() {
         {/* Hero 内容 */}
         <div className="home-hero__content">
           <picture>
-            <source srcSet="/logo-wide.webp" type="image/webp" />
-            <img src="/logo-wide.png" alt="逆袭Offer" className="home-hero__logo" />
+            <source srcSet="/logo-wide-dark.webp" type="image/webp" />
+            <img src="/logo-wide-dark.png" alt="逆袭Offer" className="home-hero__logo" />
           </picture>
-          <h1 className="home-hero__title">逆袭Offer</h1>
           <p className="home-hero__subtitle">面向低经验大学生的 AI 求职突围智能体</p>
           <p className="home-hero__tagline">
             不是每个大学生都有耀眼实习，但每段真实经历都可能藏着岗位价值。

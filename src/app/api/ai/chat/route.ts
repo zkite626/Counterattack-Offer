@@ -1,11 +1,11 @@
 import { AIClient } from "@/lib/ai/client";
 import type { ChatMessage, AIModelConfig } from "@/types/ai";
+import { getAuthUserId } from "@/lib/auth/get-auth-user";
 
 // AI 代理 API：统一代聊接口，支持流式和非流式
 export async function POST(request: Request) {
   try {
-    // JWT 验证由 middleware 处理，此处获取用户 ID
-    const userId = request.headers.get("x-user-id");
+    const userId = await getAuthUserId(request);
     if (!userId) {
       return Response.json(
         { success: false, error: { code: "AUTH_TOKEN_INVALID", message: "未授权" } },

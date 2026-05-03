@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
 import { getUserRepository } from "@/lib/repository";
 import { signToken } from "@/lib/auth/jwt";
+import { setAuthCookie } from "@/lib/auth/cookies";
 
 export async function POST(request: Request) {
   try {
@@ -53,20 +54,13 @@ export async function POST(request: Request) {
 
     // 返回用户信息（不含密码哈希）
     const { passwordHash: _, ...publicUser } = user;
-    const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 7 * 24 * 60 * 60;
 
     const response = NextResponse.json(
       { success: true, data: { user: publicUser, token } },
       { status: 200 }
     );
 
-    response.cookies.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge,
-    });
+    setAuthCookie(response.cookies, token, rememberMe);
 
     return response;
   } catch (error) {

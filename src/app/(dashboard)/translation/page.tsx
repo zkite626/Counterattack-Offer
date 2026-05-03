@@ -42,6 +42,7 @@ export default function TranslationPage() {
       const res = await fetch("/api/ai/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           rawExperiences: state.studentProfile.rawExperiences,
           targetRoles: state.studentProfile.targetRoles,

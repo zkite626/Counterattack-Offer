@@ -39,6 +39,7 @@ export default function PlanPage() {
       const res = await fetch("/api/ai/plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           careerDiagnosis: state.careerDiagnosis,
           jobAnalysis: state.jobAnalysis,

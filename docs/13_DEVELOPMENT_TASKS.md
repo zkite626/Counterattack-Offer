@@ -6,7 +6,7 @@
 
 | 字段 | 内容 |
 |------|------|
-| 目标 | 使用 `npx create-next-app` 初始化 Next.js 15 项目 |
+| 目标 | 使用 `npx create-next-app` 初始化 Next.js 16 项目 |
 | 命令 | `npx -y create-next-app@latest ./ --typescript --app --eslint --src-dir --no-tailwind --import-alias "@/*"` |
 | 验收 | `npm run dev` 正常启动，访问 `localhost:3000` 显示默认页 |
 
@@ -67,12 +67,12 @@
 | 文件 | `src/app/api/auth/*/route.ts` |
 | 参考 | `docs/03_API_SPECIFICATION.md` §3.1 |
 
-### TASK-1.9 Middleware
+### TASK-1.9 Proxy（路由保护）
 
 | 字段 | 内容 |
 |------|------|
 | 目标 | JWT 路由保护 |
-| 文件 | `src/middleware.ts` |
+| 文件 | `src/proxy.ts` |
 | 参考 | `docs/05_AUTH_DESIGN.md` §5.3 |
 
 ### TASK-1.10 AuthContext

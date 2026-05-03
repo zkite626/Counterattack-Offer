@@ -24,7 +24,7 @@
 
 | # | 任务 | 输出文件 |
 |---|------|----------|
-| 1.1 | Next.js 15 项目初始化（TypeScript, App Router） | `package.json`, `tsconfig.json`, `next.config.ts` |
+| 1.1 | Next.js 16 项目初始化（TypeScript, App Router） | `package.json`, `tsconfig.json`, `next.config.ts` |
 | 1.2 | 全局 CSS 设计系统（Design Tokens + 暗色模式） | `globals.css` |
 | 1.3 | Google Fonts 引入（Inter + Noto Sans SC + Outfit） | `layout.tsx` |
 | 1.4 | 基础 UI 组件（Button, Card, Input, Tag, Modal） | `components/ui/` |
@@ -32,7 +32,7 @@
 | 1.6 | JWT 工具（jose 签发/验证） | `lib/auth/jwt.ts` |
 | 1.7 | 用户 Repository（内存实现 + 接口） | `lib/repository/` |
 | 1.8 | Auth API Routes（login, register, me, logout） | `app/api/auth/` |
-| 1.9 | Middleware 路由保护 | `middleware.ts` |
+| 1.9 | Proxy 路由保护 | `proxy.ts` |
 | 1.10 | AuthContext + useAuth Hook | `contexts/AuthContext.tsx` |
 | 1.11 | 登录页 + 注册页 | `app/(auth)/` |
 | 1.12 | Dashboard Layout（Header + Sidebar 骨架） | `app/(dashboard)/layout.tsx` |
@@ -228,7 +228,7 @@
 | 8.10 | 错误和空状态页面美化 | 404/Error/Loading 页面统一品牌风格 |
 | 8.11 | 暗色模式全面适配 | 所有新增样式验证暗色模式 |
 | 8.12 | 响应式全面检查 | 375px ~ 1536px 全断点验证 |
-| 8.13 | 修复 middleware 弃用警告 | `middleware.ts` → `proxy.ts`，导出函数名 `proxy` |
+| 8.13 | ~~修复 middleware 弃用警告~~ | ✅ 已完成：`middleware.ts` → `proxy.ts`，导出函数名 `proxy` |
 | 8.14 | 构建验证 | `npm run build` 无报错/警告，逐页验证亮色/暗色/响应式 |
 
 ### 验收标准

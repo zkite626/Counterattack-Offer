@@ -7,17 +7,67 @@
   background: var(--color-bg-secondary);
 }
 
-/* Demo 模式 Banner 占位 */
-.dashboard--demo-banner {
-  padding-top: 36px;
+/* Demo 模式 Banner — 浮动通知条 */
+.demo-banner {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  animation: demoBannerIn 0.4s ease-out;
+  white-space: nowrap;
 }
 
-.dashboard--demo-banner .demo-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 200;
+.demo-banner__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  color: #fff;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-full);
+}
+
+.demo-banner__text {
+  color: var(--color-text-secondary);
+}
+
+@keyframes demoBannerIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-16px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.demo-banner__icon {
+  flex-shrink: 0;
+}
+
+.demo-banner__close {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  font-size: 1.125rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  margin-left: var(--space-1);
+  transition: color var(--transition-fast);
+}
+
+.demo-banner__close:hover {
+  color: var(--color-text-primary);
 }
 
 /* ── Header ── */
@@ -76,21 +126,32 @@
 .dashboard__brand {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
 }
 
-.dashboard__logo {
-  font-size: 1.5rem;
+.dashboard__logo-img {
+  height: 28px;
+  width: auto;
+  display: block;
 }
 
-.dashboard__app-name {
-  font-family: var(--font-display);
-  font-weight: var(--font-bold);
-  font-size: var(--text-lg);
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* 桌面端：横版 Logo；移动端：方形 Logo */
+.dashboard__logo-wide { display: block; }
+.dashboard__logo-square { display: none; }
+
+@media (max-width: 767px) {
+  .dashboard__logo-wide { display: none; }
+  .dashboard__logo-square { display: block; }
+  .dashboard__logo-img { height: 32px; }
+}
+
+/* 主题切换：亮色/暗色 Logo */
+.dashboard__logo-th--dark { display: none; }
+[data-theme="dark"] .dashboard__logo-th--light { display: none; }
+[data-theme="dark"] .dashboard__logo-th--dark { display: block; }
+
+/* 移动端暗色也要隐藏 wide */
+@media (max-width: 767px) {
+  [data-theme="dark"] .dashboard__logo-th--dark { display: none; }
 }
 
 /* ── 用户菜单 ── */

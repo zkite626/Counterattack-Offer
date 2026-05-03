@@ -18,12 +18,20 @@ const THEME_COLORS = [
   "#F59E0B", // 黄
   "#EF4444", // 红
   "#8B5CF6", // 深紫
+  "#0D9488", // 青
+  "#EC4899", // 粉
+  "#F97316", // 橙
+  "#14B8A6", // 翠绿
+  "#64748B", // 灰蓝
+  "#0EA5E9", // 天蓝
 ];
 
 // 可选字体
 const FONTS = [
   { label: "Inter", value: "Inter, Noto Sans SC, sans-serif" },
   { label: "思源黑体", value: "Noto Sans SC, sans-serif" },
+  { label: "思源宋体", value: "Noto Serif SC, serif" },
+  { label: "LXGW 文楷", value: "LXGW WenKai, serif" },
 ];
 
 export default function EditorToolbar() {

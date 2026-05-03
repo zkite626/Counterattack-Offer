@@ -58,6 +58,7 @@ export default function JobPage() {
       const res = await fetch("/api/ai/analyze-job", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ jobDescription: jdText, modelConfig }),
       });
 

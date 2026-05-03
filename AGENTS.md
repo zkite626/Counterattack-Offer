@@ -2,9 +2,9 @@
 
 ## 1. 项目简介
 
-《逆袭Offer：面向低经验大学生的 AI 求职突围智能体》是一个 Next.js 15 全栈 Web MVP。
+《逆袭Offer：面向低经验大学生的 AI 求职突围智能体》是一个 Next.js 16 全栈 Web MVP。
 
-技术栈：Next.js 15 App Router + TypeScript + Vanilla CSS + jose JWT + OpenAI 兼容协议。
+技术栈：Next.js 16 App Router + TypeScript + Vanilla CSS + jose JWT + OpenAI 兼容协议。
 
 ## 2. 必读文档
 

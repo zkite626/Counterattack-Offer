@@ -94,9 +94,9 @@ npm install -D @types/bcryptjs @types/uuid
 
 参考 `docs/03_API_SPECIFICATION.md` §3.1。
 
-### 任务 1.9：Middleware
+### 任务 1.9：Proxy（路由保护）
 
-创建 `src/middleware.ts`：
+创建 `src/proxy.ts`，导出 `proxy` 函数（Next.js 16 proxy 约定）：
 - 保护 /api/ai/* 路由
 - 保护 Dashboard 页面
 - 已登录用户重定向

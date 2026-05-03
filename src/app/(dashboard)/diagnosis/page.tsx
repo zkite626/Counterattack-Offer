@@ -40,6 +40,7 @@ export default function DiagnosisPage() {
       const res = await fetch("/api/ai/diagnose", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           studentProfile: state.studentProfile,
           modelConfig,

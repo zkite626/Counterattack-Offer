@@ -17,7 +17,7 @@
 | T1-11 | Card 组件 | 默认/glass/gradient变体正确 | ✅ |
 | T1-12 | Input 组件 | 标签、错误、帮助文字正确显示 | ✅ |
 
-> **备注**：原 `middleware.ts` 已重构为 `proxy.ts`，导出 `proxy` 函数。Next.js 需要确保通过 `next.config.ts` 或 `middleware.ts` 入口正确调用该函数以实现路由保护。
+> **备注**：Next.js 16 已将 `middleware` 约定迁移为 `proxy` 约定。路由保护由 `src/proxy.ts` 导出的 `proxy` 函数实现，Next.js 自动识别该约定。
 
 ## 14.2 Wave 2 验收
 

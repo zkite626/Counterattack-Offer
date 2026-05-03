@@ -60,10 +60,17 @@
 }
 
 .auth-layout__logo {
-  font-size: 2.5rem;
+  width: 200px;
+  height: auto;
   display: block;
-  margin-bottom: var(--space-3);
+  margin: 0 auto var(--space-4);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
 }
+
+/* Logo 主题切换 */
+.auth-logo--dark { display: none; }
+[data-theme="dark"] .auth-logo--light { display: none; }
+[data-theme="dark"] .auth-logo--dark { display: block; }
 
 .auth-layout__title {
   font-family: var(--font-display);

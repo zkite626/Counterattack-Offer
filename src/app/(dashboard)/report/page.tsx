@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useJobFlow } from "@/contexts/JobFlowContext";
 import { useAI } from "@/contexts/AIContext";
+import { DEMO_REPORT } from "@/data/demo-results";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Tag from "@/components/ui/Tag";
@@ -30,6 +31,13 @@ export default function ReportPage() {
   const completedCount = state.completedSteps.length;
   const completionPct = getCompletionPercentage();
 
+  // Demo 模式：自动加载预填充报告
+  useEffect(() => {
+    if (sessionStorage.getItem("isDemoMode") === "true" && !reportMarkdown) {
+      setReportMarkdown(DEMO_REPORT);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const generateReport = useCallback(async () => {
     if (!state.careerDiagnosis) {
       setReportError("请先完成至少画像诊断步骤");
@@ -48,6 +56,7 @@ export default function ReportPage() {
       const res = await fetch("/api/ai/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           careerDiagnosis: state.careerDiagnosis,
           experienceTranslations: state.experienceTranslations,

@@ -1,9 +1,10 @@
 import { AIClient } from "@/lib/ai/client";
+import { getAuthUserId } from "@/lib/auth/get-auth-user";
 
 // 连接测试 API：验证模型配置是否可用
 export async function POST(request: Request) {
   try {
-    const userId = request.headers.get("x-user-id");
+    const userId = await getAuthUserId(request);
     if (!userId) {
       return Response.json(
         { success: false, error: { code: "AUTH_TOKEN_INVALID", message: "未授权" } },

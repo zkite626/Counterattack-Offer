@@ -2,10 +2,11 @@ import { AIClient } from "@/lib/ai/client";
 import { getSystemPrompt, getUserPrompt } from "@/prompts/improvement-plan";
 import type { AIModelConfig } from "@/types/ai";
 import type { ImprovementPlan } from "@/types";
+import { getAuthUserId } from "@/lib/auth/get-auth-user";
 
 export async function POST(request: Request) {
   try {
-    const userId = request.headers.get("x-user-id");
+    const userId = await getAuthUserId(request);
     if (!userId) {
       return Response.json(
         { success: false, error: { code: "AUTH_TOKEN_INVALID", message: "未授权" } },

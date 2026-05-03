@@ -44,6 +44,7 @@ export default function InterviewPage() {
       const res = await fetch("/api/ai/interview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           careerDiagnosis: state.careerDiagnosis,
           resumeOptimization: state.resumeOptimization,

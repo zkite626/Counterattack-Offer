@@ -127,8 +127,12 @@ src/
 
 public/
 ├── favicon.ico             # 品牌 Favicon
-├── logo-square.png         # 方形 Logo（用于侧边栏、Apple Touch Icon）
-├── logo-wide.png           # 横版 Logo（用于首页、登录页）
+├── logo-square.png         # 方形 Logo（移动端侧边栏、Apple Touch Icon）
+├── logo-square.webp        # 方形 Logo（WebP）
+├── logo-wide-light.png     # 横版 Logo — 亮色模式
+├── logo-wide-light.webp    # 横版 Logo — 亮色模式（WebP）
+├── logo-wide-dark.png      # 横版 Logo — 暗色模式
+├── logo-wide-dark.webp     # 横版 Logo — 暗色模式（WebP）
 └── fonts/                  # 本地字体文件（Inter/Noto Sans SC/Outfit）
 
 docs/

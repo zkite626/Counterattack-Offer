@@ -14,6 +14,50 @@
   margin-bottom: 16px;
 }
 
+/* 证件照 */
+.resume-section__photo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.resume-section__photo {
+  width: 80px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+}
+
+/* sidebar 模板中的照片 */
+.resume-section__photo-wrap--sidebar {
+  margin-bottom: 12px;
+}
+
+.resume-section__basic--sidebar {
+  text-align: center;
+}
+
+.resume-section__name--sidebar {
+  font-size: 1.3em;
+}
+
+.resume-section__title--sidebar {
+  font-size: 0.85em;
+}
+
+.resume-section__contact--sidebar {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8em;
+}
+
+.resume-section__contact--sidebar span + span::before {
+  content: none;
+  margin-right: 0;
+}
+
 .resume-section__name {
   font-size: 1.6em;
   font-weight: 700;
@@ -160,4 +204,260 @@
 
 .resume-tpl__projects-emphasis .resume-section__item-desc {
   font-size: 0.95em;
+}
+
+/* ── 双栏侧边模板 ── */
+.resume-tpl--sidebar {
+  display: flex;
+  min-height: 100%;
+  background: #fff;
+}
+
+.resume-tpl__sidebar-left {
+  width: 35%;
+  flex-shrink: 0;
+  color: #fff;
+  padding: 28px 16px;
+}
+
+.resume-tpl__sidebar-left .resume-section__name,
+.resume-tpl__sidebar-left .resume-section__title {
+  color: #fff !important;
+}
+
+.resume-tpl__sidebar-left .resume-section__contact--sidebar {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.resume-tpl__sidebar-left .resume-section__contact--sidebar span + span::before {
+  content: none;
+}
+
+.resume-tpl__sidebar-left .resume-section__contact--sidebar span {
+  display: block;
+}
+
+.resume-tpl__sidebar-left .resume-section__heading--sidebar {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  margin: 16px 0 8px;
+  font-size: 0.95em;
+}
+
+.resume-tpl__sidebar-left .resume-section__skills-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.85em;
+}
+
+.resume-tpl__sidebar-left .resume-section__photo {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.resume-tpl__sidebar-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.resume-tpl__sidebar-right .resume-section__heading--sidebar {
+  border-bottom: 2px solid #111827;
+  margin: 18px 0 10px;
+  font-size: 1.05em;
+  padding-bottom: 5px;
+}
+
+.resume-tpl__sidebar-right .resume-section__heading--sidebar:first-child {
+  margin-top: 0;
+}
+
+/* ── 优雅简约模板 ── */
+.resume-tpl--elegant {
+  background: #fff;
+}
+
+.resume-section__heading--elegant {
+  font-size: 1em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 22px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.resume-section__heading-line {
+  flex: 1;
+  height: 1px;
+  opacity: 0.3;
+}
+
+.resume-tpl--elegant .resume-section__name {
+  font-size: 1.8em;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+}
+
+.resume-tpl--elegant .resume-section__title {
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+
+.resume-tpl--elegant .resume-section__contact {
+  font-size: 0.8em;
+  gap: 12px;
+}
+
+.resume-tpl--elegant .resume-section__item-header {
+  margin-bottom: 2px;
+}
+
+.resume-tpl--elegant .resume-section__item-title {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.resume-tpl--elegant .resume-section__item-desc {
+  font-size: 0.88em;
+  color: #4B5563;
+}
+
+/* ── 紧凑高效模板 ── */
+.resume-tpl--compact {
+  background: #fff;
+}
+
+.resume-section__heading--compact {
+  font-size: 0.95em;
+  font-weight: 600;
+  padding-bottom: 4px;
+  margin: 12px 0 8px;
+  border-bottom: 1px solid #D1D5DB;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.resume-tpl--compact .resume-section__basic {
+  margin-bottom: 8px;
+}
+
+.resume-tpl--compact .resume-section__name {
+  font-size: 1.4em;
+}
+
+.resume-tpl--compact .resume-section__contact {
+  font-size: 0.8em;
+  gap: 6px;
+}
+
+.resume-tpl--compact .resume-section__item {
+  margin-bottom: 8px;
+}
+
+.resume-tpl--compact .resume-section__item-title {
+  font-size: 0.95em;
+}
+
+.resume-tpl--compact .resume-section__item-desc {
+  font-size: 0.85em;
+  margin: 3px 0 0;
+}
+
+.resume-tpl--compact .resume-section__item-sub {
+  font-size: 0.85em;
+  margin-top: 1px;
+}
+
+.resume-tpl--compact .resume-section__skills-text,
+.resume-tpl--compact .resume-section__self-eval-text {
+  font-size: 0.85em;
+  margin: 0;
+}
+
+/* ── 醒目头部模板 ── */
+.resume-tpl--bold-header {
+  background: #fff;
+}
+
+.resume-tpl__banner {
+  padding: 24px 32px 20px;
+  color: #fff;
+}
+
+.resume-tpl__banner-inner {
+  max-width: 100%;
+}
+
+.resume-tpl__banner-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.resume-tpl__banner-photo {
+  flex-shrink: 0;
+}
+
+.resume-tpl__banner-photo img {
+  width: 72px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.resume-tpl__banner-text {
+  min-width: 0;
+}
+
+.resume-tpl__banner-name {
+  font-size: 1.8em;
+  font-weight: 700;
+  margin: 0 0 4px;
+  letter-spacing: 0.05em;
+}
+
+.resume-tpl__banner-title {
+  font-size: 1em;
+  margin: 0;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+.resume-tpl__banner-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.82em;
+  opacity: 0.9;
+}
+
+.resume-tpl__banner-contact span + span::before {
+  content: " | ";
+  margin-right: 12px;
+  opacity: 0.5;
+}
+
+.resume-tpl__banner-body {
+  background: #fff;
+}
+
+/* 醒目头部模板的 section 标题 */
+.resume-section__heading--bold {
+  font-size: 1.05em;
+  font-weight: 600;
+  margin: 20px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.resume-section__heading-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { useResumeBuilder } from "@/hooks/useResumeBuilder";
 import type { ResumeCustomField } from "@/types";
 
@@ -9,12 +10,34 @@ function generateId() {
 
 export default function BasicInfoPanel() {
   const { activeResume, dispatch } = useResumeBuilder();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!activeResume) return null;
   const { basic } = activeResume;
 
   function updateField(field: string, value: string) {
     dispatch({ type: "UPDATE_BASIC", payload: { [field]: value } });
+  }
+
+  function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+    // 限制 2MB
+    if (file.size > 2 * 1024 * 1024) {
+      alert("照片大小不能超过 2MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      dispatch({ type: "UPDATE_BASIC", payload: { photo: reader.result as string } });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removePhoto() {
+    dispatch({ type: "UPDATE_BASIC", payload: { photo: undefined } });
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   function addCustomField() {
@@ -52,6 +75,45 @@ export default function BasicInfoPanel() {
     <div className="editor-panel">
       <div className="editor-panel__card">
         <h3 className="editor-panel__card-title">基本信息</h3>
+
+        {/* 照片上传 */}
+        <div className="editor-panel__photo-row">
+          <div
+            className="editor-panel__photo-preview"
+            onClick={() => basic.photo ? undefined : fileInputRef.current?.click()}
+          >
+            {basic.photo ? (
+              <img src={basic.photo} alt="证件照" className="editor-panel__photo-img" />
+            ) : (
+              <span className="editor-panel__photo-placeholder">+</span>
+            )}
+          </div>
+          <div className="editor-panel__photo-actions">
+            <button
+              className="editor-panel__photo-btn"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {basic.photo ? "更换照片" : "上传照片"}
+            </button>
+            {basic.photo && (
+              <button
+                className="editor-panel__photo-btn editor-panel__photo-btn--remove"
+                onClick={removePhoto}
+              >
+                移除照片
+              </button>
+            )}
+            <p className="editor-panel__photo-hint">可选，支持 JPG/PNG，不超过 2MB</p>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png"
+            onChange={handlePhotoUpload}
+            style={{ display: "none" }}
+          />
+        </div>
+
         <div className="editor-panel__form-grid">
           <div className="editor-panel__field">
             <label className="editor-panel__label">姓名</label>

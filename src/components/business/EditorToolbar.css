@@ -165,7 +165,7 @@
 
 .editor-toolbar__color-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--space-2);
 }
 
@@ -190,7 +190,7 @@
 /* 模板选择弹窗 */
 .editor-toolbar__template-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: var(--space-4);
 }
 

@@ -38,6 +38,7 @@ export default function ResumePage() {
       const res = await fetch("/api/ai/optimize-resume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           rawExperiences: state.studentProfile?.rawExperiences,
           experienceTranslations: state.experienceTranslations,

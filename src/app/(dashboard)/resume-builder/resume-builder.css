@@ -54,26 +54,241 @@
   transform: translateY(-2px);
 }
 
+/* ── 卡片缩略图 ── */
 .resume-builder-list__card-thumb {
   aspect-ratio: 210 / 120;
-  background: var(--color-bg-tertiary);
+  background: #f8f9fa;
   border-radius: var(--radius-md);
   overflow: hidden;
   margin-bottom: var(--space-3);
+  position: relative;
 }
 
-.resume-builder-list__card-thumb-inner {
+.resume-card-preview {
   width: 100%;
   height: 100%;
+  padding: 12px 14px 10px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: var(--font-bold);
-  color: var(--color-text-tertiary);
-  background: linear-gradient(135deg, var(--color-bg-tertiary), var(--color-bg-secondary));
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
+.resume-card-preview__accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.resume-card-preview__photo {
+  margin-bottom: 4px;
+}
+
+.resume-card-preview__photo img {
+  width: 32px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+}
+
+.resume-card-preview__name {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 1px;
+  text-align: center;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.resume-card-preview__name--elegant {
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
+
+.resume-card-preview__title {
+  font-size: 8px;
+  color: #6b7280;
+  text-align: center;
+  margin-bottom: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resume-card-preview__title--elegant {
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+.resume-card-preview__contact {
+  display: flex;
+  gap: 6px;
+  font-size: 6px;
+  color: #9ca3af;
+  margin-bottom: 4px;
+  overflow: hidden;
+}
+
+.resume-card-preview__contact span {
+  white-space: nowrap;
+}
+
+.resume-card-preview__lines {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+  flex: 1;
+  overflow: hidden;
+}
+
+.resume-card-preview__lines > span:not(.resume-card-preview__section-heading) {
+  display: block;
+  height: 2px;
+  background: #e5e7eb;
+  border-radius: 1px;
+}
+
+.resume-card-preview__section-heading {
+  display: block;
+  width: 100%;
+  height: 1px;
+  border-bottom: 1px solid #111827;
+  margin: 2px 0 1px;
+}
+
+/* sidebar 卡片预览 */
+.resume-card-preview__sidebar-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  margin: -12px -14px -10px;
+}
+
+.resume-card-preview__sidebar-left {
+  width: 35%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  gap: 4px;
+}
+
+.resume-card-preview__sidebar-photo {
+  width: 28px;
+  height: 34px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.resume-card-preview__sidebar-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.resume-card-preview__sidebar-avatar {
+  width: 28px;
+  height: 34px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.resume-card-preview__sidebar-name {
+  font-size: 8px;
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.resume-card-preview__sidebar-right {
+  flex: 1;
+  padding: 12px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.resume-card-preview__sidebar-right .resume-card-preview__name {
+  color: #111827;
+  text-align: left;
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+
+.resume-card-preview__sidebar-right .resume-card-preview__title {
+  text-align: left;
+  font-size: 7px;
+}
+
+.resume-card-preview__sidebar-right .resume-card-preview__lines {
+  align-items: stretch;
+}
+
+/* bold-header 卡片预览 */
+.resume-card-preview__bold-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 12px 8px;
+  color: #fff;
+  z-index: 1;
+}
+
+.resume-card-preview__bold-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.resume-card-preview__bold-photo {
+  flex-shrink: 0;
+}
+
+.resume-card-preview__bold-photo img {
+  width: 24px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.resume-card-preview__bold-name {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resume-card-preview__bold-title {
+  font-size: 7px;
+  opacity: 0.9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── 卡片信息区 ── */
 .resume-builder-list__card-info {
   margin-bottom: var(--space-3);
 }

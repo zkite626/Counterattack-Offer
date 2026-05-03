@@ -42,6 +42,7 @@ export default function MatchPage() {
       const res = await fetch("/api/ai/match", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           careerDiagnosis: state.careerDiagnosis,
           experienceTranslations: state.experienceTranslations,

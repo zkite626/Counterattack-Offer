@@ -1,14 +1,115 @@
 "use client";
 
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useResumeBuilder } from "@/hooks/useResumeBuilder";
 import { useJobFlow } from "@/contexts/JobFlowContext";
 import { buildResumeFromAIResults } from "@/lib/utils/resume-builder";
+import type { ResumeBuilderData } from "@/types";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
 import "../shared-page.css";
 import "./resume-builder.css";
+
+/** 列表卡片缩略图：只渲染简历头部基本信息区域 */
+function ResumeCardPreview({ resume }: { resume: ResumeBuilderData }) {
+  const themeColor = resume.globalSettings?.themeColor || "#6366F1";
+  const { basic } = resume;
+  const isSidebar = resume.templateId === "sidebar";
+  const isElegant = resume.templateId === "elegant";
+  const isBold = resume.templateId === "bold-header";
+
+  return (
+    <div className="resume-builder-list__card-thumb">
+      <div className="resume-card-preview">
+        {/* 主题色装饰条 */}
+        {!isBold && !isSidebar && (
+          <div className="resume-card-preview__accent" style={{ backgroundColor: themeColor }} />
+        )}
+
+        {isSidebar ? (
+          <div className="resume-card-preview__sidebar-layout">
+            <div className="resume-card-preview__sidebar-left" style={{ backgroundColor: themeColor }}>
+              <div className="resume-card-preview__sidebar-photo">
+                {basic.photo ? (
+                  <img src={basic.photo} alt="" />
+                ) : (
+                  <div className="resume-card-preview__sidebar-avatar" />
+                )}
+              </div>
+              <div className="resume-card-preview__sidebar-name">{basic.name || "姓名"}</div>
+            </div>
+            <div className="resume-card-preview__sidebar-right">
+              <div className="resume-card-preview__name">{basic.name || "姓名"}</div>
+              {basic.title && <div className="resume-card-preview__title">{basic.title}</div>}
+              <div className="resume-card-preview__lines">
+                <span style={{ width: "70%" }} /><span style={{ width: "85%" }} /><span style={{ width: "60%" }} />
+              </div>
+            </div>
+          </div>
+        ) : isBold ? (
+          <>
+            <div
+              className="resume-card-preview__bold-banner"
+              style={{
+                background: `linear-gradient(135deg, ${themeColor}, ${themeColor}cc)`,
+              }}
+            >
+              <div className="resume-card-preview__bold-content">
+                {basic.photo && (
+                  <div className="resume-card-preview__bold-photo">
+                    <img src={basic.photo} alt="" />
+                  </div>
+                )}
+                <div>
+                  <div className="resume-card-preview__bold-name">{basic.name || "姓名"}</div>
+                  {basic.title && <div className="resume-card-preview__bold-title">{basic.title}</div>}
+                </div>
+              </div>
+            </div>
+            <div className="resume-card-preview__lines" style={{ alignItems: "flex-start", marginTop: "52px" }}>
+              <span className="resume-card-preview__section-heading" style={{ borderBottomColor: themeColor }} />
+              <span style={{ width: "90%" }} /><span style={{ width: "70%" }} />
+              <span className="resume-card-preview__section-heading" style={{ borderBottomColor: themeColor }} />
+              <span style={{ width: "80%" }} />
+            </div>
+          </>
+        ) : (
+          <>
+            {basic.photo && (
+              <div className="resume-card-preview__photo">
+                <img src={basic.photo} alt="" />
+              </div>
+            )}
+            <div
+              className={`resume-card-preview__name ${isElegant ? "resume-card-preview__name--elegant" : ""}`}
+              style={{ color: themeColor }}
+            >
+              {basic.name || "姓名"}
+            </div>
+            {basic.title && (
+              <div className={`resume-card-preview__title ${isElegant ? "resume-card-preview__title--elegant" : ""}`}>
+                {basic.title}
+              </div>
+            )}
+            <div className="resume-card-preview__contact">
+              {basic.phone && <span>{basic.phone}</span>}
+              {basic.email && <span>{basic.email}</span>}
+            </div>
+            {/* 模拟下方内容线条 */}
+            <div className="resume-card-preview__lines">
+              <span className="resume-card-preview__section-heading" style={{ borderBottomColor: themeColor }} />
+              <span style={{ width: "90%" }} /><span style={{ width: "75%" }} /><span style={{ width: "60%" }} />
+              <span className="resume-card-preview__section-heading" style={{ borderBottomColor: themeColor }} />
+              <span style={{ width: "85%" }} /><span style={{ width: "70%" }} />
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function ResumeBuilderListPage() {
   const router = useRouter();
@@ -37,7 +138,6 @@ export default function ResumeBuilderListPage() {
       resumeOptimization,
       jobAnalysis
     );
-    // 使用 LOAD_FROM_AI 一次性创建包含完整数据的简历
     dispatch({ type: "LOAD_FROM_AI", payload: resumeData });
     router.push(`/resume-builder/${resumeData.id}`);
   }
@@ -89,11 +189,7 @@ export default function ResumeBuilderListPage() {
               className="resume-builder-list__card"
               onClick={() => router.push(`/resume-builder/${resume.id}`)}
             >
-              <div className="resume-builder-list__card-thumb">
-                <div className="resume-builder-list__card-thumb-inner">
-                  <span>{resume.title.charAt(0)}</span>
-                </div>
-              </div>
+              <ResumeCardPreview resume={resume} />
               <div className="resume-builder-list__card-info">
                 <h3 className="resume-builder-list__card-title">{resume.title}</h3>
                 <p className="resume-builder-list__card-time">

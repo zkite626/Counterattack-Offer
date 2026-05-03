@@ -3,6 +3,7 @@
 import { type ReactNode, useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAI } from "@/contexts/AIContext";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import ThemeToggle from "@/components/ui/ThemeToggle";
@@ -26,7 +27,8 @@ const NAV_ITEMS: { path: string; label: string; icon: IconName }[] = [
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, isLoading, isAuthenticated, logout } = useAuth();
+  const { activeModel } = useAI();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
@@ -37,18 +39,44 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     setIsDemo(sessionStorage.getItem("isDemoMode") === "true");
   }, []);
 
+  // 未登录 → 重定向到登录页
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && !isDemo) {
+      router.replace("/login");
+    }
+  }, [isLoading, isAuthenticated, isDemo, router]);
+
+  // 正式登录但未配置 API Key → 跳转设置页
+  useEffect(() => {
+    if (!isDemo && pathname !== "/settings" && activeModel && !activeModel.apiKey) {
+      router.replace("/settings");
+    }
+  }, [isDemo, pathname, activeModel, router]);
+
+  // 鉴权检查中或未登录，显示加载态
+  if (isLoading || (!isAuthenticated && !isDemo)) {
+    return (
+      <div className="dashboard" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+        <p style={{ color: "var(--color-text-secondary)", fontSize: "var(--text-sm)" }}>加载中…</p>
+      </div>
+    );
+  }
+
   async function handleLogout() {
     await logout();
     router.push("/login");
   }
 
   return (
-    <div className={`dashboard${isDemo && showDemoBanner ? " dashboard--demo-banner" : ""}`}>
+    <div className="dashboard">
       {/* Demo 模式 Banner */}
       {isDemo && showDemoBanner && (
         <div className="demo-banner">
-          <Icon name="lightning" size="1.25em" className="demo-banner__icon" />
-          <span>正在使用 Demo 模式，数据为模拟案例 — 体验完整 AI 求职流程</span>
+          <span className="demo-banner__badge">
+            <Icon name="lightning" size="0.875em" />
+            Demo
+          </span>
+          <span className="demo-banner__text">正在体验模拟数据，无需配置 API Key</span>
           <button className="demo-banner__close" onClick={() => setShowDemoBanner(false)} aria-label="关闭提示">×</button>
         </div>
       )}
@@ -64,11 +92,20 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <Icon name="menu" size="1.25em" />
           </button>
           <div className="dashboard__brand">
-            <picture>
-              <source srcSet="/logo-square.webp" type="image/webp" />
-              <img src="/logo-square.png" alt="逆袭Offer" width={32} height={32} className="dashboard__logo" />
+            {/* 桌面端：横版 Logo（亮/暗主题） */}
+            <picture className="dashboard__logo-wide dashboard__logo-th--light">
+              <source srcSet="/logo-wide-light.webp" type="image/webp" />
+              <img src="/logo-wide-light.png" alt="逆袭Offer" className="dashboard__logo-img" />
             </picture>
-            <span className="dashboard__app-name">逆袭Offer</span>
+            <picture className="dashboard__logo-wide dashboard__logo-th--dark">
+              <source srcSet="/logo-wide-dark.webp" type="image/webp" />
+              <img src="/logo-wide-dark.png" alt="逆袭Offer" className="dashboard__logo-img" />
+            </picture>
+            {/* 移动端：方形 Logo */}
+            <picture className="dashboard__logo-square">
+              <source srcSet="/logo-square.webp" type="image/webp" />
+              <img src="/logo-square.png" alt="逆袭Offer" width={32} height={32} className="dashboard__logo-img" />
+            </picture>
           </div>
         </div>
         <div className="dashboard__header-right">

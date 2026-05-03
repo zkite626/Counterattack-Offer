@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
 import { getUserRepository } from "@/lib/repository";
 import { signToken } from "@/lib/auth/jwt";
+import { setAuthCookie } from "@/lib/auth/cookies";
 
 // 一键 Demo 模式 — 自动创建临时账户并登录
 export async function POST() {
@@ -29,13 +30,7 @@ export async function POST() {
       { status: 201 }
     );
 
-    response.cookies.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 30 * 24 * 60 * 60,
-    });
+    setAuthCookie(response.cookies, token, true);
 
     return response;
   } catch (error) {

@@ -9,7 +9,16 @@ import {
   type Dispatch,
 } from "react";
 import type { JobFlowState, JobFlowAction, FlowStep } from "@/types";
-import { DEMO_STUDENT_PROFILE } from "@/data/demo-case";
+import { DEMO_STUDENT_PROFILE, DEMO_JOB_DESCRIPTION } from "@/data/demo-case";
+import {
+  DEMO_DIAGNOSIS,
+  DEMO_TRANSLATIONS,
+  DEMO_JOB_ANALYSIS,
+  DEMO_MATCH_REPORT,
+  DEMO_RESUME_OPTIMIZATION,
+  DEMO_INTERVIEW,
+  DEMO_IMPROVEMENT_PLAN,
+} from "@/data/demo-results";
 
 const STORAGE_KEY = "nixi-job-flow";
 
@@ -118,8 +127,25 @@ function reducer(state: JobFlowState, action: JobFlowAction): JobFlowState {
       return {
         ...INITIAL_STATE,
         studentProfile: DEMO_STUDENT_PROFILE,
-        currentStep: "diagnosis",
-        completedSteps: ["profile"],
+        careerDiagnosis: DEMO_DIAGNOSIS,
+        experienceTranslations: DEMO_TRANSLATIONS,
+        jobDescription: DEMO_JOB_DESCRIPTION,
+        jobAnalysis: DEMO_JOB_ANALYSIS,
+        matchReport: DEMO_MATCH_REPORT,
+        resumeOptimization: DEMO_RESUME_OPTIMIZATION,
+        interviewSimulation: DEMO_INTERVIEW,
+        improvementPlan: DEMO_IMPROVEMENT_PLAN,
+        currentStep: "report",
+        completedSteps: [
+          "profile",
+          "diagnosis",
+          "translation",
+          "job",
+          "match",
+          "resume",
+          "interview",
+          "plan",
+        ],
       };
     default:
       return state;

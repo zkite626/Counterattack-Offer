@@ -59,6 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.error?.message || "登录失败");
       }
 
+      // 正式登录，清除 Demo 标记
+      sessionStorage.removeItem("isDemoMode");
       setUser(data.data.user);
     },
     []
@@ -78,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.error?.message || "注册失败");
       }
 
+      sessionStorage.removeItem("isDemoMode");
       setUser(data.data.user);
     },
     []
@@ -90,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: "include",
       });
     } finally {
+      sessionStorage.removeItem("isDemoMode");
       setUser(null);
     }
   }, []);

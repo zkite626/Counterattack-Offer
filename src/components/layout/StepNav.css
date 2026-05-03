@@ -13,7 +13,9 @@
 .step-nav__track {
   display: flex;
   align-items: center;
-  min-width: max-content;
+  justify-content: center;
+  min-width: 100%;
+  width: max-content;
 }
 
 .step-nav__item-wrapper {
