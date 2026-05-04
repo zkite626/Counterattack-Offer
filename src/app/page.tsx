@@ -40,7 +40,7 @@ const FEATURES: { icon: IconName; title: string; desc: string; link: string }[] 
 ];
 
 /* ── 导航栏组件 ── */
-function HomeNav() {
+function HomeNav({ isDemo, onDemoClick }: { isDemo: boolean; onDemoClick: () => void }) {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [scrolled, setScrolled] = useState(false);
@@ -58,7 +58,8 @@ function HomeNav() {
         <ThemeToggle />
         {isAuthenticated ? (
           <button
-            className="home-nav__btn home-nav__btn--primary"
+            className="home-hero__btn-primary"
+            style={{ padding: "var(--space-2) var(--space-5)", fontSize: "var(--text-sm)" }}
             onClick={() => router.push("/profile")}
           >
             进入工作台
@@ -66,13 +67,16 @@ function HomeNav() {
         ) : (
           <>
             <button
-              className="home-nav__btn home-nav__btn--primary"
-              onClick={() => router.push("/register")}
+              className="home-hero__btn-demo"
+              style={{ padding: "var(--space-2) var(--space-4)", fontSize: "var(--text-sm)", borderWidth: 1 }}
+              onClick={onDemoClick}
+              disabled={isDemo}
             >
-              注册
+              {isDemo ? "正在进入..." : "Demo 体验"}
             </button>
             <button
-              className="home-nav__btn home-nav__btn--primary"
+              className="home-hero__btn-primary"
+              style={{ padding: "var(--space-2) var(--space-5)", fontSize: "var(--text-sm)" }}
               onClick={() => router.push("/login")}
             >
               登录
@@ -149,6 +153,27 @@ function FeatureCard({ icon, title, desc, link, index }: { icon: IconName; title
 export default function HomePage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
+
+  // Demo 模式 — 自动创建临时账户并登录
+  const handleDemo = useCallback(async () => {
+    setIsDemoLoading(true);
+    try {
+      const res = await fetch("/api/auth/demo", { method: "POST", credentials: "include" });
+      const data = await res.json();
+      if (data.success) {
+        // 存储 Demo 标记
+        sessionStorage.setItem("isDemoMode", "true");
+        router.push("/profile");
+      } else {
+        console.error("Demo 创建失败:", data.error?.message);
+      }
+    } catch (err) {
+      console.error("Demo 请求失败:", err);
+    } finally {
+      setIsDemoLoading(false);
+    }
+  }, [router]);
 
   // 平滑滚动到指定 Section
   const scrollToSection = useCallback((id: string) => {
@@ -158,7 +183,7 @@ export default function HomePage() {
   return (
     <div className="home">
       {/* 导航栏 */}
-      <HomeNav />
+      <HomeNav isDemo={isDemoLoading} onDemoClick={handleDemo} />
 
       {/* ── Hero 区 (5.1) ── */}
       <section className="home-hero">
@@ -177,9 +202,10 @@ export default function HomePage() {
         {/* Hero 内容 */}
         <div className="home-hero__content">
           <picture>
-            <source srcSet="/logo-wide-dark.webp" type="image/webp" />
-            <img src="/logo-wide-dark.png" alt="逆袭Offer" className="home-hero__logo" />
+            <source srcSet="/logo-wide.webp" type="image/webp" />
+            <img src="/logo-wide.png" alt="逆袭Offer" className="home-hero__logo" />
           </picture>
+          <h1 className="home-hero__title">逆袭Offer</h1>
           <p className="home-hero__subtitle">面向低经验大学生的 AI 求职突围智能体</p>
           <p className="home-hero__tagline">
             不是每个大学生都有耀眼实习，但每段真实经历都可能藏着岗位价值。
@@ -189,15 +215,16 @@ export default function HomePage() {
               <>
                 <button
                   className="home-hero__btn-primary"
-                  onClick={() => router.push("/register")}
+                  onClick={() => router.push("/login")}
                 >
                   开始我的求职突围
                 </button>
                 <button
                   className="home-hero__btn-demo"
-                  onClick={() => router.push("/login")}
+                  onClick={handleDemo}
+                  disabled={isDemoLoading}
                 >
-                  已有账号？登录
+                  {isDemoLoading ? "正在准备..." : "一键体验 Demo"}
                 </button>
               </>
             ) : (
@@ -274,7 +301,7 @@ export default function HomePage() {
           <h2 className="home-cta__title">让 AI 帮你发现经历中的岗位价值</h2>
           <button
             className="home-cta__btn"
-            onClick={() => isAuthenticated ? router.push("/profile") : router.push("/register")}
+            onClick={() => isAuthenticated ? router.push("/profile") : handleDemo()}
           >
             立即开始 →
           </button>
