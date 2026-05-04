@@ -58,8 +58,7 @@ function HomeNav() {
         <ThemeToggle />
         {isAuthenticated ? (
           <button
-            className="home-hero__btn-primary"
-            style={{ padding: "var(--space-2) var(--space-5)", fontSize: "var(--text-sm)" }}
+            className="home-nav__btn home-nav__btn--primary"
             onClick={() => router.push("/profile")}
           >
             进入工作台
@@ -67,15 +66,13 @@ function HomeNav() {
         ) : (
           <>
             <button
-              className="home-hero__btn-demo"
-              style={{ padding: "var(--space-2) var(--space-4)", fontSize: "var(--text-sm)", borderWidth: 1 }}
+              className="home-nav__btn home-nav__btn--primary"
               onClick={() => router.push("/register")}
             >
               注册
             </button>
             <button
-              className="home-hero__btn-primary"
-              style={{ padding: "var(--space-2) var(--space-5)", fontSize: "var(--text-sm)" }}
+              className="home-nav__btn home-nav__btn--primary"
               onClick={() => router.push("/login")}
             >
               登录
@@ -180,10 +177,9 @@ export default function HomePage() {
         {/* Hero 内容 */}
         <div className="home-hero__content">
           <picture>
-            <source srcSet="/logo-wide-light.webp" type="image/webp" />
-            <img src="/logo-wide-light.png" alt="逆袭Offer" className="home-hero__logo" />
+            <source srcSet="/logo-wide-dark.webp" type="image/webp" />
+            <img src="/logo-wide-dark.png" alt="逆袭Offer" className="home-hero__logo" />
           </picture>
-          <h1 className="home-hero__title">逆袭Offer</h1>
           <p className="home-hero__subtitle">面向低经验大学生的 AI 求职突围智能体</p>
           <p className="home-hero__tagline">
             不是每个大学生都有耀眼实习，但每段真实经历都可能藏着岗位价值。
