@@ -8,7 +8,7 @@
 | T1-02 | 注册功能 | 填写邮箱+密码+姓名，注册成功跳转Dashboard | ✅ |
 | T1-03 | 登录功能 | 输入正确凭证登录成功，错误凭证提示错误 | ✅ |
 | T1-04 | 登出功能 | 点击退出后跳转登录页，Cookie被清除 | ✅ |
-| T1-05 | 路由保护 | 未登录访问/profile自动跳转/login（由 `proxy.ts` 实现） | ✅ |
+| T1-05 | 路由保护 | 未登录访问/profile自动跳转/login（由 `middleware.ts` 实现） | ✅ |
 | T1-06 | 已登录重定向 | 已登录访问/login自动跳转/profile | ✅ |
 | T1-07 | 暗色模式 | 点击切换按钮，UI正确变化 | ✅ |
 | T1-08 | 主题持久化 | 刷新页面后主题保持 | ✅ |
@@ -17,7 +17,7 @@
 | T1-11 | Card 组件 | 默认/glass/gradient变体正确 | ✅ |
 | T1-12 | Input 组件 | 标签、错误、帮助文字正确显示 | ✅ |
 
-> **备注**：Next.js 16 已将 `middleware` 约定迁移为 `proxy` 约定。路由保护由 `src/proxy.ts` 导出的 `proxy` 函数实现，Next.js 自动识别该约定。
+> **备注**：路由保护由项目根目录 `middleware.ts` 导出的 `middleware` 函数实现。
 
 ## 14.2 Wave 2 验收
 
@@ -165,12 +165,12 @@
 
 | Wave | 名称 | 状态 | 备注 |
 |------|------|------|------|
-| Wave 1 | 项目骨架 + 设计系统 + 认证 | ✅ 已完成 | 路由保护由 proxy.ts 实现 |
+| Wave 1 | 项目骨架 + 设计系统 + 认证 | ✅ 已完成 | 路由保护由 middleware.ts 实现 |
 | Wave 2 | AI 服务层 + 模型管理 | ✅ 已完成 | 2内置模型(DeepSeek) + 自定义模型 + 测试连接 |
 | Wave 3 | 核心业务前半段 | ✅ 已完成 | 画像/转译/JD/匹配 4个页面 |
 | Wave 4 | 核心业务后半段 | ✅ 已完成 | 简历/面试/计划/报告 4个页面 |
 | Wave 5 | 首页 + 演示模式 | ✅ 已完成 | 粒子动画 + 滚动触发 + SEO |
 | Wave 6 | 测试 + 部署 + 优化 | ✅ 已完成 | Lighthouse 桌面端：Perf 86 / A11y 98 / SEO 100 |
 | Wave 7 | 简历创建器 | ✅ 已完成 | 10模板 + 6面板 + AI导入 + PDF |
-| Wave 8 | 全站视觉升级 | ✅ 已完成 | Emoji→IconFont + 本地字体 + WebP Logo + 样式统一 + proxy.ts |
+| Wave 8 | 全站视觉升级 | ✅ 已完成 | Emoji→IconFont + 本地字体 + WebP Logo + 样式统一 |
 | Wave 9 | 移除 Demo + JSON 容错 + 新模板 | ✅ 已完成 | 移除Demo模式 + parseAIJson + 3新模板 + 随机样式 + PDF优化 |

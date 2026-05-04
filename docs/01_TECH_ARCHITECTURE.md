@@ -7,7 +7,7 @@ Browser (React Pages + Context + CSS Variables + localStorage)
         │  HTTP / SSE
         ▼
 Next.js Server (API Routes)
-├── Auth Proxy (JWT验证，proxy.ts)
+├── Auth Middleware (JWT验证，middleware.ts)
 ├── AI Service (OpenAI兼容协议)
 ├── Prompt Engine (模板加载+注入)
 └── Repository Layer (Memory → DB预留)
@@ -80,12 +80,12 @@ src/app/
 | 功能页 | CSR | 依赖用户输入和AI实时响应 |
 | API Routes | Server | 保护API Key |
 
-## 1.5 路由保护（proxy.ts）
+## 1.5 路由保护（middleware.ts）
 
-原 `middleware.ts` 已重构为 `src/proxy.ts`，导出 `proxy` 函数：
+路由保护由项目根目录的 `middleware.ts` 实现，导出 `middleware` 函数：
 
 ```
-Request → proxy.ts (proxy 函数)
+Request → middleware.ts (middleware 函数)
   ├── /api/ai/* → 验证JWT Token → 注入 x-user-id 头 → 通过/401
   ├── /(dashboard)/* → 验证JWT Cookie → 通过/重定向登录
   ├── /(auth)/* → 已登录则重定向 /profile

@@ -24,7 +24,7 @@ MVP 阶段采用无数据库 JWT 认证方案，用户信息存储在服务端�
 
 认证验证:
   请求到达
-    → proxy.ts 检查路径
+    → middleware.ts 检查路径
       → 读取 Cookie 中的 token
         → jose 验证 JWT 签名和有效期
           → 通过：注入 userId 到请求 (x-user-id header)
@@ -67,9 +67,9 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
 
 ---
 
-## 5.3 路由保护 (`proxy.ts`)
+## 5.3 路由保护 (`middleware.ts`)
 
-原 `middleware.ts` 已重构为 `src/proxy.ts`，导出 `proxy` 函数。
+路由保护由项目根目录 `middleware.ts` 实现，导出 `middleware` 函数。
 
 ```typescript
 import { NextResponse } from 'next/server';
@@ -86,7 +86,7 @@ const protectedPaths = [
 // 已登录用户应重定向的认证页面路径
 const authPaths = ['/login', '/register'];
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('token')?.value;
 
@@ -147,7 +147,7 @@ export const config = {
 };
 ```
 
-> **与原 middleware.ts 的区别**：函数名从 `middleware` 改为 `proxy`；新增 `/resume-builder` 受保护路径；matcher 增加 `:path*` 通配子路由。
+> 新增 `/resume-builder` 受保护路径；matcher 增加 `:path*` 通配子路由。
 
 ---
 
@@ -254,4 +254,4 @@ const REMEMBER_ME_COOKIE_OPTIONS = {
 4. 修改工厂函数返回数据库实现
 5. 迁移环境变量中的管理员到数据库
 
-**不需要修改**：JWT 逻辑、proxy.ts 路由保护、API Route、前端代码。
+**不需要修改**：JWT 逻辑、middleware.ts 路由保护、API Route、前端代码。

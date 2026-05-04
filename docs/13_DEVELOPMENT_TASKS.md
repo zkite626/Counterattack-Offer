@@ -72,7 +72,7 @@
 | 字段 | 内容 |
 |------|------|
 | 目标 | JWT 路由保护 |
-| 文件 | `src/proxy.ts` |
+| 文件 | `middleware.ts` |
 | 参考 | `docs/05_AUTH_DESIGN.md` §5.3 |
 
 ### TASK-1.10 AuthContext
@@ -170,7 +170,7 @@
 - 设计提示词：`docs/codex_prompts/wave8_prompt.md`
 - 组件参考：`docs/08_COMPONENT_SPECIFICATION.md`（Icon / IconSprite）
 - 设计系统参考：`docs/06_UI_UX_DESIGN_SYSTEM.md`
-- 架构参考：`docs/01_TECH_ARCHITECTURE.md`（proxy.ts 路由保护）
+- 架构参考：`docs/01_TECH_ARCHITECTURE.md`（middleware.ts 路由保护）
 
 ---
 
