@@ -2,7 +2,19 @@
 
 /* 完成度进度条 */
 .report-page__progress-card {
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.report-page__progress-bar {
+  align-items: flex-end;
+}
+
+.report-page__progress-bar .progress-bar__track {
+  height: 12px;
+}
+
+.report-page__progress-bar .progress-bar__value {
+  font-size: var(--text-lg);
 }
 
 .report-page__progress-header {
@@ -73,8 +85,30 @@
 /* 匹配度 */
 .report-page__match-overview {
   display: flex;
-  justify-content: center;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-5);
   margin-bottom: var(--space-4);
+}
+
+.report-page__match-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.report-page__match-level-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.report-page__match-summary p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
 }
 
 .report-page__dimensions {
@@ -86,6 +120,65 @@
 .report-page__dim-row {
   display: flex;
   flex-direction: column;
+  gap: var(--space-1);
+}
+
+.report-page__dim-reason {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+.report-page__match-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.report-page__match-detail {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-tertiary);
+}
+
+.report-page__match-detail h4 {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.report-page__match-detail ul {
+  padding-left: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.report-page__match-detail li {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+@media (min-width: 768px) {
+  .report-page__match-detail-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 479px) {
+  .report-page__match-overview {
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .report-page__match-level-row {
+    justify-content: center;
+  }
 }
 
 /* 简历优化精简版 */
@@ -163,11 +256,9 @@
 }
 
 .report-page__markdown-content {
-  font-family: var(--font-mono);
   font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
   color: var(--color-text-primary);
-  white-space: pre-wrap;
   word-break: break-word;
   padding: var(--space-4);
   background: var(--color-bg-tertiary);
@@ -175,4 +266,19 @@
   border: 1px solid var(--color-border-light);
   max-height: 600px;
   overflow-y: auto;
+}
+
+.report-page__markdown-content h2,
+.report-page__markdown-content h3,
+.report-page__markdown-content h4 {
+  color: var(--color-text-primary);
+}
+
+.report-page__markdown-content p {
+  margin: 0.4em 0;
+}
+
+.report-page__markdown-content ul {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
 }

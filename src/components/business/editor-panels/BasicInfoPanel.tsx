@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRef } from "react";
 import { useResumeBuilder } from "@/hooks/useResumeBuilder";
 import type { ResumeCustomField } from "@/types";
@@ -83,7 +84,14 @@ export default function BasicInfoPanel() {
             onClick={() => basic.photo ? undefined : fileInputRef.current?.click()}
           >
             {basic.photo ? (
-              <img src={basic.photo} alt="证件照" className="editor-panel__photo-img" />
+              <Image
+                src={basic.photo}
+                alt="证件照"
+                width={80}
+                height={100}
+                className="editor-panel__photo-img"
+                unoptimized
+              />
             ) : (
               <span className="editor-panel__photo-placeholder">+</span>
             )}
@@ -137,15 +145,18 @@ export default function BasicInfoPanel() {
             <label className="editor-panel__label">手机号</label>
             <input
               className="editor-panel__input"
+              type="tel"
+              maxLength={11}
               value={basic.phone}
               onChange={(e) => updateField("phone", e.target.value)}
-              placeholder="手机号"
+              placeholder="11位手机号"
             />
           </div>
           <div className="editor-panel__field">
             <label className="editor-panel__label">邮箱</label>
             <input
               className="editor-panel__input"
+              type="email"
               value={basic.email}
               onChange={(e) => updateField("email", e.target.value)}
               placeholder="邮箱地址"
@@ -161,10 +172,10 @@ export default function BasicInfoPanel() {
             />
           </div>
           <div className="editor-panel__field">
-            <label className="editor-panel__label">出生日期</label>
+            <label className="editor-panel__label">出生日期(年/月)</label>
             <input
               className="editor-panel__input"
-              type="date"
+              type="month"
               value={basic.birthDate || ""}
               onChange={(e) => updateField("birthDate", e.target.value)}
             />

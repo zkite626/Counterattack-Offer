@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useJobFlow } from "@/contexts/JobFlowContext";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
@@ -39,17 +39,17 @@ const STEP_ROUTES: Record<FlowStep, string> = {
 
 export default function StepNav() {
   const router = useRouter();
+  const pathname = usePathname();
   const { state, canAccessStep } = useJobFlow();
 
-  function getStepStatus(step: StepItem): "completed" | "current" | "locked" {
+  function getStepStatus(step: StepItem): "completed" | "accessible" | "locked" {
     if (state.completedSteps.includes(step.key)) return "completed";
-    if (state.currentStep === step.key) return "current";
+    if (canAccessStep(step.key)) return "accessible";
     return "locked";
   }
 
   function handleClick(step: StepItem) {
-    const status = getStepStatus(step);
-    if (status === "completed" || status === "current") {
+    if (canAccessStep(step.key)) {
       router.push(STEP_ROUTES[step.key]);
     }
   }
@@ -59,23 +59,35 @@ export default function StepNav() {
       <div className="step-nav__track">
         {STEPS.map((step, index) => {
           const status = getStepStatus(step);
-          const accessible = canAccessStep(step.key);
+          const isActive = pathname === STEP_ROUTES[step.key];
+
+          // 当前页面且未完成 → current（脉冲高亮）；已完成 → completed；可访问 → 无特殊高亮；不可访问 → locked
+          const cssStatus =
+            isActive && status !== "completed"
+              ? "current"
+              : status === "completed"
+                ? "completed"
+                : status === "accessible"
+                  ? "accessible"
+                  : "locked";
 
           return (
             <div key={step.key} className="step-nav__item-wrapper">
               {index > 0 && (
                 <div
                   className={`step-nav__line ${
-                    status === "completed" || state.completedSteps.includes(STEPS[index - 1].key)
+                    state.completedSteps.includes(STEPS[index - 1].key)
                       ? "step-nav__line--active"
                       : ""
                   }`}
                 />
               )}
               <button
-                className={`step-nav__item step-nav__item--${status}`}
+                className={`step-nav__item step-nav__item--${cssStatus} ${
+                  isActive ? "step-nav__item--active" : ""
+                }`}
                 onClick={() => handleClick(step)}
-                disabled={!accessible && status === "locked"}
+                disabled={status === "locked"}
                 title={step.label}
               >
                 <span className="step-nav__icon">

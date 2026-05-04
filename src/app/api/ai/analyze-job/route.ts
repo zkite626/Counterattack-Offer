@@ -1,8 +1,9 @@
 import { AIClient } from "@/lib/ai/client";
 import { getSystemPrompt, getUserPrompt } from "@/prompts/analyze-job";
 import type { AIModelConfig } from "@/types/ai";
-import type { JobAnalysis } from "@/types";
 import { getAuthUserId } from "@/lib/auth/get-auth-user";
+import { parseAIJson } from "@/lib/utils/parse-json";
+import { normalizeJobAnalysis } from "@/lib/utils/ai-results";
 
 export async function POST(request: Request) {
   try {
@@ -49,7 +50,11 @@ export async function POST(request: Request) {
       { role: "user", content: userPrompt },
     ], true);
 
-    const data: JobAnalysis = JSON.parse(result);
+    const data = normalizeJobAnalysis(parseAIJson<unknown>(result));
+    if (!data) {
+      throw new Error("AI 返回的 JD 解析结果格式不正确");
+    }
+
     return Response.json({ success: true, data });
   } catch (error) {
     const message = error instanceof Error ? error.message : "AI 服务异常";

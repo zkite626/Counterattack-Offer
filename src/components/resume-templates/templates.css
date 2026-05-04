@@ -461,3 +461,99 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
+
+/* ── 极简留白模板 ── */
+.resume-tpl--minimal {
+  background: #fff;
+}
+
+.resume-section__heading--minimal {
+  font-size: 0.9em;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-align: center;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin: 28px 0 14px;
+  color: #9CA3AF;
+}
+
+.resume-tpl--minimal .resume-section__name {
+  font-size: 2em;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+}
+
+.resume-tpl--minimal .resume-section__title {
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+  font-size: 0.95em;
+}
+
+.resume-tpl--minimal .resume-section__contact {
+  font-size: 0.78em;
+  color: #9CA3AF;
+  gap: 16px;
+}
+
+.resume-tpl--minimal .resume-section__contact span + span::before {
+  content: "·";
+  margin-right: 16px;
+  color: #D1D5DB;
+}
+
+.resume-tpl--minimal .resume-section__item-title {
+  font-weight: 500;
+}
+
+.resume-tpl--minimal .resume-section__item-desc {
+  font-size: 0.88em;
+  color: #4B5563;
+}
+
+/* ── 时间轴模板 ── */
+.resume-tpl--timeline {
+  background: #fff;
+}
+
+.resume-section__heading--timeline {
+  font-size: 1.05em;
+  font-weight: 600;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── 科技感模板 ── */
+.resume-tpl--tech {
+  background: #fff;
+}
+
+.resume-section__heading--tech {
+  font-size: 1em;
+  font-weight: 600;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.resume-tpl--tech .resume-section__item-title {
+  font-size: 0.95em;
+}
+
+.resume-tpl--tech .resume-section__item-desc {
+  font-size: 0.88em;
+}
+
+.resume-tpl--tech .resume-section__skills-text,
+.resume-tpl--tech .resume-section__self-eval-text {
+  font-size: 0.88em;
+}

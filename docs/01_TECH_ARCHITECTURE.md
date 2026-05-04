@@ -47,11 +47,12 @@ src/app/
     │   ├── login/route.ts
     │   ├── register/route.ts
     │   ├── me/route.ts
-    │   ├── logout/route.ts
-    │   └── demo/route.ts
+    │   └── logout/route.ts
     └── ai/
         ├── chat/route.ts          # 通用AI调用(流式)
+        ├── default-config/route.ts # 获取.env默认模型配置
         ├── diagnose/route.ts
+        ├── generate-jd/route.ts    # AI生成岗位JD
         ├── translate/route.ts
         ├── analyze-job/route.ts
         ├── match/route.ts
@@ -100,11 +101,11 @@ Request → proxy.ts (proxy 函数)
 ### AI 调用链路
 ```
 前端 → /api/ai/{module}/route.ts
-  → 验证JWT
-  → 从请求获取模型配置(modelId, apiKey, baseUrl)
+  → getAuthUserId(request) 验证JWT（优先读 x-user-id header，fallback 解析 cookie）
+  → 从请求 Body 获取 modelConfig(baseUrl, apiKey, model)
   → 加载Prompt模板 → 注入用户数据
-  → fetch OpenAI Chat Completions API
-  → 解析JSON响应
+  → AIClient.fetchWithRetry → OpenAI Chat Completions API
+  → parseAIJson() 解析JSON响应（自动去除 Markdown 围栏）
   → 返回类型化数据
 ```
 

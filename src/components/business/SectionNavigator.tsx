@@ -2,6 +2,7 @@
 
 import { useResumeBuilder } from "@/hooks/useResumeBuilder";
 import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import type { ResumeSection } from "@/types";
 import "./SectionNavigator.css";
 
@@ -53,7 +54,7 @@ export default function SectionNavigator() {
               className="section-nav__label"
               onClick={() => setActiveSection(section.id)}
             >
-              <Icon name={section.icon as any} size="1.125em" className="section-nav__icon" />
+              <Icon name={section.icon as IconName} size="1.125em" className="section-nav__icon" />
               <span className="section-nav__text">{section.title}</span>
             </button>
             <div className="section-nav__actions">

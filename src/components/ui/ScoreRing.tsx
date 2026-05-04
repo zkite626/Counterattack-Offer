@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useId, useState, useRef } from "react";
 import "./ScoreRing.css";
 
 interface ScoreRingProps {
@@ -23,16 +23,25 @@ export default function ScoreRing({
   const [displayScore, setDisplayScore] = useState(animated ? 0 : score);
   const [started, setStarted] = useState(!animated);
   const containerRef = useRef<HTMLDivElement>(null);
+  const gradientId = `score-ring-gradient-${useId().replace(/:/g, "")}`;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - ((started ? displayScore : 0) / 100) * circumference;
   const center = size / 2;
 
-  let color = "var(--color-primary)";
-  if (score >= 90) color = "var(--color-success)";
-  else if (score >= 75) color = "var(--color-primary)";
-  else if (score >= 60) color = "var(--color-warning)";
-  else color = "var(--color-danger)";
+  const color = `url(#${gradientId})`;
+  let gradientStart = "var(--color-primary-500)";
+  let gradientEnd = "var(--color-primary-400)";
+  if (score >= 90) {
+    gradientStart = "var(--color-accent-500)";
+    gradientEnd = "var(--color-primary-500)";
+  } else if (score >= 60 && score < 75) {
+    gradientStart = "var(--color-warning-500)";
+    gradientEnd = "var(--color-primary-500)";
+  } else if (score < 60) {
+    gradientStart = "var(--color-danger-500)";
+    gradientEnd = "var(--color-warning-500)";
+  }
 
   // IntersectionObserver 触发计数动画
   useEffect(() => {
@@ -82,6 +91,12 @@ export default function ScoreRing({
       style={{ width: size, height: size }}
     >
       <svg width={size} height={size} className="score-ring__svg">
+        <defs>
+          <linearGradient id={gradientId} x1="20%" y1="0%" x2="80%" y2="100%">
+            <stop offset="0%" stopColor={gradientStart} />
+            <stop offset="100%" stopColor={gradientEnd} />
+          </linearGradient>
+        </defs>
         <circle
           cx={center}
           cy={center}

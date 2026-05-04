@@ -9,9 +9,23 @@ import Button from "@/components/ui/Button";
 import Tag from "@/components/ui/Tag";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Skeleton from "@/components/ui/Skeleton";
-import { DEMO_JOB_DESCRIPTION } from "@/data/demo-case";
 import type { JobAnalysis } from "@/types";
+import { normalizeJobAnalysis } from "@/lib/utils/ai-results";
 import "../shared-page.css";
+
+const SAMPLE_JOB_DESCRIPTION = `岗位名称：用户运营实习生
+岗位职责：
+1. 负责社群用户日常维护，提升用户活跃度；
+2. 协助完成用户调研、反馈收集和数据整理；
+3. 参与活动策划与内容发布；
+4. 支持运营数据统计和复盘。
+
+任职要求：
+1. 本科及以上在读，专业不限；
+2. 有社团、活动运营、新媒体运营经验优先；
+3. 具备良好的沟通表达能力和执行力；
+4. 熟悉 Excel、PPT、问卷工具者优先；
+5. 对互联网产品和用户增长感兴趣。`;
 
 const importanceColor: Record<string, string> = {
   "高": "var(--color-danger-500)",
@@ -32,9 +46,37 @@ export default function JobPage() {
   const { state, dispatch } = useJobFlow();
   const { activeModel } = useAI();
   const [jdText, setJdText] = useState(state.jobDescription || "");
-  const [analysis, setAnalysis] = useState<JobAnalysis | null>(state.jobAnalysis);
+  const [analysis, setAnalysis] = useState<JobAnalysis | null>(
+    normalizeJobAnalysis(state.jobAnalysis)
+  );
   const [loading, setLoading] = useState(false);
+  const [generatingJd, setGeneratingJd] = useState(false);
   const [error, setError] = useState("");
+
+  async function handleGenerateJd(jobTitle: string) {
+    if (!jobTitle.trim()) return;
+    if (!activeModel?.apiKey) {
+      setError("请先在模型管理中配置 AI 模型");
+      return;
+    }
+    setGeneratingJd(true);
+    setError("");
+    try {
+      const res = await fetch("/api/ai/generate-jd", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ jobTitle: jobTitle.trim(), modelConfig: activeModel }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error?.message || "生成失败");
+      setJdText(json.data.jd);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "生成失败");
+    } finally {
+      setGeneratingJd(false);
+    }
+  }
 
   async function handleAnalyze() {
     if (!jdText.trim()) {
@@ -65,8 +107,11 @@ export default function JobPage() {
       const json = await res.json();
       if (!json.success) throw new Error(json.error?.message || "解析失败");
 
-      setAnalysis(json.data);
-      dispatch({ type: "SET_JOB_ANALYSIS", payload: json.data });
+      const normalized = normalizeJobAnalysis(json.data);
+      if (!normalized) throw new Error("JD 解析结果格式不正确");
+
+      setAnalysis(normalized);
+      dispatch({ type: "SET_JOB_ANALYSIS", payload: normalized });
     } catch (err) {
       setError(err instanceof Error ? err.message : "请求失败");
     } finally {
@@ -74,12 +119,12 @@ export default function JobPage() {
     }
   }
 
-  if (loading) {
+  if (loading || generatingJd) {
     return (
       <div className="biz-page">
         <div className="biz-page__header">
           <h1 className="biz-page__title">JD 解析</h1>
-          <p className="biz-page__subtitle">AI 正在解析岗位要求...</p>
+          <p className="biz-page__subtitle">{generatingJd ? "AI 正在生成参考 JD..." : "AI 正在解析岗位要求..."}</p>
         </div>
         <Card className="biz-page__skeleton-card">
           <Skeleton variant="rect" width="200px" height="28px" />
@@ -101,18 +146,18 @@ export default function JobPage() {
 
         {/* Requirements */}
         <div className="biz-page__grid-2">
-          <Card className="biz-page__section">
+          <Card className="biz-page__section biz-page__spotlight-card">
             <h3 className="biz-page__card-title">硬性要求</h3>
             <ul className="biz-page__list">
-              {analysis.hardRequirements.map((r, i) => (
+              {(analysis.hardRequirements ?? []).map((r, i) => (
                 <li key={i} className="biz-page__list-item">{r}</li>
               ))}
             </ul>
           </Card>
-          <Card className="biz-page__section">
+          <Card className="biz-page__section biz-page__accent-card">
             <h3 className="biz-page__card-title">软性要求</h3>
             <ul className="biz-page__list">
-              {analysis.softRequirements.map((r, i) => (
+              {(analysis.softRequirements ?? []).map((r, i) => (
                 <li key={i} className="biz-page__list-item">{r}</li>
               ))}
             </ul>
@@ -120,11 +165,11 @@ export default function JobPage() {
         </div>
 
         {/* Bonus points */}
-        {analysis.bonusPoints.length > 0 && (
-          <Card className="biz-page__section">
+        {(analysis.bonusPoints ?? []).length > 0 && (
+          <Card className="biz-page__section biz-page__tinted-card">
             <h3 className="biz-page__card-title">加分项</h3>
             <div className="biz-page__tag-list">
-              {analysis.bonusPoints.map((b, i) => (
+              {(analysis.bonusPoints ?? []).map((b, i) => (
                 <Tag key={i} variant="success">{b}</Tag>
               ))}
             </div>
@@ -132,14 +177,15 @@ export default function JobPage() {
         )}
 
         {/* Core abilities */}
-        <Card className="biz-page__section">
+        <Card className="biz-page__section biz-page__hero-panel">
+          <div className="biz-page__hero-glow" />
           <h3 className="biz-page__card-title">核心能力要求</h3>
           <div className="biz-page__abilities">
-            {analysis.coreAbilities.map((a, i) => (
+            {(analysis.coreAbilities ?? []).map((a, i) => (
               <div key={i} className="biz-page__ability-row">
                 <ProgressBar
                   label={a.ability}
-                  value={importanceValue[a.ability] || 50}
+                  value={importanceValue[a.importance] || 50}
                   showValue={false}
                   color={importanceColor[a.importance] || "var(--color-primary)"}
                 />
@@ -150,10 +196,10 @@ export default function JobPage() {
         </Card>
 
         {/* Hidden expectations */}
-        <Card className="biz-page__section">
+        <Card className="biz-page__section biz-page__tinted-card">
           <h3 className="biz-page__card-title">隐性期待</h3>
           <ul className="biz-page__list">
-            {analysis.hiddenExpectations.map((h, i) => (
+            {(analysis.hiddenExpectations ?? []).map((h, i) => (
               <li key={i} className="biz-page__list-item">{h}</li>
             ))}
           </ul>
@@ -178,19 +224,41 @@ export default function JobPage() {
         <p className="biz-page__subtitle">粘贴岗位 JD，AI 将自动拆解要求和能力模型</p>
       </div>
 
-      <Card className="biz-page__section">
+      {/* AI 生成参考 JD */}
+      {state.studentProfile?.targetRoles && state.studentProfile.targetRoles.length > 0 && (
+        <Card className="biz-page__section">
+          <h3 className="biz-page__card-title">AI 生成参考 JD</h3>
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginBottom: "var(--space-3)" }}>
+            点击你的目标岗位，AI 将为你生成一份参考 JD
+          </p>
+          <div className="biz-page__tag-list">
+            {state.studentProfile.targetRoles.map((role, i) => (
+              <button
+                key={i}
+                className="biz-page__role-chip"
+                onClick={() => handleGenerateJd(role)}
+                disabled={generatingJd}
+              >
+                {role}
+              </button>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      <Card className="biz-page__section biz-page__spotlight-card">
         <textarea
           className="biz-page__textarea"
-          placeholder="粘贴岗位 JD..."
+          placeholder="粘贴岗位 JD，或使用上方 AI 生成..."
           value={jdText}
           onChange={(e) => setJdText(e.target.value)}
           rows={12}
         />
-        <div style={{ marginTop: "var(--space-3)" }}>
+        <div style={{ marginTop: "var(--space-3)", display: "flex", gap: "var(--space-2)" }}>
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => setJdText(DEMO_JOB_DESCRIPTION)}
+            onClick={() => setJdText(SAMPLE_JOB_DESCRIPTION)}
           >
             填充示例 JD
           </Button>
@@ -204,6 +272,9 @@ export default function JobPage() {
       <div className="biz-page__actions">
         <Button size="lg" onClick={handleAnalyze}>
           开始解析
+        </Button>
+        <Button variant="secondary" onClick={() => router.push("/resume")}>
+          跳过 JD，直接优化简历
         </Button>
       </div>
     </div>

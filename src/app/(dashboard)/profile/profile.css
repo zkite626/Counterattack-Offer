@@ -1,16 +1,22 @@
 .profile-page {
-  max-width: 720px;
+  max-width: 860px;
   margin: 0 auto;
+  animation: slideUp 0.5s ease-out both;
 }
 
 .profile-page__header {
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-10);
 }
 
 .profile-page__title {
   font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text-primary);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: var(--color-primary-600);
 }
 
 .profile-page__subtitle {
@@ -52,7 +58,7 @@
 
 /* Sections */
 .profile-page__section {
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-6);
 }
 
 .profile-page__section-title {

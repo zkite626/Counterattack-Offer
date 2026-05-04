@@ -144,7 +144,7 @@ function reducer(state: ResumeBuilderState, action: ResumeBuilderAction): Resume
       return { ...state, resumes: { ...state.resumes, [copy.id]: copy } };
     }
     case "SET_ACTIVE_RESUME":
-      return { ...state, activeResumeId: action.payload, activeSection: "basic" };
+      return { ...state, activeResumeId: action.payload };
     case "SET_ACTIVE_SECTION":
       return { ...state, activeSection: action.payload };
     case "UPDATE_TITLE":

@@ -148,12 +148,13 @@ interface JobFlowContextValue {
   state: JobFlowState;
   dispatch: Dispatch<JobFlowAction>;
   // 便捷方法
-  loadDemoCase: () => void;
   resetFlow: () => void;
   canAccessStep: (step: FlowStep) => boolean;
   getCompletionPercentage: () => number;
 }
 ```
+
+> 注：`loadDemoCase` 已移除，所有数据通过真实 AI 接口生成。
 
 ### 步骤解锁逻辑
 

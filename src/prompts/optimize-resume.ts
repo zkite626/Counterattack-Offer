@@ -20,7 +20,7 @@ export function getSystemPrompt(): string {
       "after": "优化后",
       "targetAbility": ["能力标签"],
       "verificationQuestions": ["面试验证问题"],
-      "riskLevel": "低|中|高",
+      "riskLevel": "低", // 取值：低、中、高，三选一
       "note": "说明"
     }
   ],

@@ -11,20 +11,20 @@ import Tag from "@/components/ui/Tag";
 import Icon from "@/components/ui/Icon";
 import "./settings.css";
 
-// 提供商显示信息
 const PROVIDER_LABELS: Record<string, string> = {
   deepseek: "DeepSeek",
   openai: "OpenAI",
   zhipu: "智谱",
   alibaba: "阿里云",
+  custom: "自定义",
 };
 
-// 提供商默认图标字母
 const PROVIDER_ICON: Record<string, string> = {
   deepseek: "D",
   openai: "O",
   zhipu: "Z",
   alibaba: "Q",
+  custom: "C",
 };
 
 interface ModelFormData {
@@ -53,11 +53,6 @@ export default function SettingsPage() {
   const [testingId, setTestingId] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ id: string; success: boolean; message: string } | null>(null);
 
-  // 内置模型 vs 自定义模型
-  const builtinModels = models.filter((m) => m.isBuiltin);
-  const customModels = models.filter((m) => !m.isBuiltin);
-
-  // 验证表单
   const validateForm = useCallback((): boolean => {
     const errors: Partial<ModelFormData> = {};
     if (!form.name.trim()) errors.name = "请输入模型名称";
@@ -68,7 +63,6 @@ export default function SettingsPage() {
     return Object.keys(errors).length === 0;
   }, [form]);
 
-  // 打开添加模型弹窗
   const handleOpenAdd = useCallback(() => {
     setEditingModel(null);
     setForm(EMPTY_FORM);
@@ -76,7 +70,6 @@ export default function SettingsPage() {
     setShowModal(true);
   }, []);
 
-  // 打开编辑模型弹窗
   const handleOpenEdit = useCallback((model: AIModelConfig) => {
     setEditingModel(model);
     setForm({
@@ -89,12 +82,9 @@ export default function SettingsPage() {
     setShowModal(true);
   }, []);
 
-  // 保存模型
   const handleSave = useCallback(() => {
     if (!validateForm()) return;
-
     if (editingModel) {
-      // 编辑模式
       updateModel(editingModel.id, {
         name: form.name,
         baseUrl: form.baseUrl,
@@ -102,7 +92,6 @@ export default function SettingsPage() {
         apiKey: form.apiKey,
       });
     } else {
-      // 新增模式
       addModel({
         name: form.name,
         provider: "custom",
@@ -111,23 +100,20 @@ export default function SettingsPage() {
         apiKey: form.apiKey,
       });
     }
-
     setShowModal(false);
     setForm(EMPTY_FORM);
     setEditingModel(null);
   }, [form, editingModel, validateForm, addModel, updateModel]);
 
-  // 删除模型
   const handleDelete = useCallback(
     (id: string) => {
-      if (window.confirm("确定删除该自定义模型？")) {
+      if (window.confirm("确定删除该模型？")) {
         removeModel(id);
       }
     },
     [removeModel]
   );
 
-  // 测试连接
   const handleTest = useCallback(
     async (model: AIModelConfig) => {
       setTestingId(model.id);
@@ -158,7 +144,6 @@ export default function SettingsPage() {
     []
   );
 
-  // 更新内置模型的 API Key
   const handleUpdateApiKey = useCallback(
     (modelId: string, apiKey: string) => {
       updateModel(modelId, { apiKey });
@@ -184,17 +169,23 @@ export default function SettingsPage() {
         </span>
       </div>
 
-      {/* 内置模型 */}
+      {/* 模型列表 */}
       <section className="settings__section">
-        <h2 className="settings__section-title">内置模型</h2>
+        <div className="settings__section-header">
+          <h2 className="settings__section-title">全部模型</h2>
+          <Button variant="primary" size="sm" onClick={handleOpenAdd}>
+            + 添加模型
+          </Button>
+        </div>
         <div className="settings__model-grid">
-          {builtinModels.map((model) => (
+          {models.map((model) => (
             <ModelCard
               key={model.id}
               model={model}
               isActive={model.id === activeModelId}
               onSetActive={() => setActiveModel(model.id)}
               onEdit={() => handleOpenEdit(model)}
+              onDelete={() => handleDelete(model.id)}
               onTest={() => handleTest(model)}
               onUpdateApiKey={(key) => handleUpdateApiKey(model.id, key)}
               testingId={testingId}
@@ -204,51 +195,17 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* 自定义模型 */}
-      <section className="settings__section">
-        <div className="settings__section-header">
-          <h2 className="settings__section-title">自定义模型</h2>
-          <Button variant="primary" size="sm" onClick={handleOpenAdd}>
-            + 添加模型
-          </Button>
-        </div>
-        {customModels.length === 0 ? (
-          <Card className="settings__empty-card">
-            <p className="settings__empty-text">
-              暂无自定义模型，点击上方按钮添加 OpenAI 兼容的模型
-            </p>
-          </Card>
-        ) : (
-          <div className="settings__model-grid">
-            {customModels.map((model) => (
-              <ModelCard
-                key={model.id}
-                model={model}
-                isActive={model.id === activeModelId}
-                onSetActive={() => setActiveModel(model.id)}
-                onEdit={() => handleOpenEdit(model)}
-                onDelete={() => handleDelete(model.id)}
-                onTest={() => handleTest(model)}
-                onUpdateApiKey={(key) => handleUpdateApiKey(model.id, key)}
-                testingId={testingId}
-                testResult={testResult}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
       {/* 添加/编辑模型弹窗 */}
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title={editingModel ? "编辑模型" : "添加自定义模型"}
+        title={editingModel ? "编辑模型" : "添加模型"}
         size="md"
       >
         <div className="settings__form">
           <Input
             label="模型名称"
-            placeholder="如：我的 DeepSeek"
+            placeholder="如：DeepSeek Chat"
             value={form.name}
             error={formErrors.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -300,7 +257,7 @@ interface ModelCardProps {
   isActive: boolean;
   onSetActive: () => void;
   onEdit: () => void;
-  onDelete?: () => void;
+  onDelete: () => void;
   onTest: () => void;
   onUpdateApiKey: (key: string) => void;
   testingId: string | null;
@@ -351,9 +308,7 @@ function ModelCard({
         <span className="settings__model-id">{model.model}</span>
       </div>
 
-      {!model.isBuiltin && (
-        <p className="settings__model-url">{model.baseUrl}</p>
-      )}
+      <p className="settings__model-url">{model.baseUrl}</p>
 
       {/* API Key 区域 */}
       {!hasKey && !showKeyInput && (
@@ -431,11 +386,9 @@ function ModelCard({
             修改Key
           </Button>
         )}
-        {onDelete && (
-          <Button variant="danger" size="sm" onClick={onDelete}>
-            删除
-          </Button>
-        )}
+        <Button variant="danger" size="sm" onClick={onDelete}>
+          删除
+        </Button>
       </div>
     </Card>
   );

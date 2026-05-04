@@ -9,7 +9,14 @@ import {
   type Dispatch,
 } from "react";
 import type { JobFlowState, JobFlowAction, FlowStep } from "@/types";
-import { DEMO_STUDENT_PROFILE, DEMO_JOB_DESCRIPTION } from "@/data/demo-case";
+import {
+  normalizeCareerDiagnosis,
+  normalizeImprovementPlan,
+  normalizeInterviewSimulations,
+  normalizeJobAnalysis,
+  normalizeMatchReport,
+} from "@/lib/utils/ai-results";
+import { DEMO_STUDENT_PROFILE } from "@/data/demo-case";
 import {
   DEMO_DIAGNOSIS,
   DEMO_TRANSLATIONS,
@@ -38,125 +45,120 @@ const INITIAL_STATE: JobFlowState = {
   error: null,
 };
 
+// 根据实际数据计算已完成的步骤
+function deriveCompletedSteps(state: JobFlowState): FlowStep[] {
+  const steps: FlowStep[] = [];
+  if (state.studentProfile) steps.push("profile");
+  if (state.careerDiagnosis) steps.push("diagnosis");
+  if (state.experienceTranslations) steps.push("translation");
+  if (state.jobAnalysis) steps.push("job");
+  if (state.matchReport) steps.push("match");
+  if (state.resumeOptimization) steps.push("resume");
+  if (state.interviewSimulation) steps.push("interview");
+  if (state.improvementPlan) steps.push("plan");
+  if (steps.length >= 5) steps.push("report");
+  return steps;
+}
+
+// 完成一轮完整流程的核心步骤（不含 report）
+const CORE_STEPS: FlowStep[] = ["profile", "diagnosis", "translation", "resume", "interview", "plan"];
+
+function isFlowUnlocked(state: JobFlowState): boolean {
+  return CORE_STEPS.every((s) => state.completedSteps.includes(s));
+}
+
+function withDerivedSteps(state: JobFlowState): JobFlowState {
+  const interviewSimulation = normalizeInterviewSimulations(state.interviewSimulation);
+  const normalized: JobFlowState = {
+    ...state,
+    careerDiagnosis: normalizeCareerDiagnosis(state.careerDiagnosis),
+    jobAnalysis: normalizeJobAnalysis(state.jobAnalysis),
+    matchReport: normalizeMatchReport(state.matchReport),
+    interviewSimulation: interviewSimulation.length ? interviewSimulation : null,
+    improvementPlan: normalizeImprovementPlan(state.improvementPlan),
+  };
+  return { ...normalized, completedSteps: deriveCompletedSteps(normalized) };
+}
+
 function loadState(): JobFlowState {
   if (typeof window === "undefined") return INITIAL_STATE;
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return { ...INITIAL_STATE, ...JSON.parse(saved) };
+    if (saved) {
+      const parsed = JSON.parse(saved) as JobFlowState;
+      // 清除旧版 demo 模式遗留的 completedSteps，用实际数据重新计算
+      const merged = { ...INITIAL_STATE, ...parsed, completedSteps: [] };
+      return withDerivedSteps(merged);
+    }
   } catch {
     // ignore
   }
   return INITIAL_STATE;
 }
 
-function markCompleted(state: JobFlowState, step: FlowStep): FlowStep[] {
-  return state.completedSteps.includes(step)
-    ? state.completedSteps
-    : [...state.completedSteps, step];
-}
-
 function reducer(state: JobFlowState, action: JobFlowAction): JobFlowState {
+  let next: JobFlowState;
   switch (action.type) {
     case "SET_PROFILE":
-      return {
-        ...state,
-        studentProfile: action.payload,
-        currentStep: "diagnosis",
-        completedSteps: markCompleted(state, "profile"),
-      };
+      next = { ...state, studentProfile: action.payload };
+      break;
     case "SET_DIAGNOSIS":
-      return {
-        ...state,
-        careerDiagnosis: action.payload,
-        currentStep: "translation",
-        completedSteps: markCompleted(state, "diagnosis"),
-      };
+      next = { ...state, careerDiagnosis: action.payload };
+      break;
     case "SET_TRANSLATIONS":
-      return {
-        ...state,
-        experienceTranslations: action.payload,
-        currentStep: "job",
-        completedSteps: markCompleted(state, "translation"),
-      };
+      next = { ...state, experienceTranslations: action.payload };
+      break;
     case "SET_JOB_DESCRIPTION":
-      return { ...state, jobDescription: action.payload };
+      next = { ...state, jobDescription: action.payload };
+      break;
     case "SET_JOB_ANALYSIS":
-      return {
-        ...state,
-        jobAnalysis: action.payload,
-        currentStep: "match",
-        completedSteps: markCompleted(state, "job"),
-      };
+      next = { ...state, jobAnalysis: action.payload };
+      break;
     case "SET_MATCH_REPORT":
-      return {
-        ...state,
-        matchReport: action.payload,
-        currentStep: "resume",
-        completedSteps: markCompleted(state, "match"),
-      };
+      next = { ...state, matchReport: action.payload };
+      break;
     case "SET_RESUME_OPTIMIZATION":
-      return {
-        ...state,
-        resumeOptimization: action.payload,
-        currentStep: "interview",
-        completedSteps: markCompleted(state, "resume"),
-      };
+      next = { ...state, resumeOptimization: action.payload };
+      break;
     case "SET_INTERVIEW":
-      return {
-        ...state,
-        interviewSimulation: action.payload,
-        currentStep: "plan",
-        completedSteps: markCompleted(state, "interview"),
-      };
+      next = { ...state, interviewSimulation: action.payload };
+      break;
     case "SET_IMPROVEMENT_PLAN":
-      return {
-        ...state,
-        improvementPlan: action.payload,
-        currentStep: "report",
-        completedSteps: markCompleted(state, "plan"),
-      };
+      next = { ...state, improvementPlan: action.payload };
+      break;
     case "SET_STEP":
       return { ...state, currentStep: action.payload };
     case "SET_LOADING":
       return { ...state, isLoading: action.payload };
     case "SET_ERROR":
       return { ...state, error: action.payload };
-    case "RESET":
-      return INITIAL_STATE;
-    case "LOAD_DEMO":
-      return {
+    case "LOAD_SAMPLE":
+      next = {
         ...INITIAL_STATE,
         studentProfile: DEMO_STUDENT_PROFILE,
         careerDiagnosis: DEMO_DIAGNOSIS,
         experienceTranslations: DEMO_TRANSLATIONS,
-        jobDescription: DEMO_JOB_DESCRIPTION,
+        jobDescription: "用户运营实习生",
         jobAnalysis: DEMO_JOB_ANALYSIS,
         matchReport: DEMO_MATCH_REPORT,
         resumeOptimization: DEMO_RESUME_OPTIMIZATION,
         interviewSimulation: DEMO_INTERVIEW,
         improvementPlan: DEMO_IMPROVEMENT_PLAN,
-        currentStep: "report",
-        completedSteps: [
-          "profile",
-          "diagnosis",
-          "translation",
-          "job",
-          "match",
-          "resume",
-          "interview",
-          "plan",
-        ],
       };
+      break;
+    case "RESET":
+      return INITIAL_STATE;
     default:
       return state;
   }
+  return withDerivedSteps(next);
 }
 
 interface JobFlowContextValue {
   state: JobFlowState;
   dispatch: Dispatch<JobFlowAction>;
-  loadDemoCase: () => void;
   resetFlow: () => void;
+  loadSampleData: () => void;
   canAccessStep: (step: FlowStep) => boolean;
   getCompletionPercentage: () => number;
 }
@@ -174,58 +176,52 @@ export function JobFlowProvider({ children }: { children: ReactNode }) {
     }
   }, [state]);
 
-  function loadDemoCase() {
-    dispatch({ type: "LOAD_DEMO" });
-  }
-
   function resetFlow() {
     dispatch({ type: "RESET" });
     localStorage.removeItem(STORAGE_KEY);
   }
 
+  function loadSampleData() {
+    dispatch({ type: "LOAD_SAMPLE" });
+  }
+
+  // 未完成一轮：按顺序解锁；完成后：自由访问
   function canAccessStep(step: FlowStep): boolean {
+    if (isFlowUnlocked(state)) return true;
+    const completed = state.completedSteps;
     switch (step) {
       case "profile":
         return true;
       case "diagnosis":
-        return state.studentProfile !== null;
+        return completed.includes("profile");
       case "translation":
-        return state.careerDiagnosis !== null;
+        return completed.includes("diagnosis");
       case "job":
-        return true;
+        return completed.includes("translation");
       case "match":
-        return state.careerDiagnosis !== null && state.jobAnalysis !== null;
+        // 需要诊断完成，JD 可选
+        return completed.includes("diagnosis");
       case "resume":
-        return state.matchReport !== null;
+        // 经历转译完成即可（JD/匹配可跳过）
+        return completed.includes("translation");
       case "interview":
-        return state.resumeOptimization !== null;
+        return completed.includes("resume");
       case "plan":
-        return state.matchReport !== null;
+        return completed.includes("interview");
       case "report":
-        return state.completedSteps.length >= 5;
+        return completed.length >= 5;
       default:
         return false;
     }
   }
 
   function getCompletionPercentage(): number {
-    const steps: FlowStep[] = [
-      "profile",
-      "diagnosis",
-      "translation",
-      "job",
-      "match",
-      "resume",
-      "interview",
-      "plan",
-      "report",
-    ];
-    return Math.round((state.completedSteps.length / steps.length) * 100);
+    return Math.round((state.completedSteps.length / 9) * 100);
   }
 
   return (
     <JobFlowContext.Provider
-      value={{ state, dispatch, loadDemoCase, resetFlow, canAccessStep, getCompletionPercentage }}
+      value={{ state, dispatch, resetFlow, loadSampleData, canAccessStep, getCompletionPercentage }}
     >
       {children}
     </JobFlowContext.Provider>

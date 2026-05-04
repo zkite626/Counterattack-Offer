@@ -11,6 +11,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import Icon from "@/components/ui/Icon";
 import InterviewChat from "@/components/business/InterviewChat";
 import type { InterviewSimulation } from "@/types";
+import { normalizeInterviewSimulations } from "@/lib/utils/ai-results";
 import "../shared-page.css";
 import "./interview.css";
 
@@ -20,15 +21,18 @@ export default function InterviewPage() {
   const router = useRouter();
   const { state, dispatch } = useJobFlow();
   const { activeModel } = useAI();
-  const [simulations, setSimulations] = useState<InterviewSimulation[] | null>(state.interviewSimulation);
+  const [simulations, setSimulations] = useState<InterviewSimulation[] | null>(() => {
+    const normalized = normalizeInterviewSimulations(state.interviewSimulation);
+    return normalized.length ? normalized : null;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [mode, setMode] = useState<InterviewMode>("card");
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
 
   const runInterview = useCallback(async () => {
-    if (!state.careerDiagnosis || !state.jobAnalysis) {
-      setError("请先完成画像诊断和 JD 解析");
+    if (!state.careerDiagnosis) {
+      setError("请先完成画像诊断");
       return;
     }
 
@@ -56,8 +60,11 @@ export default function InterviewPage() {
       const json = await res.json();
       if (!json.success) throw new Error(json.error?.message || "面试训练生成失败");
 
-      setSimulations(json.data);
-      dispatch({ type: "SET_INTERVIEW", payload: json.data });
+      const normalized = normalizeInterviewSimulations(json.data);
+      if (normalized.length === 0) throw new Error("面试训练结果格式不正确");
+
+      setSimulations(normalized);
+      dispatch({ type: "SET_INTERVIEW", payload: normalized });
     } catch (err) {
       setError(err instanceof Error ? err.message : "请求失败");
     } finally {
@@ -66,10 +73,10 @@ export default function InterviewPage() {
   }, [state.careerDiagnosis, state.resumeOptimization, state.jobAnalysis, activeModel, dispatch]);
 
   useEffect(() => {
-    if (!simulations && state.careerDiagnosis && state.jobAnalysis) {
+    if (!simulations && state.careerDiagnosis && activeModel?.apiKey) {
       runInterview();
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [simulations, state.careerDiagnosis, activeModel?.apiKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleCard(index: number) {
     setExpandedCards((prev) => {
@@ -107,16 +114,17 @@ export default function InterviewPage() {
     );
   }
 
-  if (error) {
+  if (error && !simulations) {
     return (
       <div className="biz-page">
         <div className="biz-page__header">
           <h1 className="biz-page__title">面试训练</h1>
+          <p className="biz-page__subtitle">针对目标岗位的面试问题与回答建议</p>
         </div>
-        <Card className="biz-page__error-card">
-          <p className="biz-page__error-text">{error}</p>
-          <div className="biz-page__error-actions">
-            <Button onClick={runInterview}>重新生成</Button>
+        <Card className="biz-page__section">
+          <div style={{ textAlign: "center", padding: "var(--space-6) var(--space-4)" }}>
+            <p style={{ color: "var(--color-danger-500)", marginBottom: "var(--space-4)" }}>{error}</p>
+            <Button onClick={runInterview}>重试</Button>
           </div>
         </Card>
       </div>
@@ -152,12 +160,12 @@ export default function InterviewPage() {
         /* 卡片模式 */
         simulations ? (
           <div className="interview-page__cards">
-            {simulations.map((sim, index) => {
+            {(simulations ?? []).map((sim, index) => {
               const expanded = expandedCards.has(index);
               return (
                 <div key={index} style={{ animationDelay: `${index * 80}ms` }} className="interview-page__card-wrapper">
                 <Card
-                  className="interview-page__card"
+                  className="interview-page__card biz-page__accent-card"
                 >
                   <div className="interview-page__card-header">
                     <Tag
@@ -171,11 +179,11 @@ export default function InterviewPage() {
                   <p className="interview-page__main-question">{sim.mainQuestion}</p>
 
                   {/* 追问列表 */}
-                  {sim.followUpQuestions.length > 0 && (
+                  {(sim.followUpQuestions ?? []).length > 0 && (
                     <div className="interview-page__followups">
                       <div className="interview-page__section-label">追问</div>
                       <ol className="interview-page__followup-list">
-                        {sim.followUpQuestions.map((q, i) => (
+                        {(sim.followUpQuestions ?? []).map((q, i) => (
                           <li key={i}>{q}</li>
                         ))}
                       </ol>
@@ -185,7 +193,9 @@ export default function InterviewPage() {
                   {/* 推荐回答结构 */}
                   <div className="interview-page__structure">
                     <div className="interview-page__section-label">推荐回答结构</div>
-                    <p className="interview-page__structure-text">{sim.answerStructure}</p>
+                    <p className="interview-page__structure-text">
+                      {sim.answerStructure || "建议使用 STAR 法则：情境(Situation) → 任务(Task) → 行动(Action) → 结果(Result)"}
+                    </p>
                   </div>
 
                   {/* 示例答案（可展开） */}
@@ -207,25 +217,39 @@ export default function InterviewPage() {
                   </div>
 
                   {/* 评分标准 */}
-                  {sim.scoreCriteria.length > 0 && (
-                    <div className="interview-page__criteria">
-                      <div className="interview-page__section-label">评分标准</div>
-                      <ul className="interview-page__criteria-list">
-                        {sim.scoreCriteria.map((c, i) => (
-                          <li key={i}>
-                            <span className="interview-page__criteria-check">✓</span>
-                            {c}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  <div className="interview-page__criteria">
+                    <div className="interview-page__section-label">评分标准</div>
+                    <ul className="interview-page__criteria-list">
+                      {((sim.scoreCriteria ?? []).length > 0
+                        ? sim.scoreCriteria
+                        : ["回答内容与岗位要求的相关性", "表达的逻辑性和条理性", "具体事例和细节的充分程度", "自我认知和反思能力"]
+                      ).map((c, i) => (
+                        <li key={i}>
+                          <span className="interview-page__criteria-check">✓</span>
+                          {c}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </Card>
                 </div>
               );
             })}
           </div>
-        ) : null
+        ) : (
+          <Card className="biz-page__section">
+            <div style={{ textAlign: "center", padding: "var(--space-6) var(--space-4)" }}>
+              <p style={{ color: "var(--color-text-secondary)", marginBottom: "var(--space-4)" }}>
+                {state.careerDiagnosis ? "点击下方按钮生成面试问题" : "请先完成画像诊断"}
+              </p>
+              {state.careerDiagnosis && (
+                <Button onClick={runInterview} disabled={!activeModel?.apiKey}>
+                  生成面试问题
+                </Button>
+              )}
+            </div>
+          </Card>
+        )
       ) : (
         /* 对话模式 */
         <InterviewChat jobTitle={state.jobAnalysis?.jobTitle} />

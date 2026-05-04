@@ -15,7 +15,12 @@ export function getSystemPrompt(): string {
 5. 输出要具体、积极、可执行；
 6. 必须输出 JSON，不要输出 Markdown。
 
-请按以下 JSON 格式输出：
+请按以下 JSON 格式输出。字段名必须完全使用下方英文 key，不要改成中文 key。
+recommendedRoles 必须按 fitScore 从高到低排序；priority 只能取 safe、recommended、challenge 三个英文值：
+- safe：稳妥岗位，成功率较高
+- recommended：最推荐优先投递的岗位
+- challenge：可冲刺岗位，差距较明显但值得尝试
+每个推荐岗位都必须填写 reason、fitScore、priority。
 {
   "studentType": "学生类型描述",
   "summary": "整体诊断概述",

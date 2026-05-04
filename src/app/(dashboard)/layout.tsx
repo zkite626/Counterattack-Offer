@@ -17,44 +17,54 @@ const NAV_ITEMS: { path: string; label: string; icon: IconName }[] = [
   { path: "/job", label: "JD解析", icon: "job" },
   { path: "/match", label: "人岗匹配", icon: "match" },
   { path: "/resume", label: "简历优化", icon: "resume" },
-  { path: "/resume-builder", label: "简历创建器", icon: "resume-builder" },
   { path: "/interview", label: "面试训练", icon: "interview" },
   { path: "/plan", label: "能力计划", icon: "plan" },
   { path: "/report", label: "汇总报告", icon: "report" },
+  { path: "/resume-builder", label: "简历创建器", icon: "resume-builder" },
   { path: "/settings", label: "模型管理", icon: "settings" },
+];
+
+// 仅在流程页面显示步骤导航
+const FLOW_PATHS = [
+  "/profile", "/diagnosis", "/translation", "/job",
+  "/match", "/resume", "/interview", "/plan", "/report",
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isLoading, isAuthenticated, logout } = useAuth();
-  const { activeModel } = useAI();
+  const { activeModel, envConfigLoaded } = useAI();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [isDemo, setIsDemo] = useState(false);
-  const [showDemoBanner, setShowDemoBanner] = useState(true);
-
-  // 检测 Demo 模式
-  useEffect(() => {
-    setIsDemo(sessionStorage.getItem("isDemoMode") === "true");
-  }, []);
 
   // 未登录 → 重定向到登录页
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && !isDemo) {
+    if (!isLoading && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isLoading, isAuthenticated, isDemo, router]);
+  }, [isLoading, isAuthenticated, router]);
 
-  // 正式登录但未配置 API Key → 跳转设置页
+  // 未配置 API Key → 跳转设置页（等待 env 默认配置加载完成）
   useEffect(() => {
-    if (!isDemo && pathname !== "/settings" && activeModel && !activeModel.apiKey) {
+    if (!envConfigLoaded) return;
+    if (pathname !== "/settings" && activeModel && !activeModel.apiKey) {
       router.replace("/settings");
     }
-  }, [isDemo, pathname, activeModel, router]);
+  }, [pathname, activeModel, router, envConfigLoaded]);
+
+  // 侧边栏打开时锁定页面滚动
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [sidebarOpen]);
 
   // 鉴权检查中或未登录，显示加载态
-  if (isLoading || (!isAuthenticated && !isDemo)) {
+  if (isLoading || !isAuthenticated) {
     return (
       <div className="dashboard" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
         <p style={{ color: "var(--color-text-secondary)", fontSize: "var(--text-sm)" }}>加载中…</p>
@@ -69,18 +79,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="dashboard">
-      {/* Demo 模式 Banner */}
-      {isDemo && showDemoBanner && (
-        <div className="demo-banner">
-          <span className="demo-banner__badge">
-            <Icon name="lightning" size="0.875em" />
-            Demo
-          </span>
-          <span className="demo-banner__text">正在体验模拟数据，无需配置 API Key</span>
-          <button className="demo-banner__close" onClick={() => setShowDemoBanner(false)} aria-label="关闭提示">×</button>
-        </div>
-      )}
-
       {/* Header */}
       <header className="dashboard__header">
         <div className="dashboard__header-left">
@@ -147,10 +145,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      {/* StepNav */}
-      <div className="dashboard__stepnav">
-        <StepNav />
-      </div>
+      {/* StepNav — 仅流程页面显示 */}
+      {FLOW_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/")) && (
+        <div className="dashboard__stepnav">
+          <StepNav />
+        </div>
+      )}
 
       <div className="dashboard__body">
         {/* Sidebar */}

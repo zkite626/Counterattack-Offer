@@ -1,7 +1,7 @@
 /* ── Plan 能力补齐计划页面 ── */
 
 .plan-page__goal-card {
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-6);
 }
 
 .plan-page__goal-header {

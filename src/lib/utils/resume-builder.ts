@@ -64,7 +64,7 @@ export function buildResumeFromAIResults(
   // 基本信息
   const basic = {
     name: profile.name || "",
-    title: diagnosis?.recommendedRoles?.[0]?.role || profile.targetRoles?.[0] || "",
+    title: jobAnalysis?.jobTitle || diagnosis?.recommendedRoles?.[0]?.role || profile.targetRoles?.[0] || "",
     email: "",
     phone: "",
     location: profile.targetCities?.[0] || "",

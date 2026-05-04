@@ -228,6 +228,13 @@ export const TEMPLATE_REGISTRY: TemplateRegistryEntry[] = [
   { config: classicConfig, Component: ClassicTemplate },
   { config: modernConfig, Component: ModernTemplate },
   { config: freshGradConfig, Component: FreshGradTemplate },
+  { config: sidebarConfig, Component: SidebarTemplate },
+  { config: elegantConfig, Component: ElegantTemplate },
+  { config: compactConfig, Component: CompactTemplate },
+  { config: boldHeaderConfig, Component: BoldHeaderTemplate },
+  { config: minimalConfig, Component: MinimalTemplate },
+  { config: timelineConfig, Component: TimelineTemplate },
+  { config: techConfig, Component: TechTemplate },
 ];
 
 export function getTemplateComponent(layout: string): React.FC {
@@ -236,15 +243,22 @@ export function getTemplateComponent(layout: string): React.FC {
 }
 ```
 
-### 初始模板
+### 模板列表（10 个）
 
-为低经验大学生定制 3 个模板：
+为低经验大学生定制 10 个差异化模板：
 
 | 模板 | 布局 | 特点 | 适合场景 |
 |------|------|------|----------|
 | 经典 Classic | 标准单栏 | 传统简约，ATS 友好 | 通用求职 |
-| 现代 Modern | 左右分栏 | 视觉感强，重点突出 | 互联网岗位 |
+| 现代 Modern | 单栏+主题色高亮 | 视觉感强，重点突出 | 互联网岗位 |
 | 应届生 FreshGrad | 单栏+强调教育 | 教育和项目区域放大 | 无实习经验 |
+| 双栏侧边 Sidebar | 左右分栏 | 左侧深色侧栏 | 设计/创意岗位 |
+| 优雅简约 Elegant | 单栏 | 精致排版，大写字母标题 | 市场营销/品牌岗位 |
+| 紧凑高效 Compact | 单栏 | 间距紧凑，信息密度高 | 咨询/金融行业 |
+| 醒目头部 BoldHeader | 单栏+渐变Banner | 顶部醒目渐变头部 | 销售/商务岗位 |
+| 极简留白 Minimal | 单栏 | 大量留白，细线分隔 | 注重品味的创意岗位 |
+| 时间轴 Timeline | 单栏+左侧时间轴 | 时间线连接各模块 | 展示成长轨迹 |
+| 科技感 Tech | 单栏+深色头部 | 深色渐变头部，技术风格 | 程序员/数据分析师 |
 
 ---
 
@@ -295,29 +309,35 @@ function buildResumeFromAIResults(
 
 ## 17.6 PDF 导出方案
 
-### MVP 方案：浏览器原生 print
+### 方案：浏览器原生 print + 所见即所得
 
-不引入 Puppeteer 等重依赖，使用浏览器 `window.print()` + `@media print`：
+使用浏览器 `window.print()` + `@media print`，导出时自动隐藏所有非简历 UI：
 
 ```css
+/* dashboard.css — 隐藏导航栏、侧边栏等 */
 @media print {
-  /* 隐藏编辑器，只显示预览 */
-  .resume-builder__sidebar,
-  .resume-builder__editor { display: none !important; }
+  .dashboard__header,
+  .dashboard__stepnav,
+  .dashboard__sidebar,
+  .dashboard__overlay { display: none !important; }
+}
 
-  .resume-builder__preview {
-    width: 210mm !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
+/* editor-workspace.css — 隐藏编辑器，只显示预览 */
+@media print {
+  .editor-workspace__toolbar,
+  .editor-workspace__nav,
+  .editor-workspace__editor { display: none !important; }
 
-  /* A4 分页 */
-  @page {
-    size: A4;
-    margin: 0;
+  .editor-workspace__preview {
+    border: none;
+    overflow: visible;
   }
 }
 ```
+
+### PDF 文件名
+
+导出时自动设置 `document.title` 为「姓名 - 简历」，浏览器另存为 PDF 时默认使用该文件名。
 
 ### 未来升级
 
@@ -399,12 +419,13 @@ localStorage('nixi-resume-builder') → JSON
 
 **顶部工具栏**：
 - 简历标题（可编辑）
-- 模板选择按钮
-- 主题色选择器
-- 字体选择
+- 模板选择按钮（10 种模板可选）
+- 主题色选择器（12 种预设色）
+- 字体选择（4 种字体）
 - 页边距调整
-- AI 预填充按钮
-- 打印/导出 PDF
+- AI 预填充按钮（从 AI 分析结果自动填入）
+- 随机样式按钮（一键随机模板+字体+颜色）
+- 打印/导出 PDF（文件名为「姓名 - 简历.pdf」，导出时隐藏导航栏）
 - 返回列表
 
 ---
@@ -489,9 +510,16 @@ const handleClick = (e) => {
 
 | 组件 | 说明 |
 |------|------|
-| ClassicTemplate | 经典模板 |
-| ModernTemplate | 现代模板 |
-| FreshGradTemplate | 应届生模板 |
+| ClassicTemplate | 经典模板 — 标准单栏 |
+| ModernTemplate | 现代模板 — 主题色高亮 |
+| FreshGradTemplate | 应届生模板 — 强调教育 |
+| SidebarTemplate | 双栏侧边模板 |
+| ElegantTemplate | 优雅简约模板 |
+| CompactTemplate | 紧凑高效模板 |
+| BoldHeaderTemplate | 醒目头部模板 |
+| MinimalTemplate | 极简留白模板 |
+| TimelineTemplate | 时间轴模板 |
+| TechTemplate | 科技感模板 |
 | TemplateSelector | 模板选择弹窗 |
 
 ---

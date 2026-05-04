@@ -14,8 +14,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 100%;
   width: max-content;
+  margin: 0 auto;
 }
 
 .step-nav__item-wrapper {
@@ -51,6 +51,10 @@
 
 .step-nav__item:hover:not(:disabled) {
   background: var(--color-bg-tertiary);
+}
+
+.step-nav__item--accessible .step-nav__label {
+  color: var(--color-text-secondary);
 }
 
 .step-nav__item--locked {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useResumeBuilder } from "@/hooks/useResumeBuilder";
 import { useJobFlow } from "@/contexts/JobFlowContext";
@@ -33,7 +33,7 @@ function ResumeCardPreview({ resume }: { resume: ResumeBuilderData }) {
             <div className="resume-card-preview__sidebar-left" style={{ backgroundColor: themeColor }}>
               <div className="resume-card-preview__sidebar-photo">
                 {basic.photo ? (
-                  <img src={basic.photo} alt="" />
+                  <Image src={basic.photo} alt="" width={28} height={34} unoptimized />
                 ) : (
                   <div className="resume-card-preview__sidebar-avatar" />
                 )}
@@ -59,7 +59,7 @@ function ResumeCardPreview({ resume }: { resume: ResumeBuilderData }) {
               <div className="resume-card-preview__bold-content">
                 {basic.photo && (
                   <div className="resume-card-preview__bold-photo">
-                    <img src={basic.photo} alt="" />
+                    <Image src={basic.photo} alt="" width={24} height={30} unoptimized />
                   </div>
                 )}
                 <div>
@@ -79,7 +79,7 @@ function ResumeCardPreview({ resume }: { resume: ResumeBuilderData }) {
           <>
             {basic.photo && (
               <div className="resume-card-preview__photo">
-                <img src={basic.photo} alt="" />
+                <Image src={basic.photo} alt="" width={32} height={40} unoptimized />
               </div>
             )}
             <div

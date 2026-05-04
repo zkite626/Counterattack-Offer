@@ -13,7 +13,7 @@
 | 5 | 可信简历优化 | AI 对比优化前后，生成更专业的简历内容 |
 | 6 | 面试 + 能力计划 | 模拟面试追问对话 + 7/14/30 天能力提升计划 |
 
-**附加功能：** 汇总报告 · 一键 Demo 体验 · 暗色模式 · 响应式布局 · 简历创建器（多模板 + PDF 导出）
+**附加功能：** 汇总报告 · 李同学案例快速填充 · 暗色模式 · 响应式布局 · 简历创建器（10 模板 + 随机样式 + PDF 导出）
 
 ## 技术栈
 
@@ -21,7 +21,7 @@
 |------|------|
 | 框架 | Next.js 16 (App Router) + React 19 + TypeScript |
 | 认证 | JWT (jose) — HttpOnly Cookie，无数据库依赖 |
-| AI | OpenAI 兼容协议，支持 DeepSeek / OpenAI / 智谱 / 阿里云 |
+| AI | OpenAI 兼容协议，支持 DeepSeek / OpenAI / 智谱 / 阿里云等 |
 | 样式 | Vanilla CSS + CSS Variables + BEM 命名 + IconFont SVG Sprite |
 | 状态 | React Context + useReducer，持久化至 localStorage |
 | 部署 | Vercel / Docker |
@@ -75,55 +75,66 @@ DEFAULT_AI_API_KEY=
 
 本项目不内置 API Key，需在「模型管理」页面手动配置：
 
-1. 注册并登录应用
+1. 注册并登录应用（首次登录会自动跳转至模型管理页）
 2. 进入「模型管理」（设置页）
-3. 选择内置模型（DeepSeek / OpenAI / 智谱 / 阿里云）或添加自定义模型
-4. 输入 API Key 并测试连接
+3. 选择内置模型（DeepSeek Chat / DeepSeek Reasoner）或添加自定义模型（支持任何 OpenAI 兼容 API，如 OpenAI / 智谱 / 阿里云等）
+4. 输入 API Key 并**测试连接**（连接成功后方可使用）
 5. 设为活跃模型
 
-所有 AI 请求通过后端 API Route 代理，前端不直接调用 AI 服务。
+也可通过 `.env.local` 配置 `DEFAULT_AI_BASE_URL`、`DEFAULT_AI_MODEL`、`DEFAULT_AI_API_KEY`，首次打开设置页时自动加载为默认配置。
+
+所有 AI 请求通过后端 API Route 代理，前端不直接调用 AI 服务。AI 返回的 JSON 会自动去除 Markdown 代码围栏，确保解析稳定。
 
 ## 项目结构
 
 ```
 src/
-├── proxy.ts                # 路由保护（认证 + API 代理）
 ├── app/
 │   ├── (auth)/             # 登录/注册路由组
-│   ├── (dashboard)/        # 工作台路由组（需登录）
-│   │   ├── profile/        # 个人画像
+│   ├── (dashboard)/        # 工作台路由组（需登录 + API Key）
+│   │   ├── profile/        # 个人信息（支持快速填充李同学数据）
 │   │   ├── diagnosis/      # AI 诊断
 │   │   ├── translation/    # 经历转译
 │   │   ├── job/            # JD 解析
 │   │   ├── match/          # 人岗匹配
 │   │   ├── resume/         # 简历优化
-│   │   ├── resume-builder/ # 简历创建器（多模板 + PDF 导出）
+│   │   ├── resume-builder/ # 简历创建器（10 模板 + 随机样式 + PDF 导出）
 │   │   ├── interview/      # 面试训练
 │   │   ├── plan/           # 能力计划
 │   │   ├── report/         # 汇总报告
 │   │   └── settings/       # 模型管理
 │   ├── api/
-│   │   ├── auth/           # 认证 API（登录/注册/登出/Demo）
-│   │   └── ai/             # AI 服务 API（10 个端点）
+│   │   ├── auth/           # 认证 API（登录/注册/登出）
+│   │   └── ai/             # AI 服务 API（12 个端点）
 │   ├── globals.css         # Design Token 系统
 │   ├── layout.tsx          # 根布局（字体、metadata、Providers）
 │   ├── providers.tsx       # Context Provider 组合
 │   └── page.tsx            # 首页
 ├── components/
-│   ├── ui/                 # 基础 UI 组件（Button/Card/Input/Modal/Tag/Skeleton/Icon/IconSprite...）
+│   ├── ui/                 # 基础 UI 组件（Button/Card/Input/Modal/Tag/Skeleton/Icon...）
 │   ├── layout/             # 布局组件（StepNav/ThemeToggle）
-│   ├── business/           # 业务组件（InterviewChat/PlanTimeline/ResumeCompare/ResumePreview...）
-│   └── resume-templates/   # 简历模板系统（classic/modern/fresh-grad）
+│   ├── business/           # 业务组件（InterviewChat/PlanTimeline/ResumePreview/EditorToolbar...）
+│   └── resume-templates/   # 简历模板系统（10 个模板）
+│       ├── classic/        # 经典 — 标准单栏，ATS 友好
+│       ├── modern/         # 现代 — 主题色高亮，视觉感强
+│       ├── fresh-grad/     # 应届生 — 强调教育和项目
+│       ├── sidebar/        # 双栏侧边 — 左侧深色侧栏
+│       ├── elegant/        # 优雅简约 — 精致排版
+│       ├── compact/        # 紧凑高效 — 信息密度高
+│       ├── bold-header/    # 醒目头部 — 渐变 Banner
+│       ├── minimal/        # 极简留白 — 大量留白，细线分隔
+│       ├── timeline/       # 时间轴 — 左侧时间线连接各模块
+│       └── tech/           # 科技感 — 深色头部，技术风格
 ├── contexts/               # React Context（Auth/Theme/AI/JobFlow/ResumeBuilder）
 ├── hooks/                  # 自定义 Hooks（useAI/useResumeBuilder...）
 ├── lib/
 │   ├── ai/                 # AI 客户端 + 模型配置 + 流式处理
 │   ├── auth/               # JWT + Cookie 工具
 │   ├── repository/         # 数据访问层（内存实现）
-│   └── utils/              # 加密 + 简历构建工具
+│   └── utils/              # 加密 + 简历构建 + JSON 解析工具
 ├── prompts/                # AI Prompt 模板（8 个场景）
 ├── types/                  # TypeScript 类型定义
-└── data/                   # Demo 模拟数据
+└── data/                   # 李同学示例数据
 
 public/
 ├── favicon.ico             # 品牌 Favicon
@@ -140,13 +151,23 @@ docs/
 └── codex_prompts/          # 开发提示词（Wave 1~8）
 ```
 
-## Demo 演示流程
+## 快速体验流程
 
-1. 访问首页 → 点击「一键体验 Demo」
-2. 自动创建临时账户，跳转至「个人信息」页（已预填李同学数据）
-3. 按侧边栏顺序依次体验：画像诊断 → 经历转译 → JD 解析 → 人岗匹配 → 简历优化 → 面试训练 → 能力计划 → 汇总报告
-4. 进入「简历创建器」可从 AI 结果一键生成简历，选择模板并导出 PDF
-5. 每一步均可触发 AI 生成（需配置 API Key）
+1. 注册并登录应用
+2. 首次登录自动跳转「模型管理」，配置 API Key 并测试连接
+3. 进入「个人信息」→ 点击「填充李同学数据」快速填写表单
+4. 点击「开始 AI 诊断」，AI 实时调用生成求职画像
+5. 按侧边栏顺序依次体验：画像诊断 → 经历转译 → JD 解析 → 人岗匹配 → 简历优化 → 面试训练 → 能力计划 → 汇总报告
+6. 每一步均调用真实 AI 接口，进度条自动打勾
+7. 进入「简历创建器」可从 AI 结果一键生成简历，选择 10 种模板之一，支持「随机样式」和 PDF 导出
+
+## 简历创建器
+
+- **10 种模板**：经典、现代、应届生、双栏侧边、优雅简约、紧凑高效、醒目头部、极简留白、时间轴、科技感
+- **随机样式**：一键随机模板 + 字体 + 主题色，快速探索不同风格
+- **PDF 导出**：所见即所得，导出文件名为「姓名 - 简历.pdf」
+- **AI 填充**：从 AI 分析结果自动填入简历内容
+- **打印优化**：导出时自动隐藏导航栏、侧边栏等 UI 元素
 
 ## 开发 Wave 记录
 
@@ -156,10 +177,11 @@ docs/
 | Wave 2 | AI 服务层 + 模型管理 | 完成 |
 | Wave 3 | 核心业务页面（上半） | 完成 |
 | Wave 4 | 核心业务页面（下半） | 完成 |
-| Wave 5 | 首页 + Demo 模式 + 动画打磨 | 完成 |
+| Wave 5 | 首页 + 动画打磨 | 完成 |
 | Wave 6 | 测试 + 部署 + 性能优化 | 完成 |
 | Wave 7 | 简历创建器（多模板 + PDF 导出） | 完成 |
 | Wave 8 | 全站视觉升级 + 图标体系统一 + 国内资源替换 + Bug 修复 | 完成 |
+| Wave 9 | 移除 Demo 模式 + JSON 解析修复 + 新模板 + 随机样式 + PDF 优化 | 完成 |
 
 ## License
 

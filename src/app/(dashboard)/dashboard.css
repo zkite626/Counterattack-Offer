@@ -78,11 +78,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
-  padding: 0 var(--space-4);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
+  height: 64px; /* 加高至64px */
+  padding: 0 var(--space-6);
+  background: rgba(255, 255, 255, 0.85); /* 玻璃态 */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--color-border-light);
+  box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.05); /* 柔软底阴影 */
+  transition: background var(--transition-base), border-color var(--transition-base);
+}
+
+[data-theme="dark"] .dashboard__header {
+  background: rgba(15, 23, 42, 0.7);
+  box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.4);
 }
 
 .dashboard__header-left {
@@ -279,16 +287,16 @@
 /* ── Sidebar ── */
 .dashboard__sidebar {
   position: fixed;
-  top: 56px;
+  top: 64px;
   left: 0;
   bottom: 0;
-  width: 220px;
+  width: 260px; /* 加宽一点以放入更精美的 hover */
   background: var(--color-surface);
-  border-right: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border-light);
   overflow-y: auto;
   z-index: 90;
   transform: translateX(-100%);
-  transition: transform var(--transition-base);
+  transition: transform var(--transition-spring), background var(--transition-base); /* 弹性滑动 */
 }
 
 .dashboard__sidebar--open {
@@ -298,7 +306,8 @@
 @media (min-width: 1024px) {
   .dashboard__sidebar {
     position: sticky;
-    top: 56px;
+    top: 64px;
+    height: calc(100vh - 64px);
     transform: translateX(0);
     flex-shrink: 0;
   }
@@ -308,9 +317,11 @@
 .dashboard__overlay {
   position: fixed;
   inset: 0;
-  top: 56px;
-  background: rgba(0, 0, 0, 0.3);
+  top: 64px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
   z-index: 80;
+  animation: fadeIn 0.3s ease;
 }
 
 @media (min-width: 1024px) {
@@ -323,8 +334,8 @@
 .dashboard__nav {
   display: flex;
   flex-direction: column;
-  padding: var(--space-3);
-  gap: var(--space-1);
+  padding: var(--space-4) var(--space-3);
+  gap: var(--space-2);
 }
 
 .dashboard__nav-item {
@@ -332,27 +343,49 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   color: var(--color-text-secondary);
   text-decoration: none;
   transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard__nav-item:before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: transparent;
+  border-radius: 0 4px 4px 0;
+  transition: background var(--transition-fast);
 }
 
 .dashboard__nav-item:hover {
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
+  transform: translateX(2px);
 }
 
 .dashboard__nav-item--active {
-  background: var(--color-primary-50);
-  color: var(--color-primary-600);
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  font-weight: var(--font-semibold);
+}
+
+.dashboard__nav-item--active:hover {
+  background: var(--gradient-primary);
+  color: white;
+  transform: translateX(0);
 }
 
 [data-theme="dark"] .dashboard__nav-item--active {
-  background: rgba(99, 102, 241, 0.15);
-  color: var(--color-primary-400);
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
 .dashboard__nav-icon {
@@ -360,21 +393,73 @@
   width: 24px;
   text-align: center;
   flex-shrink: 0;
+  z-index: 2;
 }
 
 .dashboard__nav-label {
   white-space: nowrap;
+  z-index: 2;
 }
 
 /* ── Main ── */
 .dashboard__main {
   flex: 1;
   min-width: 0;
-  padding: var(--space-6);
+  padding: var(--space-8) var(--space-10);
+  background: var(--color-bg-secondary);
+  transition: padding var(--transition-base);
+}
+
+@media (max-width: 1024px) {
+  .dashboard__main {
+    padding: var(--space-6);
+  }
 }
 
 @media (max-width: 767px) {
   .dashboard__main {
-    padding: var(--space-4);
+    padding: var(--space-4) var(--space-3);
   }
+}
+
+/* ── 打印样式：隐藏导航栏、侧边栏等，只保留内容 ── */
+@media print {
+  .dashboard__header,
+  .dashboard__stepnav,
+  .dashboard__sidebar,
+  .dashboard__overlay,
+  .demo-banner {
+    display: none !important;
+  }
+
+  .dashboard {
+    min-height: auto;
+  }
+
+  .dashboard__body {
+    overflow: visible;
+  }
+
+  .dashboard__main {
+    padding: 0;
+    overflow: visible;
+  }
+}
+
+/* Additional dashboard beautification */
+.dashboard-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+[data-theme="dark"] .dashboard-card {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(10px);
 }

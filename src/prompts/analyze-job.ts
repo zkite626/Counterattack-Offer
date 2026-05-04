@@ -12,14 +12,15 @@ export function getSystemPrompt(): string {
 4. 隐性期待是 JD 没有直说但面试中很可能关注的能力；
 5. 输出必须具体，便于后续做人岗匹配。
 
-请按以下 JSON 格式输出：
+请按以下 JSON 格式输出。字段名必须完全使用下方英文 key，不要改成中文 key。
+所有数组字段都必须至少包含 2 条内容；如果 JD 没有明确写出软性要求或隐性期待，你需要基于岗位职责做合理推断，但不要编造具体公司信息。
 {
   "jobTitle": "",
-  "hardRequirements": [],
-  "softRequirements": [],
+  "hardRequirements": ["学历/工具/技能/经验等明确要求"],
+  "softRequirements": ["沟通/执行/协作/学习等软性要求"],
   "bonusPoints": [],
   "coreAbilities": [{ "ability": "", "importance": "高|中高|中|低" }],
-  "hiddenExpectations": []
+  "hiddenExpectations": ["面试中可能关注但 JD 未直说的能力"]
 }`;
 }
 

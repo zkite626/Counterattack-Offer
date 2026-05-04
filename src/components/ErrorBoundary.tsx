@@ -30,10 +30,6 @@ export default class ErrorBoundary extends Component<
     console.error("[ErrorBoundary] 捕获到错误:", error, errorInfo);
   }
 
-  private handleReset = (): void => {
-    this.setState({ hasError: false, error: null });
-  };
-
   private handleReload = (): void => {
     window.location.reload();
   };
@@ -65,15 +61,9 @@ export default class ErrorBoundary extends Component<
             <div className="error-fallback__actions">
               <button
                 className="btn btn--primary"
-                onClick={this.handleReset}
-              >
-                重试
-              </button>
-              <button
-                className="btn btn--secondary"
                 onClick={this.handleReload}
               >
-                刷新页面
+                重试
               </button>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { getSystemPrompt, getUserPrompt } from "@/prompts/translate-experience";
 import type { AIModelConfig } from "@/types/ai";
 import type { ExperienceTranslation } from "@/types";
 import { getAuthUserId } from "@/lib/auth/get-auth-user";
+import { parseAIJson } from "@/lib/utils/parse-json";
 
 export async function POST(request: Request) {
   try {
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
       { role: "user", content: userPrompt },
     ], true);
 
-    const parsed = JSON.parse(result) as { experienceTranslations: ExperienceTranslation[] };
+    const parsed = parseAIJson<{ experienceTranslations: ExperienceTranslation[] }>(result);
     return Response.json({ success: true, data: parsed.experienceTranslations });
   } catch (error) {
     const message = error instanceof Error ? error.message : "AI 服务异常";

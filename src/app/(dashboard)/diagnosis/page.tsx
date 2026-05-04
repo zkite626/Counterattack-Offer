@@ -10,13 +10,16 @@ import Tag from "@/components/ui/Tag";
 import ScoreRing from "@/components/ui/ScoreRing";
 import Skeleton from "@/components/ui/Skeleton";
 import type { CareerDiagnosis } from "@/types";
+import { normalizeCareerDiagnosis } from "@/lib/utils/ai-results";
 import "../shared-page.css";
 
 export default function DiagnosisPage() {
   const router = useRouter();
   const { state, dispatch } = useJobFlow();
   const { activeModel } = useAI();
-  const [diagnosis, setDiagnosis] = useState<CareerDiagnosis | null>(state.careerDiagnosis);
+  const [diagnosis, setDiagnosis] = useState<CareerDiagnosis | null>(
+    normalizeCareerDiagnosis(state.careerDiagnosis)
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -50,8 +53,11 @@ export default function DiagnosisPage() {
       const json = await res.json();
       if (!json.success) throw new Error(json.error?.message || "诊断失败");
 
-      setDiagnosis(json.data);
-      dispatch({ type: "SET_DIAGNOSIS", payload: json.data });
+      const normalized = normalizeCareerDiagnosis(json.data);
+      if (!normalized) throw new Error("画像诊断结果格式不正确");
+
+      setDiagnosis(normalized);
+      dispatch({ type: "SET_DIAGNOSIS", payload: normalized });
     } catch (err) {
       setError(err instanceof Error ? err.message : "请求失败");
     } finally {
@@ -60,10 +66,10 @@ export default function DiagnosisPage() {
   }, [state.studentProfile, activeModel, dispatch, router]);
 
   useEffect(() => {
-    if (!diagnosis && state.studentProfile) {
+    if (!diagnosis && state.studentProfile && activeModel?.apiKey) {
       runDiagnosis();
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [diagnosis, state.studentProfile, activeModel?.apiKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const priorityLabel: Record<string, string> = {
     safe: "稳妥",
@@ -98,26 +104,50 @@ export default function DiagnosisPage() {
     );
   }
 
-  if (error) {
+  if (error && !diagnosis) {
     return (
       <div className="biz-page">
         <div className="biz-page__header">
           <h1 className="biz-page__title">画像诊断</h1>
+          <p className="biz-page__subtitle">AI 将基于你的信息生成求职画像分析</p>
         </div>
-        <Card className="biz-page__error-card">
-          <p className="biz-page__error-text">{error}</p>
-          <div className="biz-page__error-actions">
-            <Button onClick={runDiagnosis}>重新生成</Button>
-            <Button variant="secondary" onClick={() => router.push("/profile")}>
-              返回修改
-            </Button>
+        <Card className="biz-page__section">
+          <div style={{ textAlign: "center", padding: "var(--space-6) var(--space-4)" }}>
+            <p style={{ color: "var(--color-danger-500)", marginBottom: "var(--space-4)" }}>{error}</p>
+            <div style={{ display: "flex", gap: "var(--space-2)", justifyContent: "center" }}>
+              <Button onClick={runDiagnosis}>重试</Button>
+              <Button variant="secondary" onClick={() => { setError(""); router.push("/profile"); }}>返回修改</Button>
+            </div>
           </div>
         </Card>
       </div>
     );
   }
 
-  if (!diagnosis) return null;
+  if (!diagnosis) {
+    return (
+      <div className="biz-page">
+        <div className="biz-page__header">
+          <h1 className="biz-page__title">画像诊断</h1>
+          <p className="biz-page__subtitle">AI 将基于你的信息生成求职画像分析</p>
+        </div>
+        <Card className="biz-page__section">
+          <div style={{ textAlign: "center", padding: "var(--space-6) var(--space-4)" }}>
+            <p style={{ color: "var(--color-text-secondary)", marginBottom: "var(--space-4)" }}>
+              {state.studentProfile ? "点击下方按钮，AI 将为你生成求职画像" : "请先填写个人信息"}
+            </p>
+            {state.studentProfile ? (
+              <Button onClick={runDiagnosis} disabled={!activeModel?.apiKey}>
+                开始 AI 诊断
+              </Button>
+            ) : (
+              <Button onClick={() => router.push("/profile")}>去填写个人信息</Button>
+            )}
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="biz-page">
@@ -126,30 +156,29 @@ export default function DiagnosisPage() {
         <p className="biz-page__subtitle">基于你的信息，AI 生成了以下求职画像分析</p>
       </div>
 
-      {/* Student type */}
-      <div className="biz-page__student-type">
-        <Tag size="md">{diagnosis.studentType}</Tag>
-      </div>
-
-      {/* Summary */}
-      <Card className="biz-page__section">
+      {/* Summary with student type */}
+      <Card className="biz-page__section biz-page__hero-panel">
+        <div className="biz-page__hero-glow" />
+        <div className="biz-page__student-type" style={{ marginBottom: "var(--space-3)" }}>
+          <Tag size="md">{diagnosis.studentType}</Tag>
+        </div>
         <p className="biz-page__summary">{diagnosis.summary}</p>
       </Card>
 
       {/* Strengths & Weaknesses */}
       <div className="biz-page__grid-2">
-        <Card className="biz-page__strength-card">
+        <Card className="biz-page__strength-card biz-page__spotlight-card">
           <h3 className="biz-page__card-title biz-page__card-title--green">核心优势</h3>
           <ul className="biz-page__list">
-            {diagnosis.coreStrengths.map((s, i) => (
+            {(diagnosis.coreStrengths ?? []).map((s, i) => (
               <li key={i} className="biz-page__list-item biz-page__list-item--green">{s}</li>
             ))}
           </ul>
         </Card>
-        <Card className="biz-page__weakness-card">
+        <Card className="biz-page__weakness-card biz-page__accent-card">
           <h3 className="biz-page__card-title biz-page__card-title--orange">主要短板</h3>
           <ul className="biz-page__list">
-            {diagnosis.mainWeaknesses.map((w, i) => (
+            {(diagnosis.mainWeaknesses ?? []).map((w, i) => (
               <li key={i} className="biz-page__list-item biz-page__list-item--orange">{w}</li>
             ))}
           </ul>
@@ -159,8 +188,8 @@ export default function DiagnosisPage() {
       {/* Recommended roles */}
       <h2 className="biz-page__sub-heading">推荐岗位</h2>
       <div className="biz-page__roles-grid">
-        {diagnosis.recommendedRoles.map((role, i) => (
-          <Card key={i} hoverable className="biz-page__role-card">
+        {(diagnosis.recommendedRoles ?? []).map((role, i) => (
+          <Card key={i} hoverable className="biz-page__role-card biz-page__tinted-card">
             <div className="biz-page__role-header">
               <span className="biz-page__role-name">{role.role}</span>
               <Tag variant={priorityVariant[role.priority] || "default"} size="sm">
@@ -176,7 +205,8 @@ export default function DiagnosisPage() {
       </div>
 
       {/* Career advice */}
-      <Card variant="gradient" className="biz-page__section">
+      <Card className="biz-page__section biz-page__hero-panel">
+        <div className="biz-page__hero-glow biz-page__hero-glow--right" />
         <h3 className="biz-page__card-title">AI 综合建议</h3>
         <p className="biz-page__advice">{diagnosis.careerAdvice}</p>
       </Card>

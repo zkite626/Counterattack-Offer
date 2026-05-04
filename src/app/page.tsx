@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { useJobFlow } from "@/contexts/JobFlowContext";
 import { useInView } from "@/hooks/useIntersectionObserver";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
@@ -41,7 +40,7 @@ const FEATURES: { icon: IconName; title: string; desc: string; link: string }[] 
 ];
 
 /* ── 导航栏组件 ── */
-function HomeNav({ isDemo, onDemoClick }: { isDemo: boolean; onDemoClick: () => void }) {
+function HomeNav() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [scrolled, setScrolled] = useState(false);
@@ -67,11 +66,10 @@ function HomeNav({ isDemo, onDemoClick }: { isDemo: boolean; onDemoClick: () => 
         ) : (
           <>
             <button
-              className="home-nav__btn home-nav__btn--demo"
-              onClick={onDemoClick}
-              disabled={isDemo}
+              className="home-nav__btn home-nav__btn--primary"
+              onClick={() => router.push("/register")}
             >
-              {isDemo ? "正在进入..." : "Demo 体验"}
+              注册
             </button>
             <button
               className="home-nav__btn home-nav__btn--primary"
@@ -151,28 +149,6 @@ function FeatureCard({ icon, title, desc, link, index }: { icon: IconName; title
 export default function HomePage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
-  const { loadDemoCase } = useJobFlow();
-  const [isDemoLoading, setIsDemoLoading] = useState(false);
-
-  // Demo 模式 — 创建临时账户 + 预填充所有 AI 数据
-  const handleDemo = useCallback(async () => {
-    setIsDemoLoading(true);
-    try {
-      const res = await fetch("/api/auth/demo", { method: "POST", credentials: "include" });
-      const data = await res.json();
-      if (data.success) {
-        sessionStorage.setItem("isDemoMode", "true");
-        loadDemoCase();
-        router.push("/profile");
-      } else {
-        console.error("Demo 创建失败:", data.error?.message);
-      }
-    } catch (err) {
-      console.error("Demo 请求失败:", err);
-    } finally {
-      setIsDemoLoading(false);
-    }
-  }, [router, loadDemoCase]);
 
   // 平滑滚动到指定 Section
   const scrollToSection = useCallback((id: string) => {
@@ -182,7 +158,7 @@ export default function HomePage() {
   return (
     <div className="home">
       {/* 导航栏 */}
-      <HomeNav isDemo={isDemoLoading} onDemoClick={handleDemo} />
+      <HomeNav />
 
       {/* ── Hero 区 (5.1) ── */}
       <section className="home-hero">
@@ -213,16 +189,15 @@ export default function HomePage() {
               <>
                 <button
                   className="home-hero__btn-primary"
-                  onClick={() => router.push("/login")}
+                  onClick={() => router.push("/register")}
                 >
                   开始我的求职突围
                 </button>
                 <button
                   className="home-hero__btn-demo"
-                  onClick={handleDemo}
-                  disabled={isDemoLoading}
+                  onClick={() => router.push("/login")}
                 >
-                  {isDemoLoading ? "正在准备..." : "一键体验 Demo"}
+                  已有账号？登录
                 </button>
               </>
             ) : (
@@ -299,7 +274,7 @@ export default function HomePage() {
           <h2 className="home-cta__title">让 AI 帮你发现经历中的岗位价值</h2>
           <button
             className="home-cta__btn"
-            onClick={() => isAuthenticated ? router.push("/profile") : handleDemo()}
+            onClick={() => isAuthenticated ? router.push("/profile") : router.push("/register")}
           >
             立即开始 →
           </button>

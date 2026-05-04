@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { ResumeBasicInfo, ResumeGlobalSettings } from "@/types";
 
 interface BasicSectionProps {
@@ -13,7 +14,14 @@ export default function BasicSection({ data, themeColor, variant = "default" }: 
       <div className="resume-section__basic resume-section__basic--sidebar">
         {data.photo && (
           <div className="resume-section__photo-wrap resume-section__photo-wrap--sidebar">
-            <img src={data.photo} alt="" className="resume-section__photo" />
+            <Image
+              src={data.photo}
+              alt=""
+              width={80}
+              height={100}
+              className="resume-section__photo"
+              unoptimized
+            />
           </div>
         )}
         <h1 className="resume-section__name resume-section__name--sidebar" style={{ color: themeColor }}>
@@ -45,7 +53,14 @@ export default function BasicSection({ data, themeColor, variant = "default" }: 
     <div className="resume-section__basic">
       {data.photo && (
         <div className="resume-section__photo-wrap">
-          <img src={data.photo} alt="" className="resume-section__photo" />
+          <Image
+            src={data.photo}
+            alt=""
+            width={80}
+            height={100}
+            className="resume-section__photo"
+            unoptimized
+          />
         </div>
       )}
       <h1 className="resume-section__name" style={{ color: themeColor }}>

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { ResumeBuilderData, ResumeTemplate } from "@/types";
 import EducationSection from "../classic/sections/EducationSection";
 import ExperienceSection from "../classic/sections/ExperienceSection";
@@ -57,7 +58,7 @@ export default function BoldHeaderTemplate({ data, template }: BoldHeaderTemplat
           <div className="resume-tpl__banner-content">
             {basic.photo && (
               <div className="resume-tpl__banner-photo">
-                <img src={basic.photo} alt="" />
+                <Image src={basic.photo} alt="" width={72} height={90} unoptimized />
               </div>
             )}
             <div className="resume-tpl__banner-text">

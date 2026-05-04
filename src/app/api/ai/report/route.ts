@@ -2,6 +2,12 @@ import { AIClient } from "@/lib/ai/client";
 import { getSystemPrompt, getUserPrompt } from "@/prompts/final-report";
 import type { AIModelConfig } from "@/types/ai";
 import { getAuthUserId } from "@/lib/auth/get-auth-user";
+import {
+  normalizeCareerDiagnosis,
+  normalizeImprovementPlan,
+  normalizeInterviewSimulations,
+  normalizeMatchReport,
+} from "@/lib/utils/ai-results";
 
 export async function POST(request: Request) {
   try {
@@ -34,7 +40,8 @@ export async function POST(request: Request) {
       modelConfig: AIModelConfig;
     };
 
-    if (!careerDiagnosis) {
+    const normalizedDiagnosis = normalizeCareerDiagnosis(careerDiagnosis);
+    if (!normalizedDiagnosis) {
       return Response.json(
         { success: false, error: { code: "VALIDATION_ERROR", message: "缺少诊断数据" } },
         { status: 400 }
@@ -57,13 +64,13 @@ export async function POST(request: Request) {
 
     const systemPrompt = getSystemPrompt();
     const userPrompt = getUserPrompt({
-      careerDiagnosis: JSON.stringify(careerDiagnosis, null, 2),
+      careerDiagnosis: JSON.stringify(normalizedDiagnosis, null, 2),
       experienceTranslations: JSON.stringify(experienceTranslations, null, 2),
       jobAnalysis: JSON.stringify(jobAnalysis, null, 2),
-      matchReport: JSON.stringify(matchReport, null, 2),
+      matchReport: JSON.stringify(normalizeMatchReport(matchReport), null, 2),
       resumeOptimization: JSON.stringify(resumeOptimization, null, 2),
-      interviewSimulation: JSON.stringify(interviewSimulation, null, 2),
-      improvementPlan: JSON.stringify(improvementPlan, null, 2),
+      interviewSimulation: JSON.stringify(normalizeInterviewSimulations(interviewSimulation), null, 2),
+      improvementPlan: JSON.stringify(normalizeImprovementPlan(improvementPlan), null, 2),
     });
 
     // 报告返回 Markdown 文本，非 JSON

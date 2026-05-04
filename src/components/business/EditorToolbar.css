@@ -233,16 +233,20 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
+  position: relative;
 }
 
-.editor-toolbar__template-placeholder {
-  font-size: 2rem;
-  font-weight: var(--font-bold);
-  color: var(--color-text-tertiary);
+.editor-toolbar__template-mini {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 794px; /* A4 width at 96dpi */
+  transform-origin: top left;
+  transform: scale(0.2);
+  pointer-events: none;
+  background: #fff;
+  color: #111827;
 }
 
 .editor-toolbar__template-name {

@@ -42,25 +42,43 @@ npm run dev
 
 ## 15.2 Vercel 部署
 
+### 前置说明
+
+- 项目 **无需** `vercel.json` 或 `output: 'standalone'`，Vercel 自动识别 Next.js App Router
+- 构建命令：`next build`（Vercel 自动执行）
+- 所有 API Route 自动转为 Serverless Functions
+
 ### 步骤
 
 1. 将代码推送到 GitHub
 2. 登录 [Vercel](https://vercel.com)
-3. 导入 GitHub 仓库
-4. 配置环境变量（同 `.env.local`）
-5. 点击 Deploy
+3. 点击「Add New → Project」，导入 GitHub 仓库
+4. Framework Preset 自动识别为 Next.js，无需修改
+5. 配置环境变量（见下方）
+6. 点击 Deploy
 
 ### Vercel 环境变量配置
 
 在 Vercel Dashboard → Project → Settings → Environment Variables 中添加：
 
-```
-JWT_SECRET=<your-secret>
-ADMIN_EMAIL=<your-email>
-ADMIN_PASSWORD=<your-password>
-```
+| 变量 | 必填 | 说明 |
+|------|------|------|
+| `JWT_SECRET` | ✅ | JWT 签名密钥（≥32 字符随机字符串） |
+| `JWT_EXPIRES_IN` | ❌ | Token 有效期，默认 `7d` |
+| `ADMIN_EMAIL` | ✅ | 默认管理员邮箱 |
+| `ADMIN_PASSWORD` | ✅ | 默认管理员密码 |
+| `NEXT_PUBLIC_APP_NAME` | ❌ | 应用名称 |
+| `NEXT_PUBLIC_APP_URL` | ❌ | 部署后的 Vercel 域名，如 `https://your-app.vercel.app` |
 
 > **注意**：`NEXT_PUBLIC_` 开头的变量会暴露给浏览器，敏感信息不要使用此前缀。
+
+### Vercel 部署后验证
+
+- [ ] 访问部署域名，首页正常加载
+- [ ] 注册/登录功能正常
+- [ ] 设置页配置 AI 模型后可正常调用
+- [ ] 暗色模式正常
+- [ ] 移动端响应式正常
 
 ---
 
@@ -122,15 +140,39 @@ docker compose up -d --build
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  output: 'standalone',  // Docker部署需要
-  // 图片优化（如果使用外部图片）
+  /* 图片优化 */
   images: {
-    remotePatterns: [],
+    formats: ['image/avif', 'image/webp'],
+  },
+
+  /* 生产环境移除 X-Powered-By 头 */
+  poweredByHeader: false,
+
+  /* 安全头 + 静态资源缓存 */
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
+      },
+      {
+        source: '/fonts/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+    ];
   },
 };
 
 export default nextConfig;
 ```
+
+> **Vercel 部署**：无需添加 `output: 'standalone'`，该选项仅用于 Docker 部署。Vercel 使用自己的构建系统，自动处理 Serverless Function 打包。
 
 ---
 

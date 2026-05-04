@@ -13,7 +13,8 @@
 2. **服务端代理**：API Key 不暴露在前端，由 API Route 代理调用
 3. **Prompt 模板化**：每个模块有独立 Prompt 模板，支持变量注入
 4. **结构化输出**：要求 AI 输出 JSON，使用 `response_format: { type: "json_object" }`
-5. **流式支持**：面试对话模块支持 SSE 流式响应
+5. **JSON 容错解析**：使用 `parseAIJson()` 自动去除 Markdown 代码围栏、提取 JSON 边界
+6. **流式支持**：面试对话模块支持 SSE 流式响应
 
 ---
 
@@ -59,7 +60,8 @@ const result = await client.chat([
   { role: 'user', content: userPrompt }
 ], true); // jsonMode = true
 
-const parsed = JSON.parse(result) as CareerDiagnosis;
+const parsed = parseAIJson<CareerDiagnosis>(result);
+// parseAIJson 自动去除 ```json ... ``` 围栏，提取 JSON 对象边界
 ```
 
 ---
@@ -88,38 +90,10 @@ export const BUILTIN_MODELS: BuiltinModel[] = [
     icon: '/images/models/deepseek.svg',
     requiresApiKey: true,
   },
-  {
-    id: 'gpt-4o-mini',
-    name: 'GPT-4o Mini',
-    provider: 'openai',
-    baseUrl: 'https://api.openai.com',
-    model: 'gpt-4o-mini',
-    description: 'OpenAI 轻量模型',
-    icon: '/images/models/openai.svg',
-    requiresApiKey: true,
-  },
-  {
-    id: 'glm-4-flash',
-    name: 'GLM-4 Flash',
-    provider: 'zhipu',
-    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
-    model: 'glm-4-flash',
-    description: '智谱免费模型',
-    icon: '/images/models/zhipu.svg',
-    requiresApiKey: true,
-  },
-  {
-    id: 'qwen-turbo',
-    name: '通义千问 Turbo',
-    provider: 'alibaba',
-    baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-    model: 'qwen-turbo',
-    description: '阿里云通义千问',
-    icon: '/images/models/qwen.svg',
-    requiresApiKey: true,
-  },
 ];
 ```
+
+> 内置仅提供 2 个 DeepSeek 模型。用户可通过设置页面添加任何 OpenAI 兼容 API 的自定义模型（如 OpenAI / 智谱 / 阿里云等）。
 
 ### 用户添加自定义模型
 
@@ -178,7 +152,7 @@ function buildPrompt(template: string, variables: Record<string, string>): strin
 }
 ```
 
-> `lib/ai/` 目录文件：`client.ts`（AIClient 类）、`models.ts`（内置模型）、`prompts.ts`（模板工具）、`stream.ts`（SSE 解析 + useStreamResponse Hook）。
+> `lib/ai/` 目录文件：`client.ts`（AIClient 类）、`models.ts`（内置模型）、`prompts.ts`（模板工具）、`stream.ts`（SSE 解析 + useStreamResponse Hook）。`lib/auth/get-auth-user.ts` 提供 `getAuthUserId()` 函数，供所有 AI API Route 使用。
 
 ### 模块 Prompt 映射
 
@@ -233,8 +207,8 @@ export async function POST(request: Request) {
       { role: 'user', content: userPrompt },
     ], true);
 
-    // 7. 解析并验证
-    const diagnosis = JSON.parse(result) as CareerDiagnosis;
+    // 7. 解析并验证（自动去除 Markdown 围栏）
+    const diagnosis = parseAIJson<CareerDiagnosis>(result);
     return Response.json({ success: true, data: diagnosis });
   } catch (error) {
     return handleAIError(error);

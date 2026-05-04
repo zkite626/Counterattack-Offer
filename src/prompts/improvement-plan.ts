@@ -5,7 +5,9 @@ export function getSystemPrompt(): string {
 
 计划要求：具体可执行；适合低经验大学生；不依赖昂贵课程；能产出简历作品；与目标岗位直接相关；不写空泛建议。
 
-请按以下 JSON 格式输出：
+请按以下 JSON 格式输出。字段名必须完全使用下方英文 key，不要改成中文 key。
+sevenDayPlan、fourteenDayPlan、thirtyDayPlan 都不能为空；每个数组至少 3 条，任务要具体到动作和产出。
+如果用户未提供 JD，请基于画像里的推荐岗位制定计划，不要报错。
 {
   "targetRole": "目标岗位",
   "goal": "目标概述",

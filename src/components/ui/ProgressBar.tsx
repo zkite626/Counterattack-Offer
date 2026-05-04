@@ -56,7 +56,7 @@ export default function ProgressBar({
             .join(" ")}
           style={{
             width: visible ? `${clamped}%` : "0%",
-            backgroundColor: color,
+            background: color,
           }}
         />
       </div>

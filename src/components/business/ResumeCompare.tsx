@@ -11,6 +11,7 @@ interface ResumeCompareProps {
 }
 
 export default function ResumeCompare({ items }: ResumeCompareProps) {
+  if (!items || items.length === 0) return null;
   return (
     <div className="resume-compare">
       {items.map((item, index) => (
@@ -23,12 +24,15 @@ export default function ResumeCompare({ items }: ResumeCompareProps) {
 function ResumeCompareCard({ item, index }: { item: ResumeOptimization; index: number }) {
   const [expanded, setExpanded] = useState(false);
 
+  // 解析风险等级：AI 可能返回 "低|中|高" 等格式，取第一个有效值
+  const rawRisk = item.riskLevel ?? "";
+  const riskLevel = rawRisk.includes("|") ? rawRisk.split("|")[0].trim() : rawRisk;
   const riskVariant =
-    item.riskLevel === "高" ? "danger" : item.riskLevel === "中" ? "warning" : "success";
+    riskLevel === "高" ? "danger" : riskLevel === "中" ? "warning" : "success";
 
   return (
     <div style={{ animationDelay: `${index * 100}ms` }} className="resume-compare__card-wrapper">
-    <Card className="resume-compare__card">
+    <Card className={`resume-compare__card ${index % 2 === 0 ? "biz-page__accent-card" : "biz-page__spotlight-card"}`}>
       {/* 来源经历标签 */}
       <div className="resume-compare__source">{item.sourceExperience}</div>
 
@@ -46,7 +50,7 @@ function ResumeCompareCard({ item, index }: { item: ResumeOptimization; index: n
 
       {/* 能力标签 */}
       <div className="resume-compare__tags">
-        {item.targetAbility.map((tag, i) => (
+        {(item.targetAbility ?? []).map((tag, i) => (
           <Tag key={i} variant="success" size="sm">{tag}</Tag>
         ))}
       </div>
@@ -54,13 +58,13 @@ function ResumeCompareCard({ item, index }: { item: ResumeOptimization; index: n
       {/* 风险等级 */}
       <div className="resume-compare__meta">
         <Tag variant={riskVariant} size="sm">
-          风险：{item.riskLevel}
+          风险：{riskLevel}
         </Tag>
         {item.note && <span className="resume-compare__note">{item.note}</span>}
       </div>
 
       {/* 面试验证问题（可展开） */}
-      {item.verificationQuestions.length > 0 && (
+      {(item.verificationQuestions ?? []).length > 0 && (
         <div className="resume-compare__verify">
           <button
             className="resume-compare__toggle"
@@ -73,7 +77,7 @@ function ResumeCompareCard({ item, index }: { item: ResumeOptimization; index: n
           </button>
           {expanded && (
             <ul className="resume-compare__questions">
-              {item.verificationQuestions.map((q, i) => (
+              {(item.verificationQuestions ?? []).map((q, i) => (
                 <li key={i}>{q}</li>
               ))}
             </ul>

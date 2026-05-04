@@ -1,8 +1,8 @@
-# 11 — Demo 数据文档
+# 11 — 示例数据文档
 
 ## 概述
 
-Demo 数据存放在 `src/data/demo-case.ts`，用于"一键导入李同学案例"功能。所有数据均为示例参考，实际运行时由 AI 实时生成。
+李同学示例数据存放在 `src/data/demo-case.ts`，用于"填充李同学数据"功能。该功能仅填充表单字段，用户点击「开始 AI 诊断」后将调用真实 AI 接口进行分析，所有模块数据均由 AI 实时生成。
 
 ---
 
@@ -107,12 +107,18 @@ export const DEMO_JOB_DESCRIPTION = `岗位名称：用户运营实习生
 ## 11.4 使用方式
 
 ```typescript
-// 在 profile 页面
-import { DEMO_STUDENT_PROFILE, DEMO_JOB_DESCRIPTION } from '@/data/demo-case';
-
-// 一键导入按钮
-const handleLoadDemo = () => {
-  dispatch({ type: 'LOAD_DEMO' });
-  // 自动填充表单
-};
+// 在 profile 页面，点击"填充李同学数据"按钮
+function handleLoadSampleData() {
+  setName("李同学");
+  setSchoolType("普通本科");
+  setMajor("市场营销");
+  // ... 填充表单字段
+  // 用户随后点击"开始 AI 诊断"触发真实 AI 调用
+}
 ```
+
+### 设计说明
+
+- **不使用 Demo 模式**：所有 AI 分析结果均通过真实 API 调用生成
+- **不预填充 AI 结果**：填充李同学数据后，用户需逐步点击各模块触发 AI 生成
+- **进度条真实反映状态**：每完成一个 AI 模块，对应的进度条步骤自动打勾

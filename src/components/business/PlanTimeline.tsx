@@ -17,7 +17,7 @@ export default function PlanTimeline({ plan }: PlanTimelineProps) {
       icon: "run" as const,
       content: (
         <ul className="plan-timeline__task-list">
-          {plan.sevenDayPlan.map((task, i) => (
+          {(plan.sevenDayPlan ?? []).map((task, i) => (
             <li key={i} className="plan-timeline__task">
               {task}
             </li>
@@ -31,7 +31,7 @@ export default function PlanTimeline({ plan }: PlanTimelineProps) {
       icon: "trending" as const,
       content: (
         <ul className="plan-timeline__task-list">
-          {plan.fourteenDayPlan.map((task, i) => (
+          {(plan.fourteenDayPlan ?? []).map((task, i) => (
             <li key={i} className="plan-timeline__task">
               {task}
             </li>
@@ -45,7 +45,7 @@ export default function PlanTimeline({ plan }: PlanTimelineProps) {
       icon: "rocket" as const,
       content: (
         <ul className="plan-timeline__task-list">
-          {plan.thirtyDayPlan.map((task, i) => (
+          {(plan.thirtyDayPlan ?? []).map((task, i) => (
             <li key={i} className="plan-timeline__task">
               {task}
             </li>
@@ -60,11 +60,11 @@ export default function PlanTimeline({ plan }: PlanTimelineProps) {
       <Timeline items={timelineItems} />
 
       {/* 推荐产出清单 */}
-      {plan.recommendedOutputs.length > 0 && (
+      {(plan.recommendedOutputs ?? []).length > 0 && (
         <div className="plan-timeline__outputs">
           <h4 className="plan-timeline__outputs-title">推荐产出清单</h4>
           <ul className="plan-timeline__checklist">
-            {plan.recommendedOutputs.map((item, i) => (
+            {(plan.recommendedOutputs ?? []).map((item, i) => (
               <li key={i} className="plan-timeline__check-item">
                 <Icon name="check" size="1em" className="plan-timeline__check-icon" />
                 {item}

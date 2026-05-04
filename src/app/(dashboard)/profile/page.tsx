@@ -9,6 +9,7 @@ import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import Tag from "@/components/ui/Tag";
 import type { StudentProfile } from "@/types";
+import "../shared-page.css";
 import "./profile.css";
 
 const SCHOOL_TYPES = ["普通本科", "985/211", "高职", "专科"];
@@ -16,7 +17,7 @@ const GRADES = ["大一", "大二", "大三", "大四", "已毕业"];
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { state, dispatch, loadDemoCase } = useJobFlow();
+  const { state, dispatch, resetFlow, loadSampleData } = useJobFlow();
 
   const [name, setName] = useState("");
   const [schoolType, setSchoolType] = useState("普通本科");
@@ -48,12 +49,6 @@ export default function ProfilePage() {
       setWeaknesses(profile.weaknesses);
     }
   }, [state.studentProfile]);
-
-  function handleLoadDemo() {
-    loadDemoCase();
-    // Redirect to diagnosis after loading demo
-    router.push("/diagnosis");
-  }
 
   function addTag(
     input: string,
@@ -134,23 +129,29 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      {/* Demo import */}
-      <Card variant="gradient" className="profile-page__demo-card">
+      {/* Sample data import & clear */}
+      <Card className="profile-page__demo-card biz-page__hero-panel">
+        <div className="biz-page__hero-glow" />
         <div className="profile-page__demo-content">
           <div>
             <div className="profile-page__demo-title">快速体验</div>
             <div className="profile-page__demo-desc">
-              一键导入李同学案例，快速体验完整流程
+              导入完整案例可查看全部模块效果；清除数据可重新开始
             </div>
           </div>
-          <Button variant="primary" onClick={handleLoadDemo}>
-            一键导入李同学案例
-          </Button>
+          <div style={{ display: "flex", gap: "var(--space-2)" }}>
+            <Button variant="primary" onClick={loadSampleData}>
+              导入完整案例
+            </Button>
+            <Button variant="secondary" onClick={resetFlow}>
+              清除所有数据
+            </Button>
+          </div>
         </div>
       </Card>
 
       {/* Basic info */}
-      <Card className="profile-page__section">
+      <Card className="profile-page__section biz-page__spotlight-card">
         <h2 className="profile-page__section-title">基本信息</h2>
         <div className="profile-page__form-grid">
           <Input
@@ -199,7 +200,7 @@ export default function ProfilePage() {
       </Card>
 
       {/* Target */}
-      <Card className="profile-page__section">
+      <Card className="profile-page__section biz-page__accent-card">
         <h2 className="profile-page__section-title">求职目标</h2>
         <div className="profile-page__tag-field">
           <label className="profile-page__label">目标城市</label>
@@ -267,7 +268,7 @@ export default function ProfilePage() {
       </Card>
 
       {/* Experiences */}
-      <Card className="profile-page__section">
+      <Card className="profile-page__section biz-page__tinted-card">
         <h2 className="profile-page__section-title">原始经历</h2>
         <p className="profile-page__section-desc">
           包括课程作业、社团活动、兼职、比赛、项目等任何经历
@@ -300,7 +301,7 @@ export default function ProfilePage() {
       </Card>
 
       {/* Skills & Weaknesses */}
-      <Card className="profile-page__section">
+      <Card className="profile-page__section biz-page__spotlight-card">
         <h2 className="profile-page__section-title">技能与困惑</h2>
         <div className="profile-page__tag-field">
           <label className="profile-page__label">技能</label>

@@ -10,6 +10,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import Icon from "@/components/ui/Icon";
 import PlanTimeline from "@/components/business/PlanTimeline";
 import type { ImprovementPlan } from "@/types";
+import { normalizeImprovementPlan } from "@/lib/utils/ai-results";
 import "../shared-page.css";
 import "./plan.css";
 
@@ -17,13 +18,15 @@ export default function PlanPage() {
   const router = useRouter();
   const { state, dispatch } = useJobFlow();
   const { activeModel } = useAI();
-  const [plan, setPlan] = useState<ImprovementPlan | null>(state.improvementPlan);
+  const [plan, setPlan] = useState<ImprovementPlan | null>(
+    normalizeImprovementPlan(state.improvementPlan)
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const runPlan = useCallback(async () => {
-    if (!state.careerDiagnosis || !state.jobAnalysis) {
-      setError("请先完成画像诊断和 JD 解析");
+    if (!state.careerDiagnosis) {
+      setError("请先完成画像诊断");
       return;
     }
 
@@ -51,8 +54,11 @@ export default function PlanPage() {
       const json = await res.json();
       if (!json.success) throw new Error(json.error?.message || "计划生成失败");
 
-      setPlan(json.data);
-      dispatch({ type: "SET_IMPROVEMENT_PLAN", payload: json.data });
+      const normalized = normalizeImprovementPlan(json.data);
+      if (!normalized) throw new Error("行动计划结果格式不正确");
+
+      setPlan(normalized);
+      dispatch({ type: "SET_IMPROVEMENT_PLAN", payload: normalized });
     } catch (err) {
       setError(err instanceof Error ? err.message : "请求失败");
     } finally {
@@ -61,10 +67,10 @@ export default function PlanPage() {
   }, [state.careerDiagnosis, state.jobAnalysis, state.matchReport, activeModel, dispatch]);
 
   useEffect(() => {
-    if (!plan && state.careerDiagnosis && state.jobAnalysis) {
+    if (!plan && state.careerDiagnosis && activeModel?.apiKey) {
       runPlan();
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [plan, state.careerDiagnosis, activeModel?.apiKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
     return (
@@ -82,23 +88,47 @@ export default function PlanPage() {
     );
   }
 
-  if (error) {
+  if (error && !plan) {
     return (
       <div className="biz-page">
         <div className="biz-page__header">
           <h1 className="biz-page__title">30天求职突围计划</h1>
+          <p className="biz-page__subtitle">AI 为你制定个性化提升路线</p>
         </div>
-        <Card className="biz-page__error-card">
-          <p className="biz-page__error-text">{error}</p>
-          <div className="biz-page__error-actions">
-            <Button onClick={runPlan}>重新生成</Button>
+        <Card className="biz-page__section">
+          <div style={{ textAlign: "center", padding: "var(--space-6) var(--space-4)" }}>
+            <p style={{ color: "var(--color-danger-500)", marginBottom: "var(--space-4)" }}>{error}</p>
+            <Button onClick={runPlan}>重试</Button>
           </div>
         </Card>
       </div>
     );
   }
 
-  if (!plan) return null;
+  if (!plan) {
+    const missing: string[] = [];
+    if (!state.careerDiagnosis) missing.push("画像诊断");
+    return (
+      <div className="biz-page">
+        <div className="biz-page__header">
+          <h1 className="biz-page__title">30天求职突围计划</h1>
+          <p className="biz-page__subtitle">AI 为你制定个性化提升路线</p>
+        </div>
+        <Card className="biz-page__section">
+          <div style={{ textAlign: "center", padding: "var(--space-6) var(--space-4)" }}>
+            <p style={{ color: "var(--color-text-secondary)", marginBottom: "var(--space-4)" }}>
+              {missing.length > 0 ? `请先完成：${missing.join("、")}` : "点击下方按钮生成行动计划"}
+            </p>
+            {missing.length === 0 && (
+              <Button onClick={runPlan} disabled={!activeModel?.apiKey}>
+                生成行动计划
+              </Button>
+            )}
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="biz-page">
@@ -108,7 +138,8 @@ export default function PlanPage() {
       </div>
 
       {/* 目标岗位 + 总目标 */}
-      <Card className="plan-page__goal-card">
+      <Card className="plan-page__goal-card biz-page__hero-panel">
+        <div className="biz-page__hero-glow biz-page__hero-glow--center" />
         <div className="plan-page__goal-header">
           <Icon name="target" size="2rem" className="plan-page__goal-icon" />
           <div>

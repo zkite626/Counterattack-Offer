@@ -171,3 +171,74 @@
 - 组件参考：`docs/08_COMPONENT_SPECIFICATION.md`（Icon / IconSprite）
 - 设计系统参考：`docs/06_UI_UX_DESIGN_SYSTEM.md`
 - 架构参考：`docs/01_TECH_ARCHITECTURE.md`（proxy.ts 路由保护）
+
+---
+
+## Wave 9 — 移除 Demo 模式 + JSON 解析修复 + 新模板 + 随机样式 + PDF 优化
+
+### TASK-9.1 移除 Demo 模式
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 删除 Demo 模式和 Mock 数据，所有功能强制调用真实 AI 接口 |
+| 变更 | 移除首页 Demo 按钮、Dashboard Demo Banner、JobFlowContext LOAD_DEMO action、report 页面 Demo 自动加载 |
+| 验收 | 无法绕过 API Key 配置，所有 AI 模块均调用真实接口 |
+
+### TASK-9.2 李同学数据改为表单填充
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 将李同学数据从 Demo 预填充改为表单快速填充 |
+| 变更 | profile 页面「填充李同学数据」按钮仅填充表单字段，点击「开始 AI 诊断」后调用真实 AI |
+| 验收 | 填充后表单显示李同学数据，提交后 AI 实时分析 |
+
+### TASK-9.3 JSON 解析容错
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 修复 AI 返回 Markdown 围栏导致的 `Unexpected token` 错误 |
+| 新增 | `lib/utils/parse-json.ts` — `parseAIJson()` 函数 |
+| 变更 | 所有 7 个 AI API Route 使用 `parseAIJson()` 替代 `JSON.parse()` |
+| 验收 | AI 返回 ` ```json {...} ``` ` 格式时正常解析 |
+
+### TASK-9.4 AI 综合建议显示优化
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 报告页面 AI 综合建议显示为正常文本而非 Markdown 原始格式 |
+| 变更 | 新增 `renderMarkdownToText()` 函数，将 Markdown 转为 React 元素 |
+| 验收 | 标题、列表、段落正常渲染，无 `#`、`*` 等 Markdown 符号 |
+
+### TASK-9.5 修复简历编辑器跳回基本信息
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 修复编辑简历时每次保存都跳回「基本信息」面板的 bug |
+| 原因 | `SET_ACTIVE_RESUME` 每次重置 `activeSection` 为 `"basic"`；`useEffect` 依赖 `state.resumes` 导致重复触发 |
+| 变更 | 移除 `SET_ACTIVE_RESUME` 中的 `activeSection` 重置；`useEffect` 仅依赖 `resumeId` |
+| 验收 | 编辑任意模块时切换不会跳回基本信息 |
+
+### TASK-9.6 新增 3 个简历模板
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 新增极简留白、时间轴、科技感 3 个差异化模板 |
+| 新增 | `components/resume-templates/minimal/`、`timeline/`、`tech/` |
+| 注册 | 更新 `registry.ts`，总计 10 个模板 |
+| 验收 | 模板选择弹窗显示 10 个模板，切换正常 |
+
+### TASK-9.7 随机样式功能
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 在简历编辑工具栏新增「随机样式」按钮 |
+| 变更 | `EditorToolbar.tsx` 新增 `handleRandomStyle()` 函数 |
+| 验收 | 点击后随机切换模板、字体和主题色 |
+
+### TASK-9.8 PDF 导出优化
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 导出 PDF 时隐藏导航栏等 UI，文件名为「姓名 - 简历.pdf」 |
+| 变更 | `dashboard.css` 添加 `@media print` 隐藏 header/sidebar/stepnav；`EditorToolbar.tsx` 设置 `document.title` |
+| 验收 | 导出 PDF 只显示简历内容，文件名包含姓名 |

@@ -96,34 +96,23 @@
 
 ---
 
-### POST `/api/auth/demo`
-
-创建演示账户并自动登录。无需请求参数。
-
-**Response 201:**
-```json
-{
-  "success": true,
-  "data": {
-    "user": { "id": "uuid", "email": "demo-xxx@demo.com", "name": "演示用户" },
-    "token": "jwt-token-string"
-  }
-}
-```
-
 ---
 
 ## 3.2 AI API
 
-所有 AI API 需要 JWT 认证。模型配置通过请求 Header 传递：
+所有 AI API 需要 JWT 认证（通过 HttpOnly Cookie 中的 `token` 传递）。模型配置通过请求 Body 中的 `modelConfig` 字段传递：
 
-```
-X-AI-Base-URL: https://api.deepseek.com
-X-AI-Model: deepseek-chat
-X-AI-API-Key: sk-xxx (加密后)
+```json
+{
+  "modelConfig": {
+    "baseUrl": "https://api.deepseek.com",
+    "model": "deepseek-chat",
+    "apiKey": "sk-xxx"
+  }
+}
 ```
 
-或通过请求 Body 中的 `modelConfig` 字段传递。
+> `GET /api/ai/default-config` 无需认证，返回 `.env.local` 中的默认模型配置。
 
 ---
 
@@ -345,6 +334,59 @@ X-AI-API-Key: sk-xxx (加密后)
 
 **Response 401:** API Key 无效
 **Response 502:** AI 服务不可用
+
+---
+
+### GET `/api/ai/default-config`
+
+返回 `.env.local` 中配置的默认 AI 模型信息。无需认证。
+
+**Response 200（已配置）:**
+```json
+{
+  "success": true,
+  "data": {
+    "baseUrl": "https://api.deepseek.com",
+    "model": "deepseek-chat",
+    "hasApiKey": true,
+    "apiKey": "sk-xxx"
+  }
+}
+```
+
+**Response 200（未配置）:**
+```json
+{
+  "success": true,
+  "data": null
+}
+```
+
+---
+
+### POST `/api/ai/generate-jd`
+
+使用 AI 根据岗位标题生成完整岗位描述（JD）。需要 JWT 认证。
+
+**Request Body:**
+```json
+{
+  "jobTitle": "用户运营实习生",
+  "modelConfig": {
+    "baseUrl": "https://api.deepseek.com",
+    "model": "deepseek-chat",
+    "apiKey": "sk-xxx"
+  }
+}
+```
+
+**Response 200:**
+```json
+{
+  "success": true,
+  "data": { "jobDescription": "岗位名称：用户运营实习生\n岗位职责：..." }
+}
+```
 
 ---
 

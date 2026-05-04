@@ -29,7 +29,7 @@ src/
 ├── hooks/          # 自定义 React Hooks
 ├── contexts/       # React Context Providers
 ├── types/          # TypeScript 类型定义
-├── data/           # Demo 数据
+├── data/           # 示例数据（李同学案例）
 └── prompts/        # AI Prompt 模板
 ```
 

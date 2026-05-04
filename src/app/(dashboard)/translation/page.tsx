@@ -8,7 +8,6 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Tag from "@/components/ui/Tag";
 import Skeleton from "@/components/ui/Skeleton";
-import Icon from "@/components/ui/Icon";
 import type { ExperienceTranslation } from "@/types";
 import "../shared-page.css";
 
@@ -63,10 +62,10 @@ export default function TranslationPage() {
   }, [state.studentProfile, activeModel, dispatch, router]);
 
   useEffect(() => {
-    if (!translations && state.studentProfile) {
+    if (!translations && state.studentProfile && activeModel?.apiKey) {
       runTranslation();
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [translations, state.studentProfile, activeModel?.apiKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
     return (
@@ -89,26 +88,50 @@ export default function TranslationPage() {
     );
   }
 
-  if (error) {
+  if (error && !translations) {
     return (
       <div className="biz-page">
         <div className="biz-page__header">
           <h1 className="biz-page__title">经历转译</h1>
+          <p className="biz-page__subtitle">AI 将帮你挖掘经历中的隐藏能力</p>
         </div>
-        <Card className="biz-page__error-card">
-          <p className="biz-page__error-text">{error}</p>
-          <div className="biz-page__error-actions">
-            <Button onClick={runTranslation}>重新生成</Button>
-            <Button variant="secondary" onClick={() => router.push("/profile")}>
-              返回修改
-            </Button>
+        <Card className="biz-page__section">
+          <div style={{ textAlign: "center", padding: "var(--space-6) var(--space-4)" }}>
+            <p style={{ color: "var(--color-danger-500)", marginBottom: "var(--space-4)" }}>{error}</p>
+            <div style={{ display: "flex", gap: "var(--space-2)", justifyContent: "center" }}>
+              <Button onClick={runTranslation}>重试</Button>
+              <Button variant="secondary" onClick={() => { setError(""); router.push("/profile"); }}>返回修改</Button>
+            </div>
           </div>
         </Card>
       </div>
     );
   }
 
-  if (!translations) return null;
+  if (!translations) {
+    return (
+      <div className="biz-page">
+        <div className="biz-page__header">
+          <h1 className="biz-page__title">经历转译</h1>
+          <p className="biz-page__subtitle">AI 将帮你挖掘经历中的隐藏能力</p>
+        </div>
+        <Card className="biz-page__section">
+          <div style={{ textAlign: "center", padding: "var(--space-6) var(--space-4)" }}>
+            <p style={{ color: "var(--color-text-secondary)", marginBottom: "var(--space-4)" }}>
+              {state.studentProfile ? "点击下方按钮，AI 将转译你的经历" : "请先填写个人信息"}
+            </p>
+            {state.studentProfile ? (
+              <Button onClick={runTranslation} disabled={!activeModel?.apiKey}>
+                开始经历转译
+              </Button>
+            ) : (
+              <Button onClick={() => router.push("/profile")}>去填写个人信息</Button>
+            )}
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="biz-page">
@@ -119,10 +142,37 @@ export default function TranslationPage() {
         </p>
       </div>
 
+      {/* 摘要高亮 */}
+      <Card className="biz-page__section biz-page__hero-panel">
+        <div className="biz-page__hero-glow" />
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-4)", flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--color-primary-600)", fontWeight: 600 }}>经历转译</div>
+            <div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--color-text-primary)", lineHeight: 1.2 }}>
+              {translations.length} 段经历
+            </div>
+          </div>
+          <div style={{ width: 1, height: 36, background: "var(--color-border-light)" }} />
+          <div>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--color-accent-600)", fontWeight: 600 }}>能力标签</div>
+            <div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--color-text-primary)", lineHeight: 1.2 }}>
+              {[...new Set(translations.flatMap(t => t.abilityTags))].length} 项能力
+            </div>
+          </div>
+          <div style={{ width: 1, height: 36, background: "var(--color-border-light)" }} />
+          <div>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--color-warning-600)", fontWeight: 600 }}>面试问题</div>
+            <div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--color-text-primary)", lineHeight: 1.2 }}>
+              {translations.reduce((sum, t) => sum + t.interviewQuestions.length, 0)} 道题
+            </div>
+          </div>
+        </div>
+      </Card>
+
       <div className="biz-page__cards-list">
         {translations.map((t, i) => (
           <div key={i} className="biz-page__translation-card" style={{ animationDelay: `${i * 100}ms` }}>
-          <Card>
+          <Card className={i % 2 === 0 ? "biz-page__accent-card" : "biz-page__spotlight-card"}>
             <div className="biz-page__translation-grid">
               {/* Raw experience */}
               <div className="biz-page__translation-col">
@@ -153,12 +203,6 @@ export default function TranslationPage() {
                   ))}
                 </ul>
               </div>
-            </div>
-
-            {/* Authenticity note */}
-            <div className="biz-page__auth-note">
-              <Icon name="warning" size="1.25em" className="biz-page__auth-icon" />
-              {t.authenticityNote}
             </div>
           </Card>
           </div>

@@ -83,7 +83,7 @@ export type JobFlowAction =
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "SET_ERROR"; payload: string | null }
   | { type: "RESET" }
-  | { type: "LOAD_DEMO" };
+  | { type: "LOAD_SAMPLE" };
 
 export interface ApiResponse<T> {
   success: boolean;

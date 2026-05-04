@@ -1,8 +1,9 @@
 import { AIClient } from "@/lib/ai/client";
 import { getSystemPrompt, getUserPrompt } from "@/prompts/improvement-plan";
 import type { AIModelConfig } from "@/types/ai";
-import type { ImprovementPlan } from "@/types";
 import { getAuthUserId } from "@/lib/auth/get-auth-user";
+import { parseAIJson } from "@/lib/utils/parse-json";
+import { normalizeImprovementPlan } from "@/lib/utils/ai-results";
 
 export async function POST(request: Request) {
   try {
@@ -17,14 +18,14 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { careerDiagnosis, jobAnalysis, matchReport, modelConfig } = body as {
       careerDiagnosis: Record<string, unknown>;
-      jobAnalysis: Record<string, unknown>;
+      jobAnalysis?: Record<string, unknown> | null;
       matchReport: Record<string, unknown>;
       modelConfig: AIModelConfig;
     };
 
-    if (!careerDiagnosis || !jobAnalysis) {
+    if (!careerDiagnosis) {
       return Response.json(
-        { success: false, error: { code: "VALIDATION_ERROR", message: "缺少诊断或岗位数据" } },
+        { success: false, error: { code: "VALIDATION_ERROR", message: "缺少诊断数据" } },
         { status: 400 }
       );
     }
@@ -46,7 +47,9 @@ export async function POST(request: Request) {
     const systemPrompt = getSystemPrompt();
     const userPrompt = getUserPrompt({
       careerDiagnosis: JSON.stringify(careerDiagnosis, null, 2),
-      jobAnalysis: JSON.stringify(jobAnalysis, null, 2),
+      jobAnalysis: jobAnalysis
+        ? JSON.stringify(jobAnalysis, null, 2)
+        : "用户未提供 JD，请基于画像中的推荐岗位制定通用求职突围计划。",
       matchReport: JSON.stringify(matchReport, null, 2),
     });
 
@@ -55,7 +58,11 @@ export async function POST(request: Request) {
       { role: "user", content: userPrompt },
     ], true);
 
-    const data: ImprovementPlan = JSON.parse(result);
+    const data = normalizeImprovementPlan(parseAIJson<unknown>(result));
+    if (!data) {
+      throw new Error("AI 返回的行动计划格式不正确");
+    }
+
     return Response.json({ success: true, data });
   } catch (error) {
     const message = error instanceof Error ? error.message : "AI 服务异常";

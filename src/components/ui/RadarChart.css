@@ -2,14 +2,29 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: var(--color-primary-500);
 }
 
 .radar-chart__area {
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.radar-chart__grid,
+.radar-chart__axis {
+  transition: stroke var(--transition-base), opacity var(--transition-base);
+}
+
+.radar-chart__point {
+  filter: drop-shadow(0 4px 8px rgba(99, 102, 241, 0.22));
+}
+
 .radar-chart__label {
   font-size: 12px;
-  fill: var(--color-text-secondary);
-  font-family: var(--font-family);
+  font-weight: var(--font-semibold);
+  fill: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+
+[data-theme="dark"] .radar-chart__point {
+  stroke: var(--color-bg-secondary);
 }

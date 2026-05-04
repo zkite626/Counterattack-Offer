@@ -15,16 +15,15 @@ export default function ResumeEditorPage() {
   const router = useRouter();
   const { state, setActiveResume } = useResumeBuilder();
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
-  const [navOpen, setNavOpen] = useState(false);
 
   const resumeId = params.id as string;
 
-  // 设置当前活跃简历
+  // 设置当前活跃简历（仅在 resumeId 变化时触发）
   useEffect(() => {
     if (resumeId && state.resumes[resumeId]) {
       setActiveResume(resumeId);
     }
-  }, [resumeId, setActiveResume, state.resumes]);
+  }, [resumeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 简历不存在时跳回列表
   useEffect(() => {
@@ -68,9 +67,7 @@ export default function ResumeEditorPage() {
 
       <div className="editor-workspace__body">
         {/* 左栏：模块导航 */}
-        <aside
-          className={`editor-workspace__nav ${navOpen ? "editor-workspace__nav--open" : ""}`}
-        >
+        <aside className={`editor-workspace__nav ${mobileTab === 'preview' ? 'editor-workspace__nav--hidden-mobile' : ''}`}>
           <SectionNavigator />
         </aside>
 

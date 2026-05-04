@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useResumeBuilder } from "@/hooks/useResumeBuilder";
-import { getTemplateComponent, RESUME_TEMPLATES } from "@/components/resume-templates/registry";
+import { renderResumeTemplate, RESUME_TEMPLATES } from "@/components/resume-templates/registry";
 import "./ResumePreview.css";
 
 // A4 尺寸：210mm × 297mm
@@ -42,7 +42,6 @@ export default function ResumePreview() {
   }
 
   const template = RESUME_TEMPLATES.find((t) => t.id === activeResume.templateId) || RESUME_TEMPLATES[0];
-  const TemplateComponent = getTemplateComponent(template.layout);
 
   // 点击 section 区域触发编辑面板切换
   function handleClick(e: React.MouseEvent) {
@@ -67,7 +66,7 @@ export default function ResumePreview() {
           }}
           onClick={handleClick}
         >
-          <TemplateComponent data={activeResume} template={template} />
+          {renderResumeTemplate(template.layout, activeResume, template)}
         </div>
         {/* 分页线提示 */}
         <div
