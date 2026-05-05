@@ -139,17 +139,20 @@ fetch(url, {
 
 ## 5.9 默认管理员初始化
 
-服务启动时若无管理员，可通过环境变量创建：
+服务启动时若 `users` 表为空，则通过环境变量创建默认管理员：
 
 ```env
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=replace-with-strong-password
+ADMIN_EMAIL=admin@nixioffer.com
+ADMIN_PASSWORD=Admin@123
 ```
 
-初始化后必须写入审计日志：
+初始化流程必须是幂等的，只在空库第一次启动时执行，不会覆盖已有用户或业务数据。
+空库启动时如果缺少 `ADMIN_EMAIL` 或 `ADMIN_PASSWORD`，后端必须拒绝启动。
+初始化后必须写入审计日志和 bootstrap 标记：
 
 ```text
 action = system.admin.bootstrap
 target_type = user
+app_settings.key = system.bootstrap
 ```
-
+首次登录后应立即修改默认管理员密码，不要长期保留示例值。

@@ -46,11 +46,18 @@ frontend
 1. 在 Vercel 新建 Project，Git 仓库选择当前仓库
 2. Framework Preset 选择 Next.js
 3. Root Directory 设置为 `frontend`
-4. Production 环境变量使用 `frontend/.env.production.example` 中的键名
+4. Production 环境变量使用 `frontend/.env.local.example` 中的键名，在 Vercel 控制台填写生产值
 5. Domains 绑定 `offer.example.com`
 6. 自定义域名生效后，将 Vercel 默认域名和自定义域名同时加入后端 `CORS_ORIGINS`
 
 前端生产环境只允许 `NEXT_PUBLIC_` 变量；数据库、JWT、SMTP、AI Key 和加密主密钥不得配置到 Vercel。
+
+前端环境变量：
+
+| 变量 | 说明 |
+|------|------|
+| `NEXT_PUBLIC_API_BASE_URL` | NestJS 后端 API 基础地址，生产示例：`https://api.offer.example.com/api/v1` |
+| `NEXT_PUBLIC_APP_NAME` | 前端展示的应用名称 |
 
 ## 15.3 后端服务器部署
 
@@ -72,12 +79,34 @@ API_PUBLIC_URL=https://api.offer.example.com
 WEB_PUBLIC_URL=https://offer.example.com
 CORS_ORIGINS=https://offer.example.com,https://counterattack-offer.vercel.app
 DATABASE_URL=postgresql://user:password@127.0.0.1:5432/counterattack_offer
+SWAGGER_PATH=docs
 JWT_ACCESS_SECRET=replace-with-long-random-secret
 JWT_REFRESH_SECRET=replace-with-long-random-secret
+ACCESS_TOKEN_TTL_SECONDS=900
+REFRESH_TOKEN_TTL_DAYS=30
 APP_KEY_ENCRYPTION_SECRET=base64-32-byte-secret
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=replace-with-strong-password
+ADMIN_EMAIL=admin@nixioffer.com
+ADMIN_PASSWORD=Admin@123
 ```
+
+后端环境变量：
+
+| 变量 | 说明 |
+|------|------|
+| `NODE_ENV` | 运行环境，生产使用 `production` |
+| `PORT` | 后端 HTTP 服务监听端口 |
+| `API_PUBLIC_URL` | 后端公开访问地址 |
+| `WEB_PUBLIC_URL` | 前端 Web 地址，用于邮件验证、找回密码等跳转链接 |
+| `CORS_ORIGINS` | 允许访问后端的前端 Origin 白名单，多个值用英文逗号分隔 |
+| `DATABASE_URL` | PostgreSQL 连接串 |
+| `SWAGGER_PATH` | Swagger/OpenAPI 文档路径 |
+| `JWT_ACCESS_SECRET` | Access Token 签名密钥，至少 32 字符 |
+| `JWT_REFRESH_SECRET` | Refresh Token 签名密钥，至少 32 字符，必须与 Access Token 密钥不同 |
+| `ACCESS_TOKEN_TTL_SECONDS` | Access Token 有效期，单位秒 |
+| `REFRESH_TOKEN_TTL_DAYS` | Refresh Token 有效期，单位天 |
+| `APP_KEY_ENCRYPTION_SECRET` | API Key / SMTP 密码加密主密钥，要求 32 字节明文或 base64 编码后的 32 字节 |
+| `ADMIN_EMAIL` | 空库首次启动时创建的默认管理员邮箱 |
+| `ADMIN_PASSWORD` | 空库首次启动时创建的默认管理员密码 |
 
 仓库提供生产样例：
 
@@ -86,6 +115,12 @@ cp backend/.env.production.example backend/.env
 ```
 
 复制后必须替换所有 `replace-with-*` 占位值，并确认 `.env` 不进入 Git。
+
+首次启动时如果 `users` 表为空，后端会使用 `ADMIN_EMAIL=admin@nixioffer.com`
+和 `ADMIN_PASSWORD=Admin@123` 创建默认管理员，并写入 `app_settings.system.bootstrap`
+和 `audit_logs(system.admin.bootstrap)`。已有用户时会跳过初始化，不会覆盖生产数据。
+空库启动时如果缺少 `ADMIN_EMAIL` 或 `ADMIN_PASSWORD`，后端会拒绝启动。
+默认管理员首次登录后应立即修改密码。
 
 ### PM2 部署
 
@@ -261,6 +296,12 @@ Crontab 示例：
 ```bash
 BACKUP_ENCRYPTION_PASSPHRASE='replace-with-backup-passphrase' \
 deploy/postgres/restore-backup-check.sh /var/backups/counterattack-offer/postgres/counterattack_offer-YYYYMMDDTHHMMSSZ.dump.enc
+```
+
+恢复演练记录模板：
+
+```text
+deploy/postgres/restore-drill-record-template.md
 ```
 
 PostgreSQL 必须只监听 `127.0.0.1` 或内网地址；云安全组和防火墙必须拒绝公网 `5432`。

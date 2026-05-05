@@ -51,7 +51,7 @@
 | 11.4 | 找回密码 | reset tokens |
 | 11.5 | SMTP 配置和测试邮件 | `MailModule` |
 | 11.6 | Role Guard 和 Admin Guard | `common/guards` |
-| 11.7 | 默认管理员初始化 | bootstrap service |
+| 11.7 | 空库默认管理员初始化 | bootstrap service + `system.admin.bootstrap` 审计 |
 
 ---
 

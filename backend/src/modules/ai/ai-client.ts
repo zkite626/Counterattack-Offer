@@ -182,6 +182,23 @@ export class OpenAICompatibleClient {
       return payload;
     }
 
+    if (this.isErrorResponse(payload)) {
+      throw new BadGatewayException({
+        code:
+          payload.error?.code ??
+          payload.error?.type ??
+          'AI_PROVIDER_ERROR',
+        message: payload.error?.message ?? 'AI 服务返回错误',
+      });
+    }
+
+    if (this.isProviderStatusErrorResponse(payload)) {
+      throw new BadGatewayException({
+        code: payload.code,
+        message: payload.message,
+      });
+    }
+
     throw new BadGatewayException({
       code: 'AI_RESPONSE_FORMAT_ERROR',
       message: 'AI 响应格式不符合 OpenAI 兼容协议',
@@ -267,9 +284,11 @@ export class OpenAICompatibleClient {
   ): Record<string, unknown> {
     const temperature = options.temperature ?? this.config.temperature;
     const maxTokens = options.maxTokens ?? this.config.maxTokens;
+    const normalizedMessages =
+      options.jsonMode === true ? this.withJsonInstruction(messages) : messages;
     const body: Record<string, unknown> = {
       model: this.config.model,
-      messages,
+      messages: normalizedMessages,
       stream,
     };
 
@@ -372,5 +391,60 @@ export class OpenAICompatibleClient {
 
   private isErrorResponse(value: unknown): value is ErrorResponse {
     return typeof value === 'object' && value !== null && 'error' in value;
+  }
+
+  private isProviderStatusErrorResponse(
+    value: unknown,
+  ): value is { code: string; message: string } {
+    if (
+      typeof value !== 'object' ||
+      value === null ||
+      !('code' in value) ||
+      !('message' in value)
+    ) {
+      return false;
+    }
+
+    const payload = value as Record<string, unknown>;
+    const code =
+      typeof payload.code === 'string'
+        ? payload.code
+        : typeof payload.code === 'number'
+          ? `${payload.code}`
+          : null;
+
+    if (
+      code === null ||
+      code === '0' ||
+      code.toLowerCase() === 'success' ||
+      typeof payload.message !== 'string'
+    ) {
+      return false;
+    }
+
+    payload.code = code;
+
+    return true;
+  }
+
+  private withJsonInstruction(messages: ChatMessage[]): ChatMessage[] {
+    if (messages.some((message) => /\bjson\b/i.test(message.content))) {
+      return messages;
+    }
+
+    const instruction = '请以 JSON 格式输出，不要输出 Markdown 或额外说明。';
+    const firstSystemIndex = messages.findIndex(
+      (message) => message.role === 'system',
+    );
+
+    if (firstSystemIndex >= 0) {
+      return messages.map((message, index) =>
+        index === firstSystemIndex
+          ? { ...message, content: `${message.content}\n\n${instruction}` }
+          : message,
+      );
+    }
+
+    return [{ role: 'system', content: instruction }, ...messages];
   }
 }

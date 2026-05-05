@@ -34,7 +34,7 @@ npm run dev
 | `JWT_SECRET` | ✅ | JWT签名密钥（≥32字符） | `your-very-long-secret-key-here-32+` |
 | `JWT_EXPIRES_IN` | ❌ | Token有效期 | `7d` |
 | `ADMIN_EMAIL` | ✅ | 默认管理员邮箱 | `admin@nixioffer.com` |
-| `ADMIN_PASSWORD` | ✅ | 默认管理员密码 | `Admin@123456` |
+| `ADMIN_PASSWORD` | ✅ | 默认管理员密码 | `Admin@123` |
 | `NEXT_PUBLIC_APP_NAME` | ❌ | 应用名称 | `逆袭Offer` |
 | `NEXT_PUBLIC_APP_URL` | ❌ | 应用URL | `http://localhost:3000` |
 

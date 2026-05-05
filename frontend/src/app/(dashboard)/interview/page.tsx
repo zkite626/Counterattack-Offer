@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useJobFlow } from "@/contexts/JobFlowContext";
 import { useAI } from "@/contexts/AIContext";
 import { aiApi } from "@/lib/api/ai";
+import { ApiError } from "@/lib/api/client";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Tag from "@/components/ui/Tag";
@@ -63,6 +64,13 @@ export default function InterviewPage() {
       setSimulations(normalized);
       dispatch({ type: "SET_INTERVIEW", payload: normalized });
     } catch (err) {
+      if (err instanceof ApiError) {
+        setError(
+          `${err.message}${err.requestId ? `（请求编号：${err.requestId}）` : ""}`,
+        );
+        return;
+      }
+
       setError(err instanceof Error ? err.message : "请求失败");
     } finally {
       setLoading(false);

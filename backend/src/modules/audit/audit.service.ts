@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { SecretService } from '../../common/security/secret.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 export interface AuditLogInput {
@@ -14,23 +15,38 @@ export interface AuditLogInput {
 
 @Injectable()
 export class AuditService {
-  constructor(private readonly prismaService: PrismaService) {}
+  private readonly logger = new Logger(AuditService.name);
+
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly secretService: SecretService,
+  ) {}
 
   async record(input: AuditLogInput): Promise<void> {
     try {
+      const safeMetadata = this.secretService.redactUnknown(
+        input.metadata ?? {},
+      );
       await this.prismaService.auditLog.create({
         data: {
           actorUserId: input.actorUserId,
           action: input.action,
           targetType: input.targetType,
           targetId: input.targetId ?? null,
-          metadata: input.metadata ?? {},
+          metadata: safeMetadata as Prisma.InputJsonObject,
           ipAddress: input.ipAddress ?? null,
           userAgent: input.userAgent ?? null,
         },
       });
     } catch (error) {
-      throw error;
+      this.logger.warn(
+        JSON.stringify({
+          action: input.action,
+          targetType: input.targetType,
+          targetId: input.targetId ?? null,
+          auditWriteFailed: true,
+        }),
+      );
     }
   }
 }

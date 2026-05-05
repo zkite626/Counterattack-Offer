@@ -14,6 +14,20 @@ export interface AdminUser extends User {
   aiCallsTotal?: number;
 }
 
+export interface CreateAdminUserPayload {
+  email: string;
+  name: string;
+  password: string;
+  role: AdminUser["role"];
+  status: AdminUser["status"];
+}
+
+export interface CreateAdminUserResult {
+  user: AdminUser;
+  message: string;
+  verificationEmailSent: boolean;
+}
+
 export interface SmtpSetting {
   id: string;
   host: string;
@@ -60,7 +74,10 @@ export interface AdminStats {
   aiLatencyP50: number;
   aiLatencyP95: number;
   estimatedModelCost: number;
+  smtpSuccessRate: number;
   mailSuccessRate: number;
+  loginFailureCount: number;
+  apiErrorCodeDistribution: Array<{ errorCode: string; count: number }>;
 }
 
 export const adminApi = {
@@ -68,6 +85,10 @@ export const adminApi = {
     const result = await apiClient.get<AdminListResponse<AdminUser> | { users: AdminUser[]; total?: number }>("/admin/users", { query });
     if ("items" in result) return result;
     return { items: result.users, total: result.total ?? result.users.length, page: 1, pageSize: result.users.length };
+  },
+
+  async createUser(payload: CreateAdminUserPayload): Promise<CreateAdminUserResult> {
+    return apiClient.post<CreateAdminUserResult>("/admin/users", payload);
   },
 
   async updateUser(id: string, payload: Partial<Pick<AdminUser, "role" | "status" | "name">>): Promise<AdminUser> {
@@ -81,6 +102,18 @@ export const adminApi = {
 
   async enableUser(id: string): Promise<void> {
     await apiClient.post<{ message: string }>(`/admin/users/${id}/enable`);
+  },
+
+  async deleteUser(id: string): Promise<{ message: string }> {
+    return apiClient.delete<{ message: string }>(`/admin/users/${id}`);
+  },
+
+  async resetUserPassword(id: string, password: string): Promise<{ message: string }> {
+    return apiClient.post<{ message: string }>(`/admin/users/${id}/reset-password`, { password });
+  },
+
+  async resendUserVerification(id: string): Promise<{ message: string }> {
+    return apiClient.post<{ message: string }>(`/admin/users/${id}/resend-verification`);
   },
 
   async listGlobalModels(): Promise<BackendAIModelConfig[]> {

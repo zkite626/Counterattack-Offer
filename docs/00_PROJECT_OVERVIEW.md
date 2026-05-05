@@ -67,6 +67,7 @@ counterattack-offer/
 - Access Token + Refresh Token 机制
 - 管理员可禁用用户、重置用户状态、查看用户基础信息
 - 所有敏感操作进入审计日志
+- 后端空库首次启动时自动创建默认管理员，并写入 bootstrap 标记和审计日志
 
 ### AI 模型配置
 

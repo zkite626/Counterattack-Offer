@@ -155,7 +155,7 @@ JWT_EXPIRES_IN=7d
 
 # 默认管理员（无数据库阶段）
 ADMIN_EMAIL=admin@nixioffer.com
-ADMIN_PASSWORD=your-secure-password
+ADMIN_PASSWORD=Admin@123
 
 # 应用
 NEXT_PUBLIC_APP_NAME=逆袭Offer

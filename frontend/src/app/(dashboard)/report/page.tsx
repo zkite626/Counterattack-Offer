@@ -17,6 +17,7 @@ import {
   normalizeImprovementPlan,
   normalizeInterviewSimulations,
   normalizeMatchReport,
+  normalizeResumeOptimization,
 } from "@/lib/utils/ai-results";
 import { useRouter } from "next/navigation";
 import "../shared-page.css";
@@ -105,6 +106,7 @@ export default function ReportPage() {
   const completionPct = getCompletionPercentage();
   const careerDiagnosis = normalizeCareerDiagnosis(state.careerDiagnosis);
   const matchReport = normalizeMatchReport(state.matchReport);
+  const resumeOptimization = normalizeResumeOptimization(state.resumeOptimization);
   const improvementPlan = normalizeImprovementPlan(state.improvementPlan);
   const interviewSimulation = normalizeInterviewSimulations(state.interviewSimulation);
   const progressColor = completionPct >= 80
@@ -137,7 +139,7 @@ export default function ReportPage() {
           experienceTranslations: state.experienceTranslations,
           jobAnalysis: state.jobAnalysis,
           matchReport: normalizeMatchReport(state.matchReport),
-          resumeOptimization: state.resumeOptimization,
+          resumeOptimization: normalizeResumeOptimization(state.resumeOptimization),
           interviewSimulation: normalizeInterviewSimulations(state.interviewSimulation),
           improvementPlan: normalizeImprovementPlan(state.improvementPlan),
         },
@@ -158,7 +160,7 @@ export default function ReportPage() {
   const uniqueTags = [...new Set(allAbilityTags)];
 
   // 简历优化精简版
-  const resumeItems = state.resumeOptimization?.resumeOptimization?.slice(0, 3) ?? [];
+  const resumeItems = resumeOptimization?.resumeOptimization.slice(0, 3) ?? [];
 
   // 面试关键问题
   const interviewQuestions = interviewSimulation.map((s) => s.mainQuestion).slice(0, 5);

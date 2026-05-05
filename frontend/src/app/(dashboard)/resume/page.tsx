@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useJobFlow } from "@/contexts/JobFlowContext";
 import { useAI } from "@/contexts/AIContext";
 import { aiApi } from "@/lib/api/ai";
+import { normalizeResumeOptimization } from "@/lib/utils/ai-results";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Skeleton from "@/components/ui/Skeleton";
@@ -17,7 +18,9 @@ export default function ResumePage() {
   const router = useRouter();
   const { state, dispatch, ensureActiveRun } = useJobFlow();
   const { activeModel } = useAI();
-  const [result, setResult] = useState<ResumeOptimizationResult | null>(state.resumeOptimization);
+  const [result, setResult] = useState<ResumeOptimizationResult | null>(
+    () => normalizeResumeOptimization(state.resumeOptimization),
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -37,7 +40,7 @@ export default function ResumePage() {
 
     try {
       const runId = await ensureActiveRun(state.jobAnalysis?.jobTitle ?? null, state.jobDescription);
-      const result = await aiApi.run<ResumeOptimizationResult>(
+      const result = await aiApi.run<unknown>(
         "optimize-resume",
         {
           rawExperiences: state.studentProfile?.rawExperiences,
@@ -49,8 +52,11 @@ export default function ResumePage() {
         activeModel.id
       );
 
-      setResult(result);
-      dispatch({ type: "SET_RESUME_OPTIMIZATION", payload: result });
+      const normalized = normalizeResumeOptimization(result);
+      if (!normalized) throw new Error("简历优化结果格式不正确");
+
+      setResult(normalized);
+      dispatch({ type: "SET_RESUME_OPTIMIZATION", payload: normalized });
     } catch (err) {
       setError(err instanceof Error ? err.message : "请求失败");
     } finally {

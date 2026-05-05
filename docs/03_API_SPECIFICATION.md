@@ -18,6 +18,10 @@ https://api.offer.example.com/api/v1
 }
 ```
 
+后端在空库首次启动时会自动创建默认管理员，并写入 `system.bootstrap`
+标记和 `system.admin.bootstrap` 审计日志；如果数据库已有用户，则跳过
+初始化，不覆盖现有数据。
+
 错误响应：
 
 ```json
@@ -151,6 +155,32 @@ refresh_token=...; HttpOnly; Secure; SameSite=None; Path=/api/v1/auth; Max-Age=2
 }
 ```
 
+### POST `/auth/change-password`
+
+登录用户修改自己的密码。
+
+```json
+{
+  "currentPassword": "old-password",
+  "newPassword": "new-password"
+}
+```
+
+成功后写入 `auth.password_change` 审计日志，并发送账号安全提醒邮件。
+
+### POST `/auth/change-email`
+
+登录用户修改自己的登录邮箱。提交后新邮箱进入待验证状态，需要通过验证邮件激活。
+
+```json
+{
+  "currentPassword": "current-password",
+  "newEmail": "new@example.com"
+}
+```
+
+成功后返回更新后的 `user`，并写入 `auth.email_change` 审计日志。
+
 ---
 
 ## 3.2 用户 API
@@ -268,6 +298,27 @@ refresh_token=...; HttpOnly; Secure; SameSite=None; Path=/api/v1/auth; Max-Age=2
 
 汇总求职报告。
 
+### POST `/ai/career-qa`
+
+求职 AI 问答，支持 `stream: true`，返回 `text/event-stream`。
+
+**Request Body:**
+
+```json
+{
+  "modelConfigId": "uuid-optional",
+  "input": {
+    "messages": [
+      { "role": "user", "content": "我没有实习，怎么介绍自己更好？" }
+    ],
+    "contextSummary": "可选的用户画像摘要"
+  },
+  "stream": true
+}
+```
+
+`contextSummary` 可为空；后端会把它合并进首条 system prompt，确保兼容不同 OpenAI 兼容服务商。
+
 ### POST `/ai/generate-jd`
 
 根据岗位标题生成 JD。
@@ -355,10 +406,14 @@ refresh_token=...; HttpOnly; Secure; SameSite=None; Path=/api/v1/auth; Max-Age=2
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/admin/users` | 用户列表 |
+| POST | `/admin/users` | 管理员新增用户 |
 | GET | `/admin/users/{id}` | 用户详情 |
 | PATCH | `/admin/users/{id}` | 更新用户状态/角色/基础信息 |
 | POST | `/admin/users/{id}/disable` | 禁用用户 |
 | POST | `/admin/users/{id}/enable` | 启用用户 |
+| DELETE | `/admin/users/{id}` | 删除用户并撤销会话 |
+| POST | `/admin/users/{id}/reset-password` | 管理员重置用户密码并使旧会话失效 |
+| POST | `/admin/users/{id}/resend-verification` | 管理员重新发送邮箱验证邮件 |
 | GET | `/admin/ai/models` | 全局模型列表 |
 | POST | `/admin/ai/models` | 创建全局模型 |
 | PATCH | `/admin/ai/models/{id}` | 更新全局模型 |
@@ -425,4 +480,3 @@ NestJS 需要正确响应 `OPTIONS`：
 | `SMTP_TEST_FAILED` | 502 | SMTP 测试失败 |
 | `RATE_LIMITED` | 429 | 请求过于频繁 |
 | `INTERNAL_ERROR` | 500 | 服务器内部错误 |
-

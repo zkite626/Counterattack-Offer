@@ -50,6 +50,10 @@ X-Request-Id: req_...
 
 便于用户反馈时定位日志。
 
+当请求返回错误时，后端会把 `requestId` 一并写入统一错误体，同时将
+`requestId`、`errorCode`、`statusCode`、`path` 写入 `api_error_logs`，
+便于管理员后台统计错误码分布和人工排查。
+
 ## 17.4 结构化日志
 
 后端日志字段：
@@ -79,6 +83,15 @@ X-Request-Id: req_...
 - 全局模型使用量
 - 用户模型测试失败次数
 
+## 17.5.1 API 错误码观测
+
+`api_error_logs` 用于观察：
+
+- `RATE_LIMITED` 超限情况
+- `AUTH_INVALID_CREDENTIALS` 登录失败
+- `FORBIDDEN` / `UNAUTHORIZED` 访问异常
+- 其他 4xx / 5xx 错误分布
+
 AI 调用异常告警条件：
 
 - 5 分钟内失败率 > 30%
@@ -107,12 +120,17 @@ AI 调用异常告警条件：
 必须审计：
 
 - 管理员登录
+- 空库首次启动创建默认管理员（`system.admin.bootstrap`）
 - 用户禁用/启用
 - 用户角色变更
 - 全局模型创建/更新/删除
 - 全局 API Key 更新
 - SMTP 配置更新
 - 密码重置成功
+- 用户自行修改密码
+- 用户修改登录邮箱
+- 管理员重置用户密码
+- 管理员重发验证邮件
 - 密钥加密主版本变更
 
 ## 17.8 数据库维护
@@ -135,6 +153,7 @@ AI 调用异常告警条件：
 - `resumes.user_id`
 - `audit_logs.actor_user_id`
 - `audit_logs.created_at`
+- `app_settings.key = system.bootstrap`
 
 ## 17.9 事故处理
 
@@ -158,4 +177,3 @@ AI 调用异常告警条件：
 2. 检查 `CORS_ORIGINS`
 3. 检查 Cookie `SameSite=None; Secure`
 4. 使用 OPTIONS 请求复现
-

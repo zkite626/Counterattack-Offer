@@ -7,6 +7,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { PrismaService } from '../../prisma/prisma.service';
+import { SecretService } from '../security/secret.service';
 import type { ApiError, ApiResponse } from '../types/api-response.type';
 import type { RequestWithContext } from '../types/request-context.type';
 
@@ -80,6 +82,8 @@ function codeFromStatus(statusCode: number): string {
       return 'FORBIDDEN';
     case HttpStatus.NOT_FOUND:
       return 'NOT_FOUND';
+    case HttpStatus.TOO_MANY_REQUESTS:
+      return 'RATE_LIMITED';
     case HttpStatus.SERVICE_UNAVAILABLE:
       return 'SERVICE_UNAVAILABLE';
     default:
@@ -110,6 +114,11 @@ function messageFromPayload(
 export class GlobalExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(GlobalExceptionFilter.name);
 
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly secretService: SecretService,
+  ) {}
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const http = host.switchToHttp();
     const request = http.getRequest<RequestWithContext>();
@@ -134,12 +143,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       requestId: request.requestId,
     };
 
+    request.errorCode = error.code;
+
     if (statusCode >= 500) {
       this.logger.error(
         JSON.stringify({
           requestId: request.requestId,
           method: request.method,
-          path: request.originalUrl,
+          path: this.redactPath(request.originalUrl),
           statusCode,
           errorCode: error.code,
         }),
@@ -147,6 +158,44 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       );
     }
 
+    void this.recordApiError(request, statusCode, error.code);
+
     response.status(statusCode).json(body);
+  }
+
+  private async recordApiError(
+    request: RequestWithContext,
+    statusCode: number,
+    errorCode: string,
+  ): Promise<void> {
+    try {
+      await this.prismaService.apiErrorLog.create({
+        data: {
+          requestId: request.requestId,
+          method: request.method,
+          path: this.redactPath(request.originalUrl),
+          statusCode,
+          errorCode,
+          userId: request.user?.id ?? null,
+          ipAddress: request.ip ?? null,
+        },
+      });
+    } catch (error) {
+      // 错误日志写库失败不能影响主响应链路。
+      this.logger.warn(
+        JSON.stringify({
+          requestId: request.requestId,
+          method: request.method,
+          path: this.redactPath(request.originalUrl),
+          statusCode,
+          errorCode,
+          logWriteFailed: true,
+        }),
+      );
+    }
+  }
+
+  private redactPath(path: string): string {
+    return this.secretService.redactLogText(path);
   }
 }

@@ -27,6 +27,9 @@
 
 SMTP 密码使用与 API Key 相同的 AES-256-GCM 加密机制。
 
+空库首次启动时只会初始化默认管理员和 bootstrap 标记，不会预置 SMTP
+配置；管理员需要在后台手动完成 SMTP 保存和测试。
+
 ## 8.3 邮件类型
 
 | 类型 | 触发时机 | 是否必须 |
@@ -103,7 +106,7 @@ POST /api/v1/auth/reset-password
 
 ```json
 {
-  "toEmail": "admin@example.com"
+  "toEmail": "admin@nixioffer.com"
 }
 ```
 
@@ -123,4 +126,3 @@ POST /api/v1/auth/reset-password
 - 验证和重置 Token 单次使用
 - 找回密码接口不暴露邮箱是否存在
 - 邮件正文避免包含敏感账号细节
-

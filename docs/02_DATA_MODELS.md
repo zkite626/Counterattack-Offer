@@ -306,6 +306,8 @@ export interface AIModelConfig {
 | `updated_by` | uuid nullable | 更新人 |
 | `updated_at` | timestamptz | 更新时间 |
 
+空库初始化时会写入 `system.bootstrap` 记录，保存初始化版本、默认管理员邮箱和初始化时间，作为首次启动的审计与运维标记。
+
 ## 2.8 通用 API 类型
 
 ```typescript
@@ -336,4 +338,3 @@ export interface PaginatedResponse<T> {
   requestId?: string;
 }
 ```
-

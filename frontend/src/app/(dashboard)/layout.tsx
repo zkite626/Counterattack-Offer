@@ -11,13 +11,15 @@ import StepNav from "@/components/layout/StepNav";
 import "./dashboard.css";
 
 const NAV_ITEMS: { path: string; label: string; icon: IconName }[] = [
-  { path: "/profile", label: "个人信息", icon: "user" },
+  { path: "/account", label: "账号中心", icon: "user" },
+  { path: "/profile", label: "学生资料", icon: "document" },
   { path: "/diagnosis", label: "画像诊断", icon: "diagnosis" },
   { path: "/translation", label: "经历转译", icon: "translate" },
   { path: "/job", label: "JD解析", icon: "job" },
   { path: "/match", label: "人岗匹配", icon: "match" },
   { path: "/resume", label: "简历优化", icon: "resume" },
   { path: "/interview", label: "面试训练", icon: "interview" },
+  { path: "/qa", label: "求职AI问答", icon: "chat" },
   { path: "/plan", label: "能力计划", icon: "plan" },
   { path: "/report", label: "汇总报告", icon: "report" },
   { path: "/resume-builder", label: "简历创建器", icon: "resume-builder" },
@@ -45,10 +47,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     }
   }, [isLoading, isAuthenticated, router]);
 
-  // 未配置可用模型 → 跳转设置页（等待后端模型列表加载完成）
+  // 未配置可用模型 → 跳转设置页；账号中心需要在无模型时也可访问。
   useEffect(() => {
     if (!envConfigLoaded) return;
-    if (pathname !== "/settings" && !activeModel) {
+    if (pathname !== "/settings" && pathname !== "/account" && !activeModel) {
       router.replace("/settings");
     }
   }, [pathname, activeModel, router, envConfigLoaded]);
@@ -78,7 +80,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="dashboard">
+    <div className={`dashboard ${sidebarOpen ? "dashboard--sidebar-open" : ""}`}>
       {/* Header */}
       <header className="dashboard__header">
         <div className="dashboard__header-left">
@@ -86,6 +88,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             className="dashboard__menu-btn"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="切换侧边栏"
+            aria-expanded={sidebarOpen}
           >
             <Icon name="menu" size="1.25em" />
           </button>
@@ -128,11 +131,31 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   className="dashboard__dropdown-item"
                   onClick={() => {
                     setShowUserMenu(false);
+                    router.push("/account");
+                  }}
+                >
+                  账号中心
+                </button>
+                <button
+                  className="dashboard__dropdown-item"
+                  onClick={() => {
+                    setShowUserMenu(false);
                     router.push("/profile");
                   }}
                 >
-                  个人信息
+                  学生资料
                 </button>
+                {user?.role === "admin" && (
+                  <button
+                    className="dashboard__dropdown-item"
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      router.push("/admin/users");
+                    }}
+                  >
+                    进入后台
+                  </button>
+                )}
                 <button
                   className="dashboard__dropdown-item dashboard__dropdown-item--danger"
                   onClick={handleLogout}

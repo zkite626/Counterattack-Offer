@@ -127,6 +127,16 @@ export interface AIClient {
 }
 ```
 
+### JSON Mode 兼容说明
+
+部分 OpenAI 兼容服务对 `response_format: { type: "json_object" }` 有额外要求，
+例如消息内容里必须显式包含 `json` 关键词。后端会在 JSON 模式下自动补充
+一条 JSON 提示，避免服务商直接返回 `200 + error` 的非预期响应体。
+
+如果服务商返回的是错误 JSON 而不是 `choices`，后端会优先透传服务商错误码，
+只有在既不是 Chat Completions，也不是标准错误体时，才会报告
+`AI_RESPONSE_FORMAT_ERROR`。
+
 ---
 
 ## 4.5 Prompt 管理
@@ -166,6 +176,9 @@ packages/prompts/
 | 面试追问 | `/ai/interview` | `interview.ts` | `InterviewSimulation[]` |
 | 能力计划 | `/ai/plan` | `improvement-plan.ts` | `ImprovementPlan` |
 | 汇总报告 | `/ai/report` | `final-report.ts` | Markdown 报告 |
+| 求职问答 | `/ai/career-qa` | `career-qa.ts` | SSE 流式对话 |
+
+`career-qa` 会把可用的用户上下文合并进首条 system prompt，而不是额外发送第二条 system 消息，以兼容部分 OpenAI 兼容服务商对消息顺序的要求。
 
 ---
 
@@ -225,4 +238,3 @@ packages/prompts/
 - 今日失败率
 - Token 用量估算
 - Top 模型和 Top 用户
-

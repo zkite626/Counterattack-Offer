@@ -16,6 +16,7 @@ import {
   normalizeInterviewSimulations,
   normalizeJobAnalysis,
   normalizeMatchReport,
+  normalizeResumeOptimization,
 } from "@/lib/utils/ai-results";
 import { DEMO_STUDENT_PROFILE } from "@/data/demo-case";
 import {
@@ -76,6 +77,7 @@ function withDerivedSteps(state: JobFlowState): JobFlowState {
     careerDiagnosis: normalizeCareerDiagnosis(state.careerDiagnosis),
     jobAnalysis: normalizeJobAnalysis(state.jobAnalysis),
     matchReport: normalizeMatchReport(state.matchReport),
+    resumeOptimization: normalizeResumeOptimization(state.resumeOptimization),
     interviewSimulation: interviewSimulation.length ? interviewSimulation : null,
     improvementPlan: normalizeImprovementPlan(state.improvementPlan),
   };
@@ -177,7 +179,7 @@ function applyResultToState(base: JobFlowState, item: CareerFlowResult): JobFlow
     case "match":
       return withDerivedSteps({ ...base, matchReport: normalizeMatchReport(item.result) });
     case "resume":
-      return withDerivedSteps({ ...base, resumeOptimization: item.result as JobFlowState["resumeOptimization"] });
+      return withDerivedSteps({ ...base, resumeOptimization: normalizeResumeOptimization(item.result) });
     case "interview": {
       const normalized = normalizeInterviewSimulations(item.result);
       return withDerivedSteps({ ...base, interviewSimulation: normalized.length ? normalized : null });

@@ -32,6 +32,16 @@ export interface ResetPasswordDto {
   newPassword?: unknown;
 }
 
+export interface ChangePasswordDto {
+  currentPassword?: unknown;
+  newPassword?: unknown;
+}
+
+export interface ChangeEmailDto {
+  currentPassword?: unknown;
+  newEmail?: unknown;
+}
+
 export interface RegisterResponse {
   user: PublicUser;
   requiresEmailVerification: boolean;
@@ -52,6 +62,11 @@ export interface RefreshResponse {
 
 export interface MessageResponse {
   message: string;
+}
+
+export interface ChangeEmailResponse {
+  message: string;
+  user: PublicUser;
 }
 
 export interface ValidatedRegisterInput {

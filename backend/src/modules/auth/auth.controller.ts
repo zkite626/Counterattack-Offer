@@ -9,12 +9,17 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { CookieOptions, Request, Response } from 'express';
+import { RateLimitService } from '../../common/rate-limit/rate-limit.service';
 import type { AppEnvironment } from '../../config/environment';
 import type { RequestWithContext } from '../../common/types/request-context.type';
+import { AuditService } from '../audit/audit.service';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import type {
+  ChangeEmailDto,
+  ChangeEmailResponse,
+  ChangePasswordDto,
   ForgotPasswordDto,
   LoginDto,
   LoginResponse,
@@ -39,6 +44,8 @@ export class AuthController {
 
   constructor(
     private readonly authService: AuthService,
+    private readonly rateLimitService: RateLimitService,
+    private readonly auditService: AuditService,
     configService: ConfigService<AppEnvironment, true>,
   ) {
     this.nodeEnv = configService.get('NODE_ENV', { infer: true });
@@ -48,8 +55,12 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() dto: RegisterDto): Promise<RegisterResponse> {
+  async register(
+    @Body() dto: RegisterDto,
+    @Req() request: RequestWithContext,
+  ): Promise<RegisterResponse> {
     try {
+      await this.rateLimitService.consumeRegister(request);
       return await this.authService.register(dto);
     } catch (error) {
       throw error;
@@ -63,10 +74,25 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<LoginResponse> {
     try {
+      await this.rateLimitService.consumeLogin(request, dto.email);
       const result = await this.authService.login(
         dto,
         this.getTokenContext(request),
       );
+      if (result.user.role === 'admin') {
+        await this.auditService.record({
+          actorUserId: result.user.id,
+          action: 'admin.auth.login',
+          targetType: 'users',
+          targetId: result.user.id,
+          metadata: {
+            email: result.user.email,
+            clientType: result.clientType,
+          },
+          ipAddress: request.ip ?? null,
+          userAgent: request.header('user-agent') ?? null,
+        });
+      }
 
       if (result.clientType === 'web') {
         this.setRefreshCookie(response, result.refreshToken);
@@ -165,6 +191,7 @@ export class AuthController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<MessageResponse> {
     try {
+      await this.rateLimitService.consumeResendVerification(user.id);
       return await this.authService.resendVerification(user.id);
     } catch (error) {
       throw error;
@@ -176,6 +203,7 @@ export class AuthController {
     @Body() dto: ForgotPasswordDto,
   ): Promise<MessageResponse> {
     try {
+      await this.rateLimitService.consumeForgotPassword(dto.email);
       return await this.authService.forgotPassword(dto);
     } catch (error) {
       throw error;
@@ -183,9 +211,51 @@ export class AuthController {
   }
 
   @Post('reset-password')
-  async resetPassword(@Body() dto: ResetPasswordDto): Promise<MessageResponse> {
+  async resetPassword(
+    @Body() dto: ResetPasswordDto,
+    @Req() request: RequestWithContext,
+  ): Promise<MessageResponse> {
     try {
-      return await this.authService.resetPassword(dto);
+      return await this.authService.resetPassword(
+        dto,
+        this.getTokenContext(request),
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: ChangePasswordDto,
+    @Req() request: RequestWithContext,
+  ): Promise<MessageResponse> {
+    try {
+      return await this.authService.changePassword(
+        user.id,
+        dto,
+        this.getTokenContext(request),
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Post('change-email')
+  @UseGuards(JwtAuthGuard)
+  async changeEmail(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: ChangeEmailDto,
+    @Req() request: RequestWithContext,
+  ): Promise<ChangeEmailResponse> {
+    try {
+      return await this.authService.changeEmail(
+        user.id,
+        dto,
+        this.getTokenContext(request),
+      );
     } catch (error) {
       throw error;
     }

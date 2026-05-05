@@ -20,9 +20,14 @@ async function bootstrap(): Promise<void> {
       app.get<ConfigService<AppEnvironment, true>>(ConfigService);
     const port = configService.get('PORT', { infer: true });
     const swaggerPath = configService.get('SWAGGER_PATH', { infer: true });
+    const httpServer = app.getHttpAdapter().getInstance() as {
+      set?: (key: string, value: number | boolean | string) => void;
+    };
+
+    httpServer.set?.('trust proxy', 1);
     app.setGlobalPrefix('api/v1');
     app.enableCors(createCorsOptions(configService));
-    app.useGlobalFilters(new GlobalExceptionFilter());
+    app.useGlobalFilters(app.get(GlobalExceptionFilter));
     app.useGlobalInterceptors(new ApiResponseInterceptor<unknown>());
 
     const swaggerConfig = new DocumentBuilder()

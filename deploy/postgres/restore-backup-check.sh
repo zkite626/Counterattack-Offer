@@ -66,11 +66,17 @@ if [[ -n "${PG_RESTORE_CONTAINER:-}" ]]; then
     -e PGPASSWORD="${PGPASSWORD:-}" \
     "$PG_RESTORE_CONTAINER" \
     psql --dbname="$target_db" --command='select count(*) as users_count from users;' >/dev/null
+  docker exec \
+    -e PGUSER="${PGUSER:-postgres}" \
+    -e PGPASSWORD="${PGPASSWORD:-}" \
+    "$PG_RESTORE_CONTAINER" \
+    psql --dbname="$target_db" --tuples-only --no-align --command="select 'users=' || count(*) from users union all select 'audit_logs=' || count(*) from audit_logs union all select 'ai_call_logs=' || count(*) from ai_call_logs union all select 'mail_events=' || count(*) from mail_events;"
 else
   dropdb --if-exists "$target_db"
   createdb "$target_db"
   pg_restore --clean --if-exists --no-owner --no-acl --dbname="$target_db" "$tmp_path"
   psql --dbname="$target_db" --command='select count(*) as users_count from users;' >/dev/null
+  psql --dbname="$target_db" --tuples-only --no-align --command="select 'users=' || count(*) from users union all select 'audit_logs=' || count(*) from audit_logs union all select 'ai_call_logs=' || count(*) from ai_call_logs union all select 'mail_events=' || count(*) from mail_events;"
 fi
 
 if [[ "$tmp_path" != "$backup_path" ]]; then

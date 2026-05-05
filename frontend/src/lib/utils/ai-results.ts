@@ -5,6 +5,8 @@ import type {
   InterviewSimulation,
   JobAnalysis,
   MatchReport,
+  ResumeOptimization,
+  ResumeOptimizationResult,
 } from "@/types";
 import type { RecommendedRole } from "@/types/student";
 
@@ -140,6 +142,15 @@ function normalizeTextArray(value: unknown): string[] {
   }
 
   return [];
+}
+
+function normalizeRiskLevel(value: unknown): ResumeOptimization["riskLevel"] {
+  const text = toText(value);
+
+  if (text.includes("高")) return "高";
+  if (text.includes("中")) return "中";
+
+  return "低";
 }
 
 function normalizeImportance(value: unknown): CoreAbility["importance"] {
@@ -402,6 +413,106 @@ export function normalizeImprovementPlan(raw: unknown): ImprovementPlan | null {
     recommendedOutputs: recommendedOutputs.length
       ? recommendedOutputs
       : ["岗位能力关键词清单", "STAR 经历素材库", "目标岗位小项目复盘", "一版可投递简历"],
+  };
+}
+
+function normalizeResumeOptimizationItem(value: unknown): ResumeOptimization | null {
+  if (!isRecord(value)) return null;
+
+  const sourceExperience = toText(
+    pick(value, [
+      "sourceExperience",
+      "rawExperience",
+      "experience",
+      "source",
+      "来源经历",
+      "原始经历",
+    ])
+  );
+  const before =
+    toText(pick(value, ["before", "original", "raw", "优化前", "原表达"])) ||
+    sourceExperience;
+  const after = toText(
+    pick(value, [
+      "after",
+      "resumeBullet",
+      "businessLanguage",
+      "optimized",
+      "optimizedResume",
+      "rewrite",
+      "优化后",
+      "简历条目",
+      "企业语言",
+    ])
+  );
+
+  if (!before && !after) return null;
+
+  return {
+    sourceExperience: sourceExperience || before || "来源经历",
+    before: before || "原始经历待补充",
+    after: after || before,
+    targetAbility: normalizeTextArray(
+      pick(value, ["targetAbility", "abilityTags", "abilities", "skills", "能力标签", "目标能力"])
+    ),
+    verificationQuestions: normalizeTextArray(
+      pick(value, [
+        "verificationQuestions",
+        "interviewQuestions",
+        "questions",
+        "面试验证问题",
+        "验证问题",
+      ])
+    ),
+    riskLevel: normalizeRiskLevel(pick(value, ["riskLevel", "risk", "风险等级"])),
+    note: toText(
+      pick(value, [
+        "note",
+        "authenticityNote",
+        "suggestion",
+        "comment",
+        "说明",
+        "真实性说明",
+        "建议",
+      ])
+    ),
+  };
+}
+
+export function normalizeResumeOptimization(
+  raw: unknown,
+): ResumeOptimizationResult | null {
+  const record = unwrapRecord(raw, [
+    "resumeOptimizationResult",
+    "resume",
+    "result",
+    "data",
+    "简历优化",
+  ]);
+  const source = Array.isArray(raw)
+    ? raw
+    : record
+      ? pick(record, [
+          "resumeOptimization",
+          "optimizations",
+          "items",
+          "resumeItems",
+          "简历优化项",
+          "优化建议",
+        ])
+      : null;
+  const items = (Array.isArray(source) ? source : [])
+    .map(normalizeResumeOptimizationItem)
+    .filter((item): item is ResumeOptimization => !!item);
+
+  if (items.length === 0) return null;
+
+  return {
+    resumeOptimization: items,
+    resumeSummary:
+      record === null
+        ? ""
+        : toText(pick(record, ["resumeSummary", "summary", "overallAdvice", "简历整体摘要", "整体建议"])),
   };
 }
 

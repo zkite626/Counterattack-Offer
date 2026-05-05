@@ -16,6 +16,11 @@ export interface MessageResult {
   message: string;
 }
 
+export interface ChangeEmailResult {
+  message: string;
+  user: User;
+}
+
 export const authApi = {
   async login(email: string, password: string): Promise<LoginResult> {
     return apiClient.post<LoginResult>("/auth/login", {
@@ -58,5 +63,19 @@ export const authApi = {
 
   async resetPassword(token: string, newPassword: string): Promise<MessageResult> {
     return apiClient.post<MessageResult>("/auth/reset-password", { token, newPassword }, { skipAuthRefresh: true });
+  },
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<MessageResult> {
+    return apiClient.post<MessageResult>("/auth/change-password", {
+      currentPassword,
+      newPassword,
+    });
+  },
+
+  async changeEmail(currentPassword: string, newEmail: string): Promise<ChangeEmailResult> {
+    return apiClient.post<ChangeEmailResult>("/auth/change-email", {
+      currentPassword,
+      newEmail,
+    });
   },
 };

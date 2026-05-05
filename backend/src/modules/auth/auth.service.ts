@@ -12,8 +12,12 @@ import { jwtVerify, SignJWT } from 'jose';
 import { createHash, randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { AppEnvironment } from '../../config/environment';
+import { AuditService } from '../audit/audit.service';
 import { MailService } from '../mail/mail.service';
 import type {
+  ChangeEmailDto,
+  ChangeEmailResponse,
+  ChangePasswordDto,
   ForgotPasswordDto,
   LoginDto,
   LoginResponse,
@@ -57,6 +61,7 @@ export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly mailService: MailService,
+    private readonly auditService: AuditService,
     configService: ConfigService<AppEnvironment, true>,
   ) {
     this.accessSecret = new TextEncoder().encode(
@@ -336,6 +341,204 @@ export class AuthService {
     }
   }
 
+  async changePassword(
+    userId: string,
+    dto: ChangePasswordDto,
+    context?: TokenRequestContext,
+  ): Promise<MessageResponse> {
+    try {
+      const currentPassword = this.readRequiredString(
+        dto.currentPassword,
+        'currentPassword',
+      );
+      const newPassword = this.readRequiredString(dto.newPassword, 'newPassword');
+
+      this.assertPassword(newPassword);
+
+      const user = await this.prismaService.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (user === null) {
+        throw new UnauthorizedException({
+          code: 'AUTH_TOKEN_INVALID',
+          message: '当前用户不存在',
+        });
+      }
+
+      const passwordMatched = await argon2.verify(
+        user.passwordHash,
+        currentPassword,
+      );
+
+      if (!passwordMatched) {
+        throw new BadRequestException({
+          code: 'AUTH_INVALID_CREDENTIALS',
+          message: '当前密码不正确',
+        });
+      }
+
+      const passwordHash = await argon2.hash(newPassword, {
+        type: argon2.argon2id,
+      });
+
+      const updatedUser = await this.prismaService.$transaction(async (tx) => {
+        await tx.user.update({
+          where: { id: userId },
+          data: { passwordHash },
+        });
+        await tx.passwordResetToken.updateMany({
+          where: { userId, usedAt: null },
+          data: { usedAt: new Date() },
+        });
+
+        return tx.user.findUniqueOrThrow({
+          where: { id: userId },
+        });
+      });
+
+      await this.sendPasswordChangedEmailSafely(updatedUser);
+      await this.auditService.record({
+        actorUserId: updatedUser.id,
+        action: 'auth.password_change',
+        targetType: 'users',
+        targetId: updatedUser.id,
+        metadata: {
+          email: updatedUser.email,
+        },
+        ipAddress: context?.ipAddress ?? null,
+        userAgent: context?.userAgent ?? null,
+      });
+
+      return { message: '密码已更新' };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async changeEmail(
+    userId: string,
+    dto: ChangeEmailDto,
+    context?: TokenRequestContext,
+  ): Promise<ChangeEmailResponse> {
+    try {
+      const currentPassword = this.readRequiredString(
+        dto.currentPassword,
+        'currentPassword',
+      );
+      const newEmail = this.normalizeEmail(
+        this.readRequiredString(dto.newEmail, 'newEmail'),
+      );
+
+      this.assertEmail(newEmail);
+
+      const user = await this.prismaService.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (user === null) {
+        throw new UnauthorizedException({
+          code: 'AUTH_TOKEN_INVALID',
+          message: '当前用户不存在',
+        });
+      }
+
+      const passwordMatched = await argon2.verify(
+        user.passwordHash,
+        currentPassword,
+      );
+
+      if (!passwordMatched) {
+        throw new BadRequestException({
+          code: 'AUTH_INVALID_CREDENTIALS',
+          message: '当前密码不正确',
+        });
+      }
+
+      if (newEmail === user.email) {
+        if (user.emailVerifiedAt === null) {
+          const rawToken = await this.createEmailVerificationToken(user);
+          await this.sendVerificationEmailSafely(user, rawToken);
+          return {
+            message: '邮箱未变更，已重新发送验证邮件',
+            user: this.toPublicUser(user),
+          };
+        }
+
+        return {
+          message: '邮箱地址未变化',
+          user: this.toPublicUser(user),
+        };
+      }
+
+      const existingUser = await this.prismaService.user.findUnique({
+        where: { email: newEmail },
+        select: { id: true },
+      });
+
+      if (existingUser !== null && existingUser.id !== userId) {
+        throw new ConflictException({
+          code: 'AUTH_EMAIL_ALREADY_REGISTERED',
+          message: '该邮箱已被其他账号使用',
+        });
+      }
+
+      const updatedUser = await this.prismaService.$transaction(async (tx) => {
+        const now = new Date();
+        const updated = await tx.user.update({
+          where: { id: userId },
+          data: {
+            email: newEmail,
+            emailVerifiedAt: null,
+            status: UserStatus.PENDING_EMAIL,
+          },
+        });
+
+        const rawToken = this.generateOpaqueToken();
+
+        await tx.emailVerificationToken.updateMany({
+          where: { userId, usedAt: null },
+          data: { usedAt: now },
+        });
+
+        await tx.emailVerificationToken.create({
+          data: {
+            userId,
+            tokenHash: this.hashToken(rawToken),
+            email: newEmail,
+            expiresAt: this.addMinutes(now, 60),
+          },
+        });
+
+        return { updated, rawToken };
+      });
+
+      await this.sendVerificationEmailSafely(
+        updatedUser.updated,
+        updatedUser.rawToken,
+      );
+      await this.auditService.record({
+        actorUserId: updatedUser.updated.id,
+        action: 'auth.email_change',
+        targetType: 'users',
+        targetId: updatedUser.updated.id,
+        metadata: {
+          previousEmail: user.email,
+          email: updatedUser.updated.email,
+        },
+        ipAddress: context?.ipAddress ?? null,
+        userAgent: context?.userAgent ?? null,
+      });
+
+      return {
+        message: '邮箱已更新，请前往新邮箱完成验证',
+        user: this.toPublicUser(updatedUser.updated),
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async forgotPassword(dto: ForgotPasswordDto): Promise<MessageResponse> {
     try {
       const email = this.normalizeEmail(
@@ -363,7 +566,10 @@ export class AuthService {
     }
   }
 
-  async resetPassword(dto: ResetPasswordDto): Promise<MessageResponse> {
+  async resetPassword(
+    dto: ResetPasswordDto,
+    context?: TokenRequestContext,
+  ): Promise<MessageResponse> {
     try {
       const token = this.readRequiredString(dto.token, 'token');
       const newPassword = this.readRequiredString(
@@ -411,6 +617,17 @@ export class AuthService {
       });
 
       await this.sendPasswordChangedEmailSafely(updatedUser);
+      await this.auditService.record({
+        actorUserId: updatedUser.id,
+        action: 'auth.password_reset',
+        targetType: 'users',
+        targetId: updatedUser.id,
+        metadata: {
+          email: updatedUser.email,
+        },
+        ipAddress: context?.ipAddress ?? null,
+        userAgent: context?.userAgent ?? null,
+      });
 
       return { message: '密码已重置，请重新登录' };
     } catch (error) {

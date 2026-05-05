@@ -5,7 +5,7 @@ import type { AppEnvironment } from '../../config/environment';
 import { SecretCryptoService } from './secret-crypto.service';
 
 const secretFieldPattern =
-  /(authorization|cookie|apiKey|api_key|password|token|secret)(["'\s:=]+)([^"'\s,}]+)/gi;
+  /(authorization|cookie|apiKey|api_key|password|token|secret|encryptedApiKey|encrypted_api_key|encryptedPassword|encrypted_password)(["'\s:=]+)([^"'\s,}]+)/gi;
 const bearerPattern = /(authorization\s*:\s*bearer\s+)[^\s,}]+/gi;
 const cookiePattern = /(cookie\s*:\s*)[^\n,}]+/gi;
 
@@ -97,7 +97,7 @@ export class SecretService {
   }
 
   private isSensitiveKey(key: string): boolean {
-    return /authorization|cookie|apiKey|api_key|password|token|secret/i.test(
+    return /authorization|cookie|apiKey|api_key|password|token|secret|encryptedApiKey|encrypted_api_key|encryptedPassword|encrypted_password/i.test(
       key,
     );
   }

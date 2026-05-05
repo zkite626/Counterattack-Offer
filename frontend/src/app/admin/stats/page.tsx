@@ -17,7 +17,10 @@ const EMPTY_STATS: AdminStats = {
   aiLatencyP50: 0,
   aiLatencyP95: 0,
   estimatedModelCost: 0,
+  smtpSuccessRate: 0,
   mailSuccessRate: 0,
+  loginFailureCount: 0,
+  apiErrorCodeDistribution: [],
 };
 
 export default function AdminStatsPage() {
@@ -43,7 +46,8 @@ export default function AdminStatsPage() {
     ["P50 延迟", `${stats.aiLatencyP50}ms`],
     ["P95 延迟", `${stats.aiLatencyP95}ms`],
     ["成本估算", `¥${stats.estimatedModelCost.toFixed(2)}`],
-    ["邮件成功率", `${Math.round(stats.mailSuccessRate * 100)}%`],
+    ["SMTP 成功率", `${Math.round(stats.smtpSuccessRate * 100)}%`],
+    ["登录失败", stats.loginFailureCount],
   ];
 
   return (
@@ -62,6 +66,21 @@ export default function AdminStatsPage() {
             <span className="admin-stat__label">{label}</span>
           </div>
         ))}
+      </div>
+      <div className="admin-card">
+        <h2 className="admin-card__title">API 错误码分布</h2>
+        <div className="admin-error-codes">
+          {stats.apiErrorCodeDistribution.length === 0 ? (
+            <p className="admin-muted">暂无错误码统计</p>
+          ) : (
+            stats.apiErrorCodeDistribution.map((item) => (
+              <div className="admin-error-code" key={item.errorCode}>
+                <span className="admin-error-code__label">{item.errorCode}</span>
+                <span className="admin-error-code__value">{item.count}</span>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

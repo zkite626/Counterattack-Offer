@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
-import { SecretCryptoService } from '../../common/security/secret-crypto.service';
-import { SecretService } from '../../common/security/secret.service';
+import { RateLimitModule } from '../../common/rate-limit/rate-limit.module';
+import { SecurityModule } from '../../common/security/security.module';
+import { AuditModule } from '../audit/audit.module';
 import { AuthModule } from '../auth/auth.module';
 import { ModelConfigController } from './model-config.controller';
 import { ModelConfigService } from './model-config.service';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, RateLimitModule, SecurityModule, AuditModule],
   controllers: [ModelConfigController],
-  providers: [ModelConfigService, SecretCryptoService, SecretService],
+  providers: [ModelConfigService],
   exports: [ModelConfigService],
 })
 export class ModelConfigModule {}

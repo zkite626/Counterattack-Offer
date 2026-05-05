@@ -13,6 +13,16 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
+function readRequestId(error: Error | null): string | null {
+  const candidate = error as (Error & { requestId?: string }) | null;
+
+  if (candidate !== null && typeof candidate.requestId === "string") {
+    return candidate.requestId;
+  }
+
+  return null;
+}
+
 export default class ErrorBoundary extends Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
@@ -39,6 +49,7 @@ export default class ErrorBoundary extends Component<
       if (this.props.fallback) {
         return this.props.fallback;
       }
+      const requestId = readRequestId(this.state.error);
 
       return (
         <div className="error-fallback">
@@ -48,6 +59,11 @@ export default class ErrorBoundary extends Component<
             <p className="error-fallback__message">
               抱歉，页面加载时遇到了意外错误。请尝试刷新页面或返回上一页。
             </p>
+            {requestId && (
+              <p className="error-fallback__message">
+                请求编号：{requestId}
+              </p>
+            )}
             {process.env.NODE_ENV === "development" && this.state.error && (
               <details className="error-fallback__details">
                 <summary>错误详情（开发模式）</summary>

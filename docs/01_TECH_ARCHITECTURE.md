@@ -136,6 +136,7 @@ Web 使用 Cookie 时，API 请求必须携带 `credentials: "include"`；移动
 
 | 模块 | 职责 |
 |------|------|
+| `BootstrapModule` | 空库首次启动时初始化默认管理员和 bootstrap 标记 |
 | `AuthModule` | 注册、登录、刷新 Token、登出、邮箱验证、找回密码 |
 | `UsersModule` | 用户资料、用户状态、个人设置 |
 | `ModelConfigModule` | 用户模型、全局模型、密钥加密、连接测试 |
@@ -184,6 +185,17 @@ Mobile Login
   → 返回业务结果
 ```
 
+### 空库初始化链路
+
+```
+NestJS 启动
+  → 检查 users 表是否为空
+  → 空库：用 ADMIN_EMAIL / ADMIN_PASSWORD 创建默认管理员
+  → 写入 app_settings.system.bootstrap
+  → 写入 audit_logs(system.admin.bootstrap)
+  → 非空库：直接跳过
+```
+
 ## 1.7 关键技术决策
 
 | 决策 | 选择 | 原因 |
@@ -220,8 +232,8 @@ REFRESH_TOKEN_TTL=30d
 APP_KEY_ENCRYPTION_SECRET=base64-32-byte-secret
 
 # 管理员初始化
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=replace-with-strong-password
+ADMIN_EMAIL=admin@nixioffer.com
+ADMIN_PASSWORD=Admin@123
 
 # 前端
 NEXT_PUBLIC_API_BASE_URL=https://api.offer.example.com/api/v1

@@ -7,6 +7,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { RateLimitService } from '../../common/rate-limit/rate-limit.service';
 import { AuditService } from '../audit/audit.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequireRoles } from '../auth/decorators/require-roles.decorator';
@@ -29,6 +30,7 @@ export class AdminSmtpController {
   constructor(
     private readonly mailService: MailService,
     private readonly auditService: AuditService,
+    private readonly rateLimitService: RateLimitService,
   ) {}
 
   @Get()
@@ -60,6 +62,8 @@ export class AdminSmtpController {
           secure: setting.secure,
           fromEmail: setting.fromEmail,
           isEnabled: setting.isEnabled,
+          passwordUpdated:
+            typeof dto.password === 'string' && dto.password.trim().length > 0,
         },
         ipAddress: request.ip ?? null,
         userAgent: request.header('user-agent') ?? null,
@@ -78,6 +82,7 @@ export class AdminSmtpController {
     @Req() request: RequestWithContext,
   ): Promise<SmtpTestResponse> {
     try {
+      await this.rateLimitService.consumeSmtpTest(user.id);
       const result = await this.mailService.sendTestEmail(dto);
 
       await this.auditService.record({

@@ -1069,10 +1069,11 @@
   }
 
   .home-hero__art {
-    background-position: 58% center;
-    background-size: cover;
-    opacity: 0.72;
-    transform: scale(1.04);
+    background-position: 76% center;
+    background-size: auto 100%;
+    opacity: 0.92;
+    mix-blend-mode: normal;
+    transform: scale(1.02);
   }
 
   .home-hero__content {

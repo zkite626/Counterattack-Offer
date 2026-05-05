@@ -111,3 +111,11 @@
 
 后续如引入 React Query/SWR，需先更新本文档和任务文档。
 
+## 10.9 空库初始化流
+
+```
+后端启动
+  → 查询 users 表
+  → 如果为空：创建默认管理员、写入 system.bootstrap、写入 system.admin.bootstrap 审计
+  → 如果非空：跳过
+```

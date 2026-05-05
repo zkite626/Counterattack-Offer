@@ -57,9 +57,18 @@
   color: var(--color-text-secondary);
 }
 
+.step-nav__item--accessible .step-nav__icon {
+  color: var(--color-text-tertiary);
+}
+
 .step-nav__item--locked {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.step-nav__item--locked .step-nav__icon,
+.step-nav__item--locked .step-nav__label {
+  color: var(--color-text-tertiary);
 }
 
 .step-nav__item--current {
@@ -80,7 +89,12 @@
 }
 
 .step-nav__item--current .step-nav__icon {
+  color: var(--color-primary-600);
   animation: stepPulse 2s ease-in-out infinite;
+}
+
+[data-theme="dark"] .step-nav__item--current .step-nav__icon {
+  color: var(--color-primary-400);
 }
 
 @keyframes stepPulse {
@@ -89,6 +103,10 @@
 }
 
 .step-nav__item--completed .step-nav__label {
+  color: var(--color-success-500);
+}
+
+.step-nav__item--completed .step-nav__icon {
   color: var(--color-success-500);
 }
 

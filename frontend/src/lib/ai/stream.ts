@@ -1,17 +1,53 @@
 import { useState, useCallback, useRef } from 'react';
 import { apiClient } from "@/lib/api/client";
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getSSEErrorMessage(payload: Record<string, unknown>): string | null {
+  const error = payload.error;
+  if (isRecord(error) && typeof error.message === "string") {
+    return error.message;
+  }
+
+  if (!("choices" in payload) && typeof payload.message === "string") {
+    return payload.message;
+  }
+
+  return null;
+}
+
 // SSE 数据行解析：从 SSE 文本中提取 content 字段
 function parseSSELine(line: string): string | null {
   if (!line.startsWith('data: ')) return null;
   const data = line.slice(6).trim();
   if (data === '[DONE]') return null;
+
+  let parsed: unknown;
   try {
-    const parsed = JSON.parse(data);
-    return parsed.choices?.[0]?.delta?.content ?? null;
+    parsed = JSON.parse(data) as unknown;
   } catch {
     return null;
   }
+
+  if (!isRecord(parsed)) return null;
+
+  const errorMessage = getSSEErrorMessage(parsed);
+  if (errorMessage) {
+    throw new Error(errorMessage);
+  }
+
+  const choices = parsed.choices;
+  if (!Array.isArray(choices)) return null;
+
+  const firstChoice = choices[0];
+  if (!isRecord(firstChoice)) return null;
+
+  const delta = firstChoice.delta;
+  if (!isRecord(delta) || typeof delta.content !== "string") return null;
+
+  return delta.content;
 }
 
 /**

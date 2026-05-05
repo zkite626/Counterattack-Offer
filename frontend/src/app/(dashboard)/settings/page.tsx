@@ -9,23 +9,8 @@ import Input from "@/components/ui/Input";
 import Modal from "@/components/ui/Modal";
 import Tag from "@/components/ui/Tag";
 import Icon from "@/components/ui/Icon";
+import { PROVIDER_OPTIONS, getProviderBaseUrl, getProviderIcon, getProviderLabel } from "@/lib/labels";
 import "./settings.css";
-
-const PROVIDER_LABELS: Record<string, string> = {
-  deepseek: "DeepSeek",
-  openai: "OpenAI",
-  zhipu: "智谱",
-  alibaba: "阿里云",
-  custom: "自定义",
-};
-
-const PROVIDER_ICON: Record<string, string> = {
-  deepseek: "D",
-  openai: "O",
-  zhipu: "Z",
-  alibaba: "Q",
-  custom: "C",
-};
 
 interface ModelFormData {
   displayName: string;
@@ -85,15 +70,24 @@ export default function SettingsPage() {
     setShowModal(true);
   }, []);
 
+  const handleProviderChange = useCallback((provider: string) => {
+    const baseUrl = getProviderBaseUrl(provider);
+    setForm((prev) => ({
+      ...prev,
+      provider,
+      baseUrl: baseUrl || prev.baseUrl,
+    }));
+  }, []);
+
   const handleSave = useCallback(
     async (event: FormEvent) => {
       event.preventDefault();
       if (!form.displayName.trim() || !form.baseUrl.trim() || !form.model.trim()) {
-        setFormError("请填写模型名称、API 地址和 Model ID");
+        setFormError("请填写模型名称、接口地址和模型 ID");
         return;
       }
       if (!editingModel && !form.apiKey.trim()) {
-        setFormError("新增模型需要填写 API Key，保存后前端只显示掩码");
+        setFormError("新增模型需要填写密钥，保存后只显示掩码");
         return;
       }
 
@@ -125,7 +119,7 @@ export default function SettingsPage() {
   const handleDelete = useCallback(
     async (model: AIModelConfig) => {
       if (model.scope === "global") return;
-      if (window.confirm("确定删除该模型？后端会同步删除密钥配置。")) {
+      if (window.confirm("确定删除该模型？关联密钥也会一起移除。")) {
         await removeModel(model.id);
       }
     },
@@ -157,7 +151,7 @@ export default function SettingsPage() {
       <div className="settings__header">
         <h1 className="settings__title">模型管理</h1>
         <p className="settings__subtitle">
-          API Key 由后端加密保存，前端只展示掩码和连接状态
+          密钥会安全保存，页面仅展示掩码和连接状态。
         </p>
       </div>
 
@@ -182,6 +176,10 @@ export default function SettingsPage() {
 
         {isLoading ? (
           <Card className="settings__model-card">模型加载中...</Card>
+        ) : models.length === 0 ? (
+          <Card className="settings__empty-card">
+            <p className="settings__empty-text">当前还没有添加模型，先点「添加模型」创建一个吧。</p>
+          </Card>
         ) : (
           <div className="settings__model-grid">
             {models.map((model) => (
@@ -216,29 +214,40 @@ export default function SettingsPage() {
             onChange={(e) => setForm((prev) => ({ ...prev, displayName: e.target.value }))}
             required
           />
+          <div className="settings__field">
+            <label className="settings__label" htmlFor="model-provider">
+              模型服务商<span className="settings__required">*</span>
+            </label>
+            <select
+              id="model-provider"
+              className="settings__select"
+              value={form.provider}
+              onChange={(e) => handleProviderChange(e.target.value)}
+              required
+            >
+              {PROVIDER_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
           <Input
-            label="Provider"
-            placeholder="deepseek / openai / custom"
-            value={form.provider}
-            onChange={(e) => setForm((prev) => ({ ...prev, provider: e.target.value }))}
-            required
-          />
-          <Input
-            label="API Base URL"
+            label="接口地址"
             placeholder="https://api.deepseek.com"
             value={form.baseUrl}
             onChange={(e) => setForm((prev) => ({ ...prev, baseUrl: e.target.value }))}
             required
           />
           <Input
-            label="Model ID"
+            label="模型 ID"
             placeholder="deepseek-chat"
             value={form.model}
             onChange={(e) => setForm((prev) => ({ ...prev, model: e.target.value }))}
             required
           />
           <Input
-            label={editingModel ? "新 API Key（不填则保持原密钥）" : "API Key"}
+            label={editingModel ? "新密钥（不填则保持原密钥）" : "密钥"}
             type="password"
             placeholder="sk-..."
             value={form.apiKey}
@@ -289,12 +298,12 @@ function ModelCard({
     >
       <div className="settings__model-card-header">
         <div className="settings__model-icon">
-          {PROVIDER_ICON[model.provider] ?? model.displayName.charAt(0)}
+          {getProviderIcon(model.provider, model.displayName)}
         </div>
         <div className="settings__model-info">
           <h3 className="settings__model-name">{model.displayName}</h3>
           <span className="settings__model-provider">
-            {PROVIDER_LABELS[model.provider] ?? model.provider}
+            {getProviderLabel(model.provider)}
           </span>
         </div>
         {isActive && <Tag variant="success" size="sm">默认</Tag>}
@@ -307,8 +316,8 @@ function ModelCard({
       <p className="settings__model-url">{model.baseUrl}</p>
 
       <div className="settings__key-warning">
-        <Icon name="warning" size="1.125em" className="settings__key-warning-icon" />
-        <span>Key：{model.apiKeyHint || "已由后端保存"}</span>
+        <Icon name="key" size="1.125em" className="settings__key-warning-icon" />
+        <span>密钥：{model.apiKeyHint || "已安全保存"}</span>
       </div>
 
       {model.lastTestStatus && (

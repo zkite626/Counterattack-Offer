@@ -5,6 +5,7 @@ export interface RequestContextFields {
   requestId: string;
   startedAt: number;
   user?: AuthenticatedUser;
+  errorCode?: string;
 }
 
 export type RequestWithContext = Request & RequestContextFields;

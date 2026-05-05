@@ -8,10 +8,21 @@ interface ErrorPageProps {
   reset: () => void;
 }
 
+function readRequestId(error: Error): string | null {
+  const candidate = error as Error & { requestId?: string };
+
+  if (typeof candidate.requestId === "string") {
+    return candidate.requestId;
+  }
+
+  return null;
+}
+
 export default function GlobalError({ error, reset }: ErrorPageProps) {
   useEffect(() => {
     console.error("[GlobalError]", error);
   }, [error]);
+  const requestId = readRequestId(error);
 
   return (
     <div className="error-fallback">
@@ -21,6 +32,9 @@ export default function GlobalError({ error, reset }: ErrorPageProps) {
         <p className="error-fallback__message">
           抱歉，发生了意外错误。请尝试重新加载页面。
         </p>
+        {requestId && (
+          <p className="error-fallback__message">请求编号：{requestId}</p>
+        )}
         <div className="error-fallback__actions">
           <button className="btn btn--primary" onClick={reset}>
             重试

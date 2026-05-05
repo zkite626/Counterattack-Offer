@@ -138,9 +138,9 @@ export default function ProfilePage() {
   return (
     <div className="profile-page">
       <div className="profile-page__header">
-        <h1 className="profile-page__title">学生信息</h1>
+        <h1 className="profile-page__title">学生资料</h1>
         <p className="profile-page__subtitle">
-          填写你的基本信息和经历，AI 将为你生成求职画像
+          填写你的求职背景和真实经历，AI 将为你生成求职画像
         </p>
       </div>
 

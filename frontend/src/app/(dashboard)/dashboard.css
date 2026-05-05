@@ -150,6 +150,7 @@
   .dashboard__logo-wide { display: none; }
   .dashboard__logo-square { display: block; }
   .dashboard__logo-img { height: 32px; }
+
 }
 
 /* 主题切换：亮色/暗色 Logo */
@@ -275,6 +276,12 @@
 .dashboard__stepnav {
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
+}
+
+@media (max-width: 1023px) {
+  .dashboard--sidebar-open .dashboard__stepnav {
+    display: none;
+  }
 }
 
 /* ── Body ── */

@@ -7,8 +7,12 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
+import { RateLimitModule } from './common/rate-limit/rate-limit.module';
+import { SecurityModule } from './common/security/security.module';
 import { validateEnvironment } from './config/environment';
 import { PrismaModule } from './prisma/prisma.module';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { BootstrapModule } from './bootstrap/bootstrap.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AiModule } from './modules/ai/ai.module';
 import { AuditModule } from './modules/audit/audit.module';
@@ -27,7 +31,10 @@ import { UsersModule } from './modules/users/users.module';
       envFilePath: ['.env.local', '.env'],
       validate: validateEnvironment,
     }),
+    SecurityModule,
+    RateLimitModule,
     PrismaModule,
+    BootstrapModule,
     HealthModule,
     AuthModule,
     UsersModule,
@@ -39,6 +46,7 @@ import { UsersModule } from './modules/users/users.module';
     AdminModule,
     AuditModule,
   ],
+  providers: [GlobalExceptionFilter, RequestIdMiddleware, RequestLoggerMiddleware],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

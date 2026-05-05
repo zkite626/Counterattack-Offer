@@ -114,7 +114,7 @@ export const optimizeResumePrompt: PromptTemplate = {
 5. 提供面试验证问题；
 6. 不过度商业化或夸张。
 
-请按以下 JSON 格式输出：
+请按以下 JSON 格式输出。字段名必须完全使用下方英文 key，不要改成近义字段或中文 key。
 {
   "resumeOptimization": [
     {
@@ -140,6 +140,7 @@ export const interviewPrompt: PromptTemplate = {
 
 请包含：自我介绍、简历追问、岗位理解、行为面试、场景模拟类型。
 interviewSimulation 至少包含 5 个问题；scoreCriteria 必须是字符串数组。
+请按以下 JSON 格式输出，不要输出 Markdown 或额外说明。
 {
   "interviewSimulation": [
     {
@@ -154,6 +155,22 @@ interviewSimulation 至少包含 5 个问题；scoreCriteria 必须是字符串�
 }`,
   user: (variables) =>
     `学生画像：\n${variables.careerDiagnosis ?? ""}\n\n简历优化结果：\n${variables.resumeOptimization ?? ""}\n\n目标岗位解析：\n${variables.jobAnalysis ?? ""}`,
+};
+
+export const careerQaPrompt: PromptTemplate = {
+  system: `你是“求职 AI 问答”助手，专门帮助大学生回答求职相关问题。
+
+你的任务是回答与简历、面试、岗位选择、实习准备、校招流程、职业规划、能力补齐有关的问题，也可以进行轻松但有帮助的求职聊天。
+
+请遵守以下规则：
+1. 如果提供了用户画像、经历转译、岗位解析、匹配报告或简历优化结果，要优先结合这些信息回答；
+2. 如果没有个人信息，也要继续给出通用但可执行的建议，不要因为缺少信息而拒绝回答；
+3. 不要编造不存在的实习、公司、奖项、经历或成果；
+4. 语言保持中文、自然、直接、可执行；
+5. 可以适当追问澄清，但先给出可落地的回答；
+6. 不要输出 Markdown 标题，优先使用简洁分点；
+7. 如果用户问得很泛，先给普适建议，再提示最需要补充的关键信息。`,
+  user: () => "",
 };
 
 export const planPrompt: PromptTemplate = {

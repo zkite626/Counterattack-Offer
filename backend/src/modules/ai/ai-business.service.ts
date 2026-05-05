@@ -14,6 +14,7 @@ import type {
 } from "./dto/ai-business.dto";
 import {
   analyzeJobPrompt,
+  careerQaPrompt,
   diagnosePrompt,
   generateJdPrompt,
   interviewPrompt,
@@ -288,6 +289,62 @@ export class AiBusinessService {
     }
   }
 
+  async careerQa(
+    userId: string,
+    dto: AIBusinessRequestDto,
+  ): Promise<ReadableStream<Uint8Array>> {
+    try {
+      const body = this.toRecord(dto, "body");
+      const input = this.isRecord(body.input) ? { ...body.input } : { ...body };
+      const modelConfigId =
+        this.readOptionalString(body.modelConfigId, "modelConfigId") ??
+        this.readOptionalString(input.modelConfigId, "input.modelConfigId") ??
+        null;
+      const contextSummary =
+        this.readOptionalString(
+          input.contextSummary ?? input.userContext ?? input.profileSummary,
+          "input.contextSummary",
+        ) ?? "";
+      const messages = this.readChatMessages(
+        input.messages ?? input.history,
+        "messages",
+      );
+      const question = this.readOptionalString(input.question, "input.question");
+      const chatMessages: ChatMessage[] =
+        messages.length > 0
+          ? messages
+          : question
+            ? [{ role: "user" as const, content: question }]
+            : [];
+
+      if (chatMessages.length === 0) {
+        throw this.validationError("缺少 messages");
+      }
+
+      const systemContent = [
+        careerQaPrompt.system,
+        contextSummary.length > 0
+          ? `可参考的用户信息（只有相关时再使用，没有信息也要正常回答）：\n${contextSummary}`
+          : null,
+      ]
+        .filter((line): line is string => Boolean(line))
+        .join("\n\n");
+
+      const requestMessages: ChatMessage[] = [
+        { role: "system", content: systemContent },
+        ...chatMessages,
+      ];
+
+      return await this.aiService.chatStream(userId, {
+        module: "career_qa",
+        modelConfigId,
+        messages: requestMessages,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   private async invokeJson(
     userId: string,
     context: AIBusinessContext,
@@ -366,6 +423,51 @@ export class AiBusinessService {
       { role: "system", content: prompt.system },
       { role: "user", content: prompt.user(variables) },
     ];
+  }
+
+  private readChatMessages(
+    value: unknown,
+    fieldName: string,
+  ): ChatMessage[] {
+    if (value === undefined || value === null) {
+      return [];
+    }
+
+    if (!Array.isArray(value)) {
+      throw this.validationError(`${fieldName} 必须是消息数组`);
+    }
+
+    return value
+      .flatMap((item, index) => {
+        if (!this.isRecord(item)) {
+          throw this.validationError(`${fieldName}[${index}] 必须是对象`);
+        }
+
+        const role = this.readOptionalString(
+          item.role,
+          `${fieldName}[${index}].role`,
+        );
+        const content = this.readOptionalString(
+          item.content,
+          `${fieldName}[${index}].content`,
+        );
+
+        if (!role || !content) {
+          throw this.validationError(
+            `${fieldName}[${index}] 必须包含 role 和 content`,
+          );
+        }
+
+        if (role !== "user" && role !== "assistant") {
+          return [];
+        }
+
+        return [{ role, content }];
+      })
+      .filter(
+        (message): message is ChatMessage =>
+          message.role === "user" || message.role === "assistant",
+      );
   }
 
   private async resolveContext(

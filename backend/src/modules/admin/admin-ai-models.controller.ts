@@ -8,6 +8,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { RateLimitService } from '../../common/rate-limit/rate-limit.service';
 import { AuditService } from '../audit/audit.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequireRoles } from '../auth/decorators/require-roles.decorator';
@@ -30,6 +31,7 @@ export class AdminAIModelsController {
   constructor(
     private readonly modelConfigService: ModelConfigService,
     private readonly auditService: AuditService,
+    private readonly rateLimitService: RateLimitService,
   ) {}
 
   @Get()
@@ -53,7 +55,7 @@ export class AdminAIModelsController {
         dto,
       );
 
-      await this.recordAudit(user, request, 'admin.ai_model.create', model);
+      await this.recordAudit(user, request, 'admin.ai_model.create', model, dto);
 
       return { model };
     } catch (error) {
@@ -71,7 +73,7 @@ export class AdminAIModelsController {
     try {
       const model = await this.modelConfigService.updateGlobalModel(id, dto);
 
-      await this.recordAudit(user, request, 'admin.ai_model.update', model);
+      await this.recordAudit(user, request, 'admin.ai_model.update', model, dto);
 
       return { model };
     } catch (error) {
@@ -108,6 +110,7 @@ export class AdminAIModelsController {
     @Req() request: RequestWithContext,
   ): Promise<ModelTestResponse> {
     try {
+      await this.rateLimitService.consumeModelTest(user.id);
       const result = await this.modelConfigService.testGlobalModel(user.id, id);
 
       await this.auditService.record({
@@ -145,6 +148,7 @@ export class AdminAIModelsController {
     request: RequestWithContext,
     action: string,
     model: AIModelConfigResponse,
+    dto?: SaveAIModelDto | UpdateAIModelDto,
   ): Promise<void> {
     await this.auditService.record({
       actorUserId: user.id,
@@ -157,6 +161,10 @@ export class AdminAIModelsController {
         baseUrl: model.baseUrl,
         model: model.model,
         apiKeyHint: model.apiKeyHint,
+        apiKeyUpdated:
+          dto === undefined
+            ? false
+            : typeof dto.apiKey === 'string' && dto.apiKey.trim().length > 0,
         isDefault: model.isDefault,
         isEnabled: model.isEnabled,
       },

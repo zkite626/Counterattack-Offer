@@ -351,6 +351,34 @@ model MailEvent {
   @@map("mail_events")
 }
 
+model RateLimitBucket {
+  key       String   @id @db.VarChar(160)
+  count     Int      @default(0)
+  resetAt   DateTime @map("reset_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([resetAt])
+  @@map("rate_limit_buckets")
+}
+
+model ApiErrorLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId  String   @map("request_id") @db.VarChar(128)
+  method     String   @db.VarChar(12)
+  path       String
+  statusCode Int      @map("status_code")
+  errorCode  String   @map("error_code") @db.VarChar(120)
+  userId     String?  @map("user_id") @db.Uuid
+  ipAddress  String?  @map("ip_address") @db.Inet
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([requestId])
+  @@index([errorCode])
+  @@index([statusCode])
+  @@index([createdAt])
+  @@map("api_error_logs")
+}
+
 model AppSetting {
   key           String   @id @db.VarChar(100)
   value         Json
