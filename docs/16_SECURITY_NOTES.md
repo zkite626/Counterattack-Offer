@@ -1,102 +1,114 @@
 # 16 — 安全注意事项
 
-## 16.1 API Key 安全
+## 16.1 敏感信息原则
 
-### 问题
+以下信息不得进入前端持久化、日志、审计明文或 Git：
 
-用户在前端输入的 AI 模型 API Key 需要安全处理。
+- 用户密码
+- Refresh Token
+- AI API Key
+- SMTP 密码
+- JWT Secret
+- 加密主密钥
+- 数据库连接串
 
-### 方案
+## 16.2 API Key 与 SMTP 密码
 
-1. **传输安全**：API Key 通过 HTTPS 加密传输（生产环境强制 HTTPS）
-2. **存储安全（MVP）**：localStorage 中使用简单加密存储
-   - 使用 AES 加密，密钥来源于用户 JWT Token
-   - 不以明文存储 API Key
-3. **服务端代理**：所有 AI 调用通过 API Route 代理
-   - 前端将加密的 Key 发送到 API Route
-   - API Route 解密后调用目标模型 API
-   - 目标 API Key 不出现在前端网络请求中
-4. **未来改进**：接入数据库后，API Key 存储在服务端加密字段
+使用 AES-256-GCM 加密存储：
 
-### 禁止事项
+- `encrypted_api_key`
+- `encrypted_password`
 
-- ❌ 不在前端直接调用第三方 AI API
-- ❌ 不在 `NEXT_PUBLIC_` 环境变量中存放 API Key
-- ❌ 不在日志中打印 API Key
-- ❌ 不在 Git 中提交 `.env.local`
+展示时只显示掩码：
 
----
-
-## 16.2 JWT 安全
-
-1. **密钥强度**：JWT_SECRET 至少 32 字符，使用随机字符串
-2. **HttpOnly Cookie**：Token 存储在 HttpOnly Cookie 中，JavaScript 无法读取
-3. **Secure Flag**：生产环境强制 Secure 标志
-4. **SameSite=Lax**：防止 CSRF 攻击
-5. **过期时间**：默认 7 天，不超过 30 天
-6. **签名算法**：HS256
-
----
-
-## 16.3 XSS 防护
-
-1. **React 自动转义**：React 默认对 JSX 中的变量进行 HTML 转义
-2. **避免 dangerouslySetInnerHTML**：除非必要（如 Markdown 渲染），不使用
-3. **Markdown 渲染**：如果渲染 AI 返回的 Markdown，使用安全的 Markdown 解析器
-4. **用户输入校验**：所有表单输入在前端和后端都进行校验
-
----
-
-## 16.4 CORS 配置
-
-Next.js API Routes 默认同源，无需额外 CORS 配置。如果需要跨域访问：
-
-```typescript
-// 在 API Route 中设置
-const headers = {
-  'Access-Control-Allow-Origin': process.env.NEXT_PUBLIC_APP_URL,
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+```text
+sk-***abcd
 ```
 
----
+更新密钥时：
 
-## 16.5 输入校验
+1. 校验权限
+2. 加密新值
+3. 更新指纹和掩码
+4. 写入审计日志
+5. 不返回明文
 
-### 前端校验
+## 16.3 CORS 安全
 
-- 邮箱格式验证
-- 密码长度（≥8字符）
-- 必填字段非空
-- JD 文本最大长度限制（10000字符）
+前端部署在 Vercel、后端独立服务器时，CORS 是上线关键项。
 
-### 后端校验
+必须：
 
-- 所有 API Route 入口进行参数校验
-- 类型检查
-- 长度限制
-- 格式验证
+- 使用精确 Origin 白名单
+- 生产环境禁止 `origin: "*"`
+- credentials 请求必须使用 `Access-Control-Allow-Credentials: true`
+- Cookie 跨站必须 `SameSite=None; Secure`
+- 移动端使用 Bearer Token，不依赖 CORS Cookie
 
----
+## 16.4 CSRF
 
-## 16.6 速率限制（建议）
+Web 使用跨域 Cookie 时需考虑 CSRF。
 
-MVP 阶段暂不实现，但建议后续添加：
+基础防护：
 
-- 登录接口：5次/分钟
-- AI 调用接口：10次/分钟
-- 注册接口：3次/小时
+- Refresh Token Cookie 限定 `Path=/api/v1/auth`
+- 写操作使用 Access Token Bearer Header
+- 后端校验 `Origin` 和 `Referer`
+- 关键操作可增加 CSRF Token
 
----
+## 16.5 XSS
 
-## 16.7 .gitignore
+- React 默认转义用户内容
+- 避免 `dangerouslySetInnerHTML`
+- 渲染 AI Markdown 前做安全清洗
+- 用户输入和 AI 输出都按不可信内容处理
 
-确保以下文件不被提交：
+## 16.6 密码安全
 
+- 新密码至少 8 位，建议包含字母和数字
+- 新用户使用 Argon2id 哈希
+- 如兼容旧 bcrypt 哈希，登录成功后可升级哈希
+- 找回密码成功后撤销所有 Refresh Token
+
+## 16.7 限流
+
+建议基础限流：
+
+| 接口 | 限制 |
+|------|------|
+| 登录 | 5 次/分钟/IP + 邮箱 |
+| 注册 | 3 次/小时/IP |
+| 找回密码 | 3 次/小时/邮箱 |
+| 发送验证邮件 | 3 次/小时/用户 |
+| 模型测试 | 10 次/小时/用户 |
+| AI 调用 | 60 次/小时/用户 |
+
+## 16.8 日志脱敏
+
+日志中必须脱敏：
+
+```text
+Authorization: Bearer ***
+Cookie: ***
+apiKey: ***
+password: ***
+token: ***
 ```
-.env.local
-.env.production
-node_modules/
-.next/
-```
+
+AI 调用日志只记录模型、耗时、Token 用量、错误码，不记录完整 API Key。
+
+## 16.9 管理员安全
+
+- 至少保留一个管理员
+- 管理员登录建议后续加入 MFA
+- 管理员修改全局模型、SMTP、用户角色必须写审计日志
+- 管理员不能查看用户 API Key 明文
+
+## 16.10 数据库安全
+
+- PostgreSQL 禁止公网裸露
+- 使用独立数据库账号，最小权限
+- 定期备份并加密
+- 生产数据库禁止使用开发密码
+- Prisma migration 必须经过审核
+

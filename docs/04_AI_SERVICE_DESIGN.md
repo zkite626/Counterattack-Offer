@@ -1,319 +1,228 @@
 # 04 — AI 服务设计文档
 
-## 4.1 架构概览
+## 4.1 设计目标
 
-```
-用户选择模型 → 前端传递 modelConfig → API Route 构造请求
-  → OpenAI Chat Completions API → 解析响应 → 返回类型化数据
-```
+AI 服务升级后由后端统一代理，目标是：
 
-### 核心原则
-
-1. **OpenAI 兼容协议**：所有模型统一使用 Chat Completions API
-2. **服务端代理**：API Key 不暴露在前端，由 API Route 代理调用
-3. **Prompt 模板化**：每个模块有独立 Prompt 模板，支持变量注入
-4. **结构化输出**：要求 AI 输出 JSON，使用 `response_format: { type: "json_object" }`
-5. **JSON 容错解析**：使用 `parseAIJson()` 自动去除 Markdown 代码围栏、提取 JSON 边界
-6. **流式支持**：面试对话模块支持 SSE 流式响应
+1. 用户可安全保存自己的模型配置和 API Key
+2. 管理员可配置全局默认模型和全局 API Key
+3. Web 和移动端都不接触第三方模型明文密钥
+4. 所有 AI 调用可记录、可限流、可排查
+5. OpenAI 兼容协议保持为统一适配层
 
 ---
 
-## 4.2 统一 AI 客户端 (`lib/ai/client.ts`)
+## 4.2 模型选择优先级
+
+每次 AI 调用按以下顺序解析模型：
+
+```
+请求 modelConfigId
+  → 用户默认模型
+  → 管理员全局默认模型
+  → 返回 AI_MODEL_NOT_CONFIGURED
+```
+
+管理员可设置平台策略：
+
+| 策略 | 说明 |
+|------|------|
+| `allow_user_models` | 是否允许用户添加自定义模型 |
+| `allow_global_fallback` | 用户无模型时是否允许使用全局模型 |
+| `require_model_test_before_use` | 模型必须测试成功后才能使用 |
+| `max_user_models` | 每个用户最多保存模型数 |
+| `daily_ai_call_limit` | 用户每日 AI 调用上限 |
+
+---
+
+## 4.3 API Key 加密存储
+
+### 存储原则
+
+- 数据库永不保存 API Key 明文
+- 前端永不接收 API Key 明文
+- 后端日志、审计日志、错误栈不得包含 API Key
+- API Key 更新后只展示掩码，如 `sk-***abcd`
+
+### 加密方案
+
+使用 AES-256-GCM：
 
 ```typescript
-interface AIClientConfig {
+export interface EncryptedSecret {
+  ciphertext: string;
+  iv: string;
+  authTag: string;
+  version: number;
+}
+```
+
+主密钥来自环境变量：
+
+```env
+APP_KEY_ENCRYPTION_SECRET=base64-32-byte-secret
+```
+
+加密字段以 JSON 字符串存入数据库：
+
+```json
+{
+  "ciphertext": "...",
+  "iv": "...",
+  "authTag": "...",
+  "version": 1
+}
+```
+
+### 指纹与重复检测
+
+为避免重复保存同一个 Key，可保存不可逆指纹：
+
+```text
+api_key_fingerprint = HMAC_SHA256(APP_KEY_ENCRYPTION_SECRET, apiKey)
+```
+
+指纹仅用于重复检测，不用于还原。
+
+---
+
+## 4.4 AIClient 统一接口
+
+```typescript
+export interface AIClientConfig {
   baseUrl: string;
   apiKey: string;
   model: string;
-  maxTokens?: number;
   temperature?: number;
-  timeout?: number;         // 默认 60s
-  retryCount?: number;      // 默认 2
+  maxTokens?: number;
+  timeoutMs?: number;
+  retryCount?: number;
 }
 
-class AIClient {
-  constructor(config: AIClientConfig);
+export interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
 
-  // 非流式调用：返回完整JSON
-  async chat(messages: ChatMessage[], jsonMode?: boolean): Promise<string>;
-
-  // 流式调用：返回 ReadableStream
-  async chatStream(messages: ChatMessage[]): Promise<ReadableStream>;
-
-  // 带重试的调用
-  private async fetchWithRetry(url: string, options: RequestInit): Promise<Response>;
+export interface AIClient {
+  chat(messages: ChatMessage[], options?: AIChatOptions): Promise<string>;
+  chatJson<T>(messages: ChatMessage[], schemaName: string): Promise<T>;
+  chatStream(messages: ChatMessage[], options?: AIChatOptions): Promise<ReadableStream>;
+  testConnection(): Promise<AIConnectionTestResult>;
 }
 ```
 
-### 调用示例
+### OpenAI 兼容请求
 
-```typescript
-const client = new AIClient({
-  baseUrl: 'https://api.deepseek.com',
-  apiKey: 'sk-xxx',
-  model: 'deepseek-chat',
-  temperature: 0.7,
-});
-
-const result = await client.chat([
-  { role: 'system', content: systemPrompt },
-  { role: 'user', content: userPrompt }
-], true); // jsonMode = true
-
-const parsed = parseAIJson<CareerDiagnosis>(result);
-// parseAIJson 自动去除 ```json ... ``` 围栏，提取 JSON 对象边界
-```
-
----
-
-## 4.3 内置模型配置 (`lib/ai/models.ts`)
-
-```typescript
-export const BUILTIN_MODELS: BuiltinModel[] = [
-  {
-    id: 'deepseek-chat',
-    name: 'DeepSeek Chat',
-    provider: 'deepseek',
-    baseUrl: 'https://api.deepseek.com',
-    model: 'deepseek-chat',
-    description: '高性价比中文大模型，推荐使用',
-    icon: '/images/models/deepseek.svg',
-    requiresApiKey: true,
-  },
-  {
-    id: 'deepseek-reasoner',
-    name: 'DeepSeek Reasoner',
-    provider: 'deepseek',
-    baseUrl: 'https://api.deepseek.com',
-    model: 'deepseek-reasoner',
-    description: '深度推理模型，适合复杂分析',
-    icon: '/images/models/deepseek.svg',
-    requiresApiKey: true,
-  },
-];
-```
-
-> 内置仅提供 2 个 DeepSeek 模型。用户可通过设置页面添加任何 OpenAI 兼容 API 的自定义模型（如 OpenAI / 智谱 / 阿里云等）。
-
-### 用户添加自定义模型
-
-用户可通过设置页面添加任何 OpenAI 兼容 API 的模型：
-
-```typescript
-interface CustomModelInput {
-  name: string;           // 自定义名称
-  baseUrl: string;        // API 地址
-  model: string;          // 模型ID
-  apiKey: string;         // API Key
+```json
+{
+  "model": "deepseek-chat",
+  "messages": [
+    { "role": "system", "content": "..." },
+    { "role": "user", "content": "..." }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 4096,
+  "response_format": { "type": "json_object" }
 }
 ```
 
 ---
 
-## 4.4 模型管理存储
+## 4.5 Prompt 管理
 
-### MVP 阶段：localStorage
+Prompt 模板从旧前端迁移到共享包或后端：
 
-```typescript
-const STORAGE_KEY = 'nixi-offer-ai-models';
-
-// 存储结构
-interface AIModelStorage {
-  models: AIModelConfig[];      // 所有模型（内置+自定义）
-  activeModelId: string;         // 当前激活模型ID
-}
-
-// API Key 加密存储（简单 AES 加密）
-function encryptApiKey(key: string): string;
-function decryptApiKey(encrypted: string): string;
+```
+packages/prompts/
+├── diagnose.ts
+├── translate-experience.ts
+├── analyze-job.ts
+├── match-report.ts
+├── optimize-resume.ts
+├── interview.ts
+├── improvement-plan.ts
+└── final-report.ts
 ```
 
-### 未来：数据库存储
+每个 Prompt 输出必须包含：
 
-通过 Repository Pattern 迁移，API Key 存储在服务端加密。
+- System Prompt
+- User Prompt 构造函数
+- 期望 JSON Schema 说明
+- 解析后的 TypeScript 类型
 
 ---
 
-## 4.5 Prompt 模板系统 (`prompts/`)
+## 4.6 AI 业务模块映射
 
-### 模板结构
-
-每个模块的 Prompt 由两部分组成：
-
-1. **System Prompt**：角色定义 + 输出规则 + JSON Schema
-2. **User Prompt**：用户数据注入
-
-### 变量注入 (`lib/ai/prompts.ts`)
-
-```typescript
-// lib/ai/prompts.ts
-function buildPrompt(template: string, variables: Record<string, string>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => variables[key] || '');
-}
-```
-
-> `lib/ai/` 目录文件：`client.ts`（AIClient 类）、`models.ts`（内置模型）、`prompts.ts`（模板工具）、`stream.ts`（SSE 解析 + useStreamResponse Hook）。`lib/auth/get-auth-user.ts` 提供 `getAuthUserId()` 函数，供所有 AI API Route 使用。
-
-### 模块 Prompt 映射
-
-| 模块 | 文件 | System Prompt 要点 |
-|------|------|-------------------|
-| 画像诊断 | `diagnose.ts` | 就业指导顾问角色，输出JSON |
-| 经历转译 | `translate-experience.ts` | 经历挖掘专家，不编造经历 |
-| JD解析 | `analyze-job.ts` | JD解析专家，结构化拆解 |
-| 人岗匹配 | `match-report.ts` | 匹配分析智能体，客观评分 |
-| 简历优化 | `optimize-resume.ts` | 可信简历专家，保留来源 |
-| 面试追问 | `interview.ts` | 面试教练，STAR法则 |
-| 能力计划 | `improvement-plan.ts` | 行动规划顾问，具体可执行 |
-| 汇总报告 | `final-report.ts` | 报告助手，Markdown输出 |
+| 模块 | API | Prompt | 输出 |
+|------|-----|--------|------|
+| 画像诊断 | `/ai/diagnose` | `diagnose.ts` | `CareerDiagnosis` |
+| 经历转译 | `/ai/translate` | `translate-experience.ts` | `ExperienceTranslation[]` |
+| JD 解析 | `/ai/analyze-job` | `analyze-job.ts` | `JobAnalysis` |
+| 人岗匹配 | `/ai/match` | `match-report.ts` | `MatchReport` |
+| 简历优化 | `/ai/optimize-resume` | `optimize-resume.ts` | `ResumeOptimizationResult` |
+| 面试追问 | `/ai/interview` | `interview.ts` | `InterviewSimulation[]` |
+| 能力计划 | `/ai/plan` | `improvement-plan.ts` | `ImprovementPlan` |
+| 汇总报告 | `/ai/report` | `final-report.ts` | Markdown 报告 |
 
 ---
 
-## 4.6 API Route 实现模式
+## 4.7 JSON 容错解析
 
-每个 AI API Route 遵循统一模式：
+后端保留旧版 `parseAIJson()` 能力，并统一在 AI 服务层使用：
 
-```typescript
-// /api/ai/diagnose/route.ts
-export async function POST(request: Request) {
-  // 1. 验证JWT
-  const user = await verifyAuth(request);
-  if (!user) return unauthorized();
+1. 去除 Markdown 代码围栏
+2. 提取最外层 JSON 对象或数组
+3. 解析失败时记录原始响应摘要，不记录敏感输入
+4. 使用 DTO 或 schema 校验输出结构
 
-  // 2. 解析请求
-  const { studentProfile, modelConfig } = await request.json();
+错误返回：
 
-  // 3. 参数校验
-  if (!studentProfile || !modelConfig) return badRequest('缺少必要参数');
-
-  // 4. 构造AI客户端
-  const client = new AIClient({
-    baseUrl: modelConfig.baseUrl,
-    apiKey: modelConfig.apiKey,
-    model: modelConfig.model,
-    temperature: 0.7,
-  });
-
-  // 5. 加载Prompt模板
-  const systemPrompt = getDiagnoseSystemPrompt();
-  const userPrompt = buildPrompt(getDiagnoseUserPrompt(), {
-    studentProfile: JSON.stringify(studentProfile, null, 2),
-  });
-
-  // 6. 调用AI
-  try {
-    const result = await client.chat([
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt },
-    ], true);
-
-    // 7. 解析并验证（自动去除 Markdown 围栏）
-    const diagnosis = parseAIJson<CareerDiagnosis>(result);
-    return Response.json({ success: true, data: diagnosis });
-  } catch (error) {
-    return handleAIError(error);
+```json
+{
+  "success": false,
+  "error": {
+    "code": "AI_PARSE_ERROR",
+    "message": "AI 返回格式无法解析，请稍后重试或切换模型"
   }
 }
 ```
 
 ---
 
-## 4.7 流式响应（SSE）
+## 4.8 调用日志
 
-SSE 解析和前端消费由 `lib/ai/stream.ts` 提供：
+每次 AI 调用记录到 `ai_call_logs`：
 
-- `createSSEStream(response)` — 将 fetch Response 转为 ReadableStream 文本
-- `useStreamResponse()` — React Hook，提供 `startStream/stopStream/content/error` 状态
-
-面试对话模块支持流式响应：
-
-```typescript
-export async function POST(request: Request) {
-  // ... 验证和准备 ...
-
-  const stream = await client.chatStream(messages);
-
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-    },
-  });
-}
-```
-
-前端消费：
-
-```typescript
-const response = await fetch('/api/ai/chat', { method: 'POST', body: JSON.stringify(data) });
-const reader = response.body?.getReader();
-const decoder = new TextDecoder();
-
-while (true) {
-  const { done, value } = await reader.read();
-  if (done) break;
-  const chunk = decoder.decode(value);
-  // 解析 SSE data 并更新UI
-}
-```
+| 字段 | 是否记录 | 说明 |
+|------|----------|------|
+| 用户 ID | 是 | 用于配额和排查 |
+| 模型配置 ID | 是 | 用户模型或全局模型 |
+| Prompt 明文 | 默认否 | 可选只记录模板版本 |
+| API Key | 永不记录 | 禁止 |
+| Token 用量 | 是 | 若模型返回 usage |
+| 延迟 | 是 | 监控性能 |
+| 错误码 | 是 | 统计故障 |
 
 ---
 
-## 4.8 错误处理与重试
+## 4.9 限流与配额
 
-```typescript
-class AIClient {
-  private async fetchWithRetry(url: string, options: RequestInit): Promise<Response> {
-    for (let i = 0; i <= this.retryCount; i++) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+基础限流建议：
 
-        const response = await fetch(url, { ...options, signal: controller.signal });
-        clearTimeout(timeoutId);
+| 接口 | 限制 |
+|------|------|
+| 模型测试 | 10 次/小时/用户 |
+| AI 业务调用 | 60 次/小时/用户 |
+| 全局模型调用 | 可按管理员策略设置每日上限 |
+| 未验证邮箱用户 | 禁止 AI 调用或低配额 |
 
-        if (response.status === 429) {
-          // 速率限制，等待后重试
-          await sleep(Math.pow(2, i) * 1000);
-          continue;
-        }
+管理员后台应显示：
 
-        if (!response.ok) {
-          throw new AIServiceError(response.status, await response.text());
-        }
+- 今日调用次数
+- 今日失败率
+- Token 用量估算
+- Top 模型和 Top 用户
 
-        return response;
-      } catch (error) {
-        if (i === this.retryCount) throw error;
-        await sleep(Math.pow(2, i) * 1000);
-      }
-    }
-    throw new Error('Max retries exceeded');
-  }
-}
-```
-
----
-
-## 4.9 模型连接测试
-
-设置页面提供"测试连接"功能：
-
-```typescript
-// /api/ai/test-connection/route.ts
-export async function POST(request: Request) {
-  const { baseUrl, model, apiKey } = await request.json();
-
-  const client = new AIClient({ baseUrl, apiKey, model, timeout: 10000 });
-
-  try {
-    const result = await client.chat([
-      { role: 'user', content: '请回复"连接成功"' }
-    ]);
-    return Response.json({ success: true, message: '模型连接成功', response: result });
-  } catch (error) {
-    return Response.json({ success: false, message: '连接失败: ' + error.message });
-  }
-}
-```

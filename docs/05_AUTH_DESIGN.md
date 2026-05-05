@@ -1,257 +1,155 @@
-# 05 — 认证设计文档
+# 05 — 认证与权限设计文档
 
 ## 5.1 认证方案概述
 
-MVP 阶段采用无数据库 JWT 认证方案，用户信息存储在服务端内存（进程启动时从环境变量初始化 + 运行时注册的用户存内存）。
+升级后认证由 NestJS 后端负责。Web 前端部署在 Vercel，后端独立服务器部署，因此认证设计必须同时满足跨域浏览器访问和移动端访问。
 
-### 流程图
+| 客户端 | Access Token | Refresh Token | 说明 |
+|--------|--------------|---------------|------|
+| Web | 内存保存，短期有效 | HttpOnly Cookie | 降低 XSS 泄露长期凭证风险 |
+| 移动端 | 安全存储或内存 | App 安全存储 | 使用 Bearer Token，不依赖 Cookie |
+
+## 5.2 登录流程
 
 ```
-注册流程:
-  用户填写邮箱+密码+姓名
-    → POST /api/auth/register
-      → 校验参数 → 检查邮箱唯一性
-        → bcrypt 哈希密码 → 存入 MemoryUserRepository
-          → 签发 JWT → 设置 HttpOnly Cookie
-            → 返回 User + Token
-
-登录流程:
-  用户输入邮箱+密码
-    → POST /api/auth/login
-      → 查找用户 → bcrypt 比对密码
-        → 签发 JWT → 设置 HttpOnly Cookie
-          → 返回 User + Token
-
-认证验证:
-  请求到达
-    → middleware.ts 检查路径
-      → 读取 Cookie 中的 token
-        → jose 验证 JWT 签名和有效期
-          → 通过：注入 userId 到请求 (x-user-id header)
-          → 失败：返回 401 或重定向登录页
+用户提交邮箱密码
+  → POST /api/v1/auth/login
+  → 校验用户存在且未禁用
+  → 校验密码哈希
+  → 检查邮箱验证策略
+  → 生成 accessToken + refreshToken
+  → 写入 refresh_tokens 表
+  → Web 设置 HttpOnly Cookie
+  → 返回 accessToken + user
 ```
 
----
+Access Token 默认 15 分钟过期，Refresh Token 默认 30 天过期。
 
-## 5.2 JWT 实现 (`lib/auth/jwt.ts`)
+## 5.3 邮箱验证流程
+
+注册后：
+
+```
+创建用户 pending_email
+  → 生成 email_verification_tokens
+  → 发送验证邮件
+  → 用户点击链接
+  → POST /auth/verify-email
+  → 标记 email_verified_at
+  → 用户状态变为 active
+  → 发送欢迎邮件
+```
+
+系统设置：
+
+| 设置 | 默认 | 说明 |
+|------|------|------|
+| `require_email_verification` | true | 未验证邮箱是否禁止使用核心功能 |
+| `verification_token_ttl_minutes` | 60 | 验证链接有效期 |
+| `welcome_email_enabled` | true | 验证成功后发送欢迎邮件 |
+
+## 5.4 找回密码流程
+
+```
+用户输入邮箱
+  → POST /auth/forgot-password
+  → 无论邮箱是否存在都返回成功
+  → 若用户存在，生成 password_reset_tokens
+  → 发送重置邮件
+  → 用户提交 token + 新密码
+  → 校验 token 未过期未使用
+  → 更新密码哈希
+  → 撤销该用户所有 refresh token
+  → 发送安全提醒邮件
+```
+
+## 5.5 权限模型
+
+### 角色
 
 ```typescript
-import { SignJWT, jwtVerify } from 'jose';
-
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
-
-// 签发 Token
-export async function signToken(payload: {
-  sub: string;
-  email: string;
-  name: string;
-}, rememberMe?: boolean): Promise<string> {
-  const expiresIn = rememberMe ? '30d' : '7d';
-  return new SignJWT(payload)
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime(expiresIn)
-    .sign(JWT_SECRET);
-}
-
-// 验证 Token
-export async function verifyToken(token: string): Promise<JWTPayload | null> {
-  try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload as JWTPayload;
-  } catch {
-    return null;
-  }
-}
+export type UserRole = 'student' | 'admin';
 ```
 
----
+### 权限矩阵
 
-## 5.3 路由保护 (`middleware.ts`)
+| 能力 | 游客 | 学生 | 管理员 |
+|------|------|------|--------|
+| 浏览首页 | ✅ | ✅ | ✅ |
+| 注册/登录 | ✅ | ✅ | ✅ |
+| 管理个人档案 | ❌ | ✅ | ✅ |
+| 配置个人 AI 模型 | ❌ | ✅ | ✅ |
+| 使用全局模型 | ❌ | 按策略 | ✅ |
+| 管理用户 | ❌ | ❌ | ✅ |
+| 管理全局模型 | ❌ | ❌ | ✅ |
+| 管理 SMTP | ❌ | ❌ | ✅ |
+| 查看审计日志 | ❌ | ❌ | ✅ |
 
-路由保护由项目根目录 `middleware.ts` 实现，导出 `middleware` 函数。
+## 5.6 Guard 与 Decorator
 
-```typescript
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+NestJS 后端建议实现：
 
-// 需要认证的 Dashboard 页面路径
-const protectedPaths = [
-  '/profile', '/diagnosis', '/translation', '/job',
-  '/match', '/resume', '/resume-builder', '/interview',
-  '/plan', '/report', '/settings',
-];
+| 名称 | 用途 |
+|------|------|
+| `JwtAuthGuard` | 校验 Access Token |
+| `RolesGuard` | 校验角色 |
+| `EmailVerifiedGuard` | 核心功能要求邮箱已验证 |
+| `CurrentUser()` | 获取当前用户 |
+| `RequireRoles('admin')` | 标记管理员接口 |
 
-// 已登录用户应重定向的认证页面路径
-const authPaths = ['/login', '/register'];
+## 5.7 跨域 Cookie 配置
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const token = request.cookies.get('token')?.value;
-
-  // 1. AI API 路由保护
-  if (pathname.startsWith('/api/ai/')) {
-    if (!token) {
-      return NextResponse.json(
-        { success: false, error: { code: 'AUTH_TOKEN_MISSING', message: '未登录' } },
-        { status: 401 }
-      );
-    }
-    const payload = await verifyToken(token);
-    if (!payload) {
-      return NextResponse.json(
-        { success: false, error: { code: 'AUTH_TOKEN_EXPIRED', message: 'Token已过期' } },
-        { status: 401 }
-      );
-    }
-    // 注入用户ID到请求头，供下游使用
-    const headers = new Headers(request.headers);
-    headers.set('x-user-id', payload.sub);
-    return NextResponse.next({ headers });
-  }
-
-  // 2. Dashboard 页面保护
-  if (protectedPaths.some(p => pathname.startsWith(p))) {
-    if (!token) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    const payload = await verifyToken(token);
-    if (!payload) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
-
-  // 3. 已登录用户访问登录/注册页 → 重定向到 profile
-  if (authPaths.some(p => pathname.startsWith(p))) {
-    if (token) {
-      const payload = await verifyToken(token);
-      if (payload) {
-        return NextResponse.redirect(new URL('/profile', request.url));
-      }
-    }
-  }
-
-  return NextResponse.next();
-}
-
-export const config = {
-  matcher: [
-    '/api/ai/:path*',
-    '/profile', '/profile/:path*',
-    '/diagnosis', '/translation', '/job', '/match', '/resume',
-    '/resume-builder', '/resume-builder/:path*',
-    '/interview', '/plan', '/report', '/settings',
-    '/login', '/register',
-  ],
-};
-```
-
-> 新增 `/resume-builder` 受保护路径；matcher 增加 `:path*` 通配子路由。
-
----
-
-## 5.4 用户数据存储 (Repository Pattern)
-
-### 接口定义 (`lib/repository/interface.ts`)
+前端 Vercel、后端独立域名时，生产 Cookie 配置：
 
 ```typescript
-export interface IUserRepository {
-  findById(id: string): Promise<User | null>;
-  findByEmail(email: string): Promise<User | null>;
-  create(dto: CreateUserDTO & { passwordHash: string }): Promise<User>;
-  update(id: string, data: Partial<User>): Promise<User>;
-}
-```
-
-### 内存实现 (`lib/repository/memory.ts`)
-
-```typescript
-class MemoryUserRepository implements IUserRepository {
-  private users: Map<string, UserRecord> = new Map();
-
-  constructor() {
-    // 从环境变量初始化默认管理员
-    if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
-      const hash = bcryptjs.hashSync(process.env.ADMIN_PASSWORD, 10);
-      this.users.set('admin-uuid', {
-        id: 'admin-uuid',
-        email: process.env.ADMIN_EMAIL,
-        name: '管理员',
-        passwordHash: hash,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-    }
-  }
-  // ... 实现方法
-}
-```
-
-### 数据库实现（预留骨架）
-
-```typescript
-// lib/repository/database.ts
-class DatabaseUserRepository implements IUserRepository {
-  // 未来接入 Prisma / Drizzle / 等 ORM 实现
-  // constructor(private db: PrismaClient) {}
-}
-```
-
-### 工厂函数
-
-```typescript
-// lib/repository/index.ts
-export function getUserRepository(): IUserRepository {
-  if (process.env.DATABASE_URL) {
-    // 未来：return new DatabaseUserRepository(db);
-    throw new Error('Database not implemented yet');
-  }
-  return MemoryUserRepository.getInstance();
-}
-```
-
----
-
-## 5.5 Cookie 配置
-
-```typescript
-const COOKIE_OPTIONS = {
+{
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  path: '/',
-  maxAge: 7 * 24 * 60 * 60,  // 7天
-};
-
-// 记住我模式
-const REMEMBER_ME_COOKIE_OPTIONS = {
-  ...COOKIE_OPTIONS,
-  maxAge: 30 * 24 * 60 * 60, // 30天
-};
+  secure: true,
+  sameSite: 'none',
+  path: '/api/v1/auth',
+  maxAge: 30 * 24 * 60 * 60 * 1000
+}
 ```
 
----
+后端 CORS 必须：
 
-## 5.6 安全措施
+```typescript
+app.enableCors({
+  origin: corsOriginMatcher,
+  credentials: true,
+});
+```
 
-1. **密码哈希**：bcryptjs，salt rounds = 10
-2. **JWT 签名**：HS256，密钥最少 32 字符
-3. **HttpOnly Cookie**：防止 XSS 读取 Token
-4. **Secure Flag**：生产环境强制 HTTPS
-5. **SameSite=Lax**：防止 CSRF
-6. **Token 过期**：默认 7 天，记住我 30 天
+前端请求必须：
 
----
+```typescript
+fetch(url, {
+  credentials: 'include',
+});
+```
 
-## 5.7 数据库迁移路径
+## 5.8 用户状态处理
 
-当需要接入数据库时，只需：
+| 状态 | 登录 | 核心功能 | 说明 |
+|------|------|----------|------|
+| `pending_email` | 允许 | 可限制 | 等待邮箱验证 |
+| `active` | 允许 | 允许 | 正常状态 |
+| `disabled` | 禁止 | 禁止 | 管理员禁用 |
+| `deleted` | 禁止 | 禁止 | 软删除 |
 
-1. 安装 ORM（如 Prisma）
-2. 创建 User 表 Schema
-3. 实现 `DatabaseUserRepository`
-4. 修改工厂函数返回数据库实现
-5. 迁移环境变量中的管理员到数据库
+## 5.9 默认管理员初始化
 
-**不需要修改**：JWT 逻辑、middleware.ts 路由保护、API Route、前端代码。
+服务启动时若无管理员，可通过环境变量创建：
+
+```env
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=replace-with-strong-password
+```
+
+初始化后必须写入审计日志：
+
+```text
+action = system.admin.bootstrap
+target_type = user
+```
+

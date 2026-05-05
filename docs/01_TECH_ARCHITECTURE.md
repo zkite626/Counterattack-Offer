@@ -3,175 +3,203 @@
 ## 1.1 架构总览
 
 ```
-Browser (React Pages + Context + CSS Variables + localStorage)
-        │  HTTP / SSE
-        ▼
-Next.js Server (API Routes)
-├── Auth Middleware (JWT验证，middleware.ts)
-├── AI Service (OpenAI兼容协议)
-├── Prompt Engine (模板加载+注入)
-└── Repository Layer (Memory → DB预留)
+Web Browser / Vercel Edge
+  Next.js 16 App Router
+  React Pages + Context + CSS Variables
         │
+        │ HTTPS / CORS / Cookie or Authorization Bearer
         ▼
-OpenAI-Compatible LLM APIs (DeepSeek/OpenAI/GLM/Kimi/...)
+NestJS API Server
+  AuthModule
+  UsersModule
+  AiModule
+  ModelConfigModule
+  CareerFlowModule
+  ResumeModule
+  MailModule
+  AdminModule
+  AuditModule
+        │
+        ├── PostgreSQL
+        ├── SMTP Server
+        └── OpenAI-Compatible LLM APIs
+
+Mobile App / Mini Program / Future Clients
+        │
+        └── Same /api/v1 contract
 ```
 
-## 1.2 Next.js App Router 路由结构
+## 1.2 Monorepo 目标结构
+
+升级后建议采用单仓多应用结构，保留现有前端代码并新增后端服务：
 
 ```
-src/app/
-├── layout.tsx                 # Root Layout
-├── page.tsx                   # 首页（公开）
-├── globals.css                # 全局CSS + Design Tokens
-├── (auth)/                    # 认证路由组（无需登录）
-│   ├── layout.tsx             # 居中卡片布局
-│   ├── login/page.tsx
-│   └── register/page.tsx
-├── (dashboard)/               # 受保护路由组（需JWT）
-│   ├── layout.tsx             # Dashboard布局(Header+Sidebar+StepNav)
-│   ├── profile/page.tsx       # 学生信息页
-│   ├── diagnosis/page.tsx     # AI画像诊断页
-│   ├── translation/page.tsx   # 经历转译页
-│   ├── job/page.tsx           # JD解析页
-│   ├── match/page.tsx         # 人岗匹配页
-│   ├── resume/page.tsx        # 简历优化页
-│   ├── interview/page.tsx     # 面试训练页
-│   ├── plan/page.tsx          # 能力计划页
-│   ├── report/page.tsx        # 汇总报告页
-│   ├── settings/page.tsx      # 模型管理页
-│   └── resume-builder/        # 简历创建器
-│       ├── page.tsx           # 简历列表页
-│       └── [id]/page.tsx      # 编辑工作台页
-└── api/
-    ├── auth/
-    │   ├── login/route.ts
-    │   ├── register/route.ts
-    │   ├── me/route.ts
-    │   └── logout/route.ts
-    └── ai/
-        ├── chat/route.ts          # 通用AI调用(流式)
-        ├── default-config/route.ts # 获取.env默认模型配置
-        ├── diagnose/route.ts
-        ├── generate-jd/route.ts    # AI生成岗位JD
-        ├── translate/route.ts
-        ├── analyze-job/route.ts
-        ├── match/route.ts
-        ├── optimize-resume/route.ts
-        ├── interview/route.ts
-        ├── plan/route.ts
-        ├── report/route.ts
-        └── test-connection/route.ts
+apps/
+├── web/                         # Next.js 前端（由当前项目迁移而来）
+│   ├── src/app/
+│   ├── src/components/
+│   ├── src/contexts/
+│   └── src/lib/api/
+├── api/                         # NestJS 后端
+│   ├── src/main.ts
+│   ├── src/app.module.ts
+│   ├── src/modules/
+│   │   ├── auth/
+│   │   ├── users/
+│   │   ├── ai/
+│   │   ├── model-config/
+│   │   ├── career-flow/
+│   │   ├── resume/
+│   │   ├── mail/
+│   │   ├── admin/
+│   │   └── audit/
+│   └── prisma/
+└── mobile/                      # 未来移动端，当前只预留 API 契约
+
+packages/
+├── shared/                      # DTO、错误码、常量、类型
+├── prompts/                     # AI Prompt 模板
+└── eslint-config/               # 可选共享规范
+
+docs/
+└── ...                          # 当前升级文档
 ```
 
-## 1.3 Route Group 说明
+> 如果第一阶段不重构 monorepo，也可以先在仓库根目录新增 `backend/` 或 `apps/api/`，待后续 Wave 再迁移 `apps/web/`。文档以最终目标结构为准。
 
-| Route Group | 用途 | Layout | 认证 |
-|-------------|------|--------|------|
-| `(auth)` | 登录/注册 | 居中卡片 | 不需要 |
-| `(dashboard)` | 所有功能页 | Header+侧边栏+步骤导航 | 需要JWT |
-| 根 `/` | 首页 | 全屏Landing | 不需要 |
+## 1.3 部署拓扑
 
-## 1.4 渲染策略
+| 部分 | 部署位置 | 域名示例 | 说明 |
+|------|----------|----------|------|
+| Web 前端 | Vercel | `https://offer.example.com` | 静态资源、SSR/CSR 页面 |
+| NestJS API | 独立服务器 | `https://api.offer.example.com` | REST/SSE API、认证、AI 代理 |
+| PostgreSQL | 同服务器或托管数据库 | 内网地址 | 禁止公网裸露 |
+| SMTP | 第三方邮件服务或自建 | 服务商提供 | 仅后端访问 |
 
-| 页面 | 渲染方式 | 原因 |
-|------|----------|------|
-| 首页 | SSG | 内容固定，SEO友好 |
-| 登录/注册 | CSR | 表单交互为主 |
-| 功能页 | CSR | 依赖用户输入和AI实时响应 |
-| API Routes | Server | 保护API Key |
+### CORS 策略
 
-## 1.5 路由保护（middleware.ts）
+后端只允许明确白名单来源：
 
-路由保护由项目根目录的 `middleware.ts` 实现，导出 `middleware` 函数：
-
-```
-Request → middleware.ts (middleware 函数)
-  ├── /api/ai/* → 验证JWT Token → 注入 x-user-id 头 → 通过/401
-  ├── /(dashboard)/* → 验证JWT Cookie → 通过/重定向登录
-  ├── /(auth)/* → 已登录则重定向 /profile
-  └── 其他 → 放行
+```env
+CORS_ORIGINS=https://offer.example.com,https://counterattack-offer.vercel.app,http://localhost:3000
 ```
 
-受保护路径：`/profile`, `/diagnosis`, `/translation`, `/job`, `/match`, `/resume`, `/resume-builder`, `/interview`, `/plan`, `/report`, `/settings`
+NestJS 必须启用：
 
-认证页面：`/login`, `/register`
+- `origin` 精确匹配白名单
+- `credentials: true`
+- `allowedHeaders: Content-Type, Authorization, X-Request-Id, X-Client-Version`
+- `methods: GET,POST,PATCH,PUT,DELETE,OPTIONS`
 
-## 1.6 数据流
+Web 使用 Cookie 时，API 请求必须携带 `credentials: "include"`；移动端使用 Bearer Token 时不依赖 Cookie。
+
+## 1.4 前后端责任边界
+
+| 能力 | 前端 Next.js | 后端 NestJS |
+|------|--------------|-------------|
+| 页面渲染 | 负责 | 不负责 |
+| 表单交互 | 负责 | 提供校验错误 |
+| 登录注册 UI | 负责 | 负责认证、Token、邮件验证 |
+| 用户数据持久化 | 只读写 API | 负责 PostgreSQL |
+| AI Prompt 展示/触发 | 负责交互 | 负责加载 Prompt、调用模型、解析输出 |
+| API Key 存储 | 不存储明文 | 加密存储和解密调用 |
+| SMTP 配置 | 管理员 UI | 加密存储、测试和发信 |
+| 管理员审计 | 展示 | 记录、查询、导出 |
+| 移动端支持 | 不负责 | 提供通用 API |
+
+## 1.5 NestJS 模块设计
+
+| 模块 | 职责 |
+|------|------|
+| `AuthModule` | 注册、登录、刷新 Token、登出、邮箱验证、找回密码 |
+| `UsersModule` | 用户资料、用户状态、个人设置 |
+| `ModelConfigModule` | 用户模型、全局模型、密钥加密、连接测试 |
+| `AiModule` | OpenAI 兼容调用、Prompt 编排、流式响应、调用日志 |
+| `CareerFlowModule` | 画像、经历转译、JD 解析、匹配、计划、报告 |
+| `ResumeModule` | 简历列表、版本、模板配置、导出元数据 |
+| `MailModule` | SMTP 设置、邮件模板、发信队列、测试邮件 |
+| `AdminModule` | 用户管理、系统设置、全局模型、SMTP、统计 |
+| `AuditModule` | 操作日志、敏感动作审计 |
+
+## 1.6 请求链路
+
+### Web 登录链路
+
+```
+Next.js 登录页
+  → POST https://api.offer.example.com/api/v1/auth/login
+  → NestJS 校验密码
+  → 设置 HttpOnly refresh cookie
+  → 返回 accessToken + user
+  → Web 内存保存 accessToken，刷新后通过 /auth/session 恢复
+```
+
+### 移动端登录链路
+
+```
+Mobile Login
+  → POST /api/v1/auth/login
+  → 返回 accessToken + refreshToken
+  → App 安全存储 refreshToken
+  → 后续请求使用 Authorization: Bearer <accessToken>
+```
 
 ### AI 调用链路
+
 ```
-前端 → /api/ai/{module}/route.ts
-  → getAuthUserId(request) 验证JWT（优先读 x-user-id header，fallback 解析 cookie）
-  → 从请求 Body 获取 modelConfig(baseUrl, apiKey, model)
-  → 加载Prompt模板 → 注入用户数据
-  → AIClient.fetchWithRetry → OpenAI Chat Completions API
-  → parseAIJson() 解析JSON响应（自动去除 Markdown 围栏）
-  → 返回类型化数据
+前端触发功能
+  → POST /api/v1/ai/{module}
+  → AuthGuard 验证用户
+  → ResolveModelConfig 解析用户模型或全局模型
+  → DecryptApiKey 服务端解密
+  → PromptService 构造消息
+  → AIClient 调用 OpenAI 兼容接口
+  → parseAIJson 类型化解析
+  → 写入 ai_call_logs
+  → 返回业务结果
 ```
 
 ## 1.7 关键技术决策
 
 | 决策 | 选择 | 原因 |
 |------|------|------|
-| 框架 | Next.js App Router | 全栈一体，API代理保护Key |
-| 样式 | Vanilla CSS | Design Token驱动，暗色模式原生支持 |
-| JWT库 | jose | Edge Runtime兼容 |
-| AI调用 | 原生fetch | 无需OpenAI SDK，减少依赖 |
-| 数据层 | Repository Pattern | MVP内存实现，预留DB迁移 |
+| 前后端分离 | Next.js + NestJS | 前端可继续 Vercel，后端可独立扩容 |
+| API 版本 | `/api/v1` | 支持移动端和未来破坏性升级 |
+| 认证模式 | Web Cookie + 移动端 Bearer | 同时满足浏览器安全和移动端可用性 |
+| 数据库 | PostgreSQL | 强关系、事务、审计、JSONB 兼容 |
+| ORM | Prisma | 类型安全、迁移清晰、团队上手快 |
+| 密钥加密 | AES-256-GCM + 服务端主密钥 | API Key/SMTP 密码可安全存储 |
+| 跨域 | CORS 白名单 + credentials | 支持 Vercel 前端访问独立后端 |
+| API 文档 | Swagger/OpenAPI | Web/移动端/测试共享契约 |
 
-## 1.8 Repository Pattern 预留数据库
-
-```typescript
-// 接口定义
-interface IUserRepository {
-  findByEmail(email: string): Promise<User | null>;
-  create(user: CreateUserDTO): Promise<User>;
-}
-
-// MVP：内存实现
-class MemoryUserRepository implements IUserRepository { ... }
-
-// 未来：数据库实现
-class DatabaseUserRepository implements IUserRepository { ... }
-```
-
-## 1.9 第三方依赖
-
-| 依赖 | 用途 | 必须 |
-|------|------|------|
-| next ^16.x | 全栈框架 | ✅ |
-| react ^19.x | UI库 | ✅ |
-| typescript ^5.x | 类型安全 | ✅ |
-| jose ^6.x | JWT签发/验证 | ✅ |
-| bcryptjs ^3.x | 密码哈希 | ✅ |
-| uuid ^14.x | 唯一ID | ✅ |
-
-## 1.10 环境变量
+## 1.8 环境变量总览
 
 ```env
-# JWT
-JWT_SECRET=your-jwt-secret-key-min-32-chars
-JWT_EXPIRES_IN=7d
+# API 基础
+NODE_ENV=production
+PORT=3001
+API_PUBLIC_URL=https://api.offer.example.com
+WEB_PUBLIC_URL=https://offer.example.com
+CORS_ORIGINS=https://offer.example.com,https://counterattack-offer.vercel.app
 
-# 默认管理员（无数据库阶段）
-ADMIN_EMAIL=admin@nixioffer.com
-ADMIN_PASSWORD=your-secure-password
+# 数据库
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/counterattack_offer
 
-# 应用
+# Token
+JWT_ACCESS_SECRET=replace-with-long-random-secret
+JWT_REFRESH_SECRET=replace-with-long-random-secret
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL=30d
+
+# 加密
+APP_KEY_ENCRYPTION_SECRET=base64-32-byte-secret
+
+# 管理员初始化
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=replace-with-strong-password
+
+# 前端
+NEXT_PUBLIC_API_BASE_URL=https://api.offer.example.com/api/v1
 NEXT_PUBLIC_APP_NAME=逆袭Offer
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# 内置模型（可选）
-DEFAULT_AI_BASE_URL=https://api.deepseek.com
-DEFAULT_AI_MODEL=deepseek-chat
-DEFAULT_AI_API_KEY=
 ```
 
-## 1.11 编码规范
-
-1. **文件命名**：组件PascalCase，工具camelCase
-2. **类型优先**：所有函数参数和返回值必须声明类型
-3. **错误处理**：AI调用必须有超时和重试
-4. **注释**：复杂逻辑必须有中文注释
-5. **CSS类名**：BEM-like命名（`.card__header--active`）
-6. **禁止any**：不使用TypeScript `any` 类型

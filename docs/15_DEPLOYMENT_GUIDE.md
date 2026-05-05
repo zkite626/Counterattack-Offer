@@ -1,188 +1,154 @@
 # 15 — 部署指南
 
-## 15.1 本地开发
+## 15.1 部署目标
 
-### 前置条件
+本项目采用前后端分离部署：
 
-- Node.js >= 18.x（推荐 20.x+，Next.js 16 兼容）
-- npm >= 9.x
+| 服务 | 部署平台 | 示例域名 |
+|------|----------|----------|
+| Next.js 前端 | Vercel | `https://offer.example.com` |
+| NestJS 后端 | 自有服务器 | `https://api.offer.example.com` |
+| PostgreSQL | 自有服务器或托管数据库 | 内网访问 |
 
-### 启动步骤
+## 15.2 前端 Vercel 部署
+
+### 环境变量
+
+```env
+NEXT_PUBLIC_API_BASE_URL=https://api.offer.example.com/api/v1
+NEXT_PUBLIC_APP_NAME=逆袭Offer
+```
+
+前端禁止配置：
+
+- 数据库连接串
+- AI API Key
+- SMTP 密码
+- JWT Secret
+- 加密主密钥
+
+### 构建命令
 
 ```bash
-# 1. 克隆项目
-git clone <repo-url>
-cd counterattack-offer
-
-# 2. 安装依赖
-npm install
-
-# 3. 配置环境变量
-cp .env.local.example .env.local
-# 编辑 .env.local 填写 JWT_SECRET 等
-
-# 4. 启动开发服务器
-npm run dev
-
-# 5. 访问 http://localhost:3000
+npm run build
 ```
 
-### 环境变量说明
+若迁移为 monorepo，Vercel Root Directory 应指向 `apps/web`。
 
-| 变量 | 必填 | 说明 | 示例 |
-|------|------|------|------|
-| `JWT_SECRET` | ✅ | JWT签名密钥（≥32字符） | `your-very-long-secret-key-here-32+` |
-| `JWT_EXPIRES_IN` | ❌ | Token有效期 | `7d` |
-| `ADMIN_EMAIL` | ✅ | 默认管理员邮箱 | `admin@nixioffer.com` |
-| `ADMIN_PASSWORD` | ✅ | 默认管理员密码 | `Admin@123456` |
-| `NEXT_PUBLIC_APP_NAME` | ❌ | 应用名称 | `逆袭Offer` |
-| `NEXT_PUBLIC_APP_URL` | ❌ | 应用URL | `http://localhost:3000` |
+## 15.3 后端服务器部署
 
----
+推荐服务器组件：
 
-## 15.2 Vercel 部署
+- Ubuntu LTS
+- Node.js LTS
+- PostgreSQL 15+
+- Nginx
+- PM2 或 Docker
+- Certbot/Let's Encrypt HTTPS
 
-### 前置说明
+### 后端环境变量
 
-- 项目 **无需** `vercel.json` 或 `output: 'standalone'`，Vercel 自动识别 Next.js App Router
-- 构建命令：`next build`（Vercel 自动执行）
-- 所有 API Route 自动转为 Serverless Functions
-
-### 步骤
-
-1. 将代码推送到 GitHub
-2. 登录 [Vercel](https://vercel.com)
-3. 点击「Add New → Project」，导入 GitHub 仓库
-4. Framework Preset 自动识别为 Next.js，无需修改
-5. 配置环境变量（见下方）
-6. 点击 Deploy
-
-### Vercel 环境变量配置
-
-在 Vercel Dashboard → Project → Settings → Environment Variables 中添加：
-
-| 变量 | 必填 | 说明 |
-|------|------|------|
-| `JWT_SECRET` | ✅ | JWT 签名密钥（≥32 字符随机字符串） |
-| `JWT_EXPIRES_IN` | ❌ | Token 有效期，默认 `7d` |
-| `ADMIN_EMAIL` | ✅ | 默认管理员邮箱 |
-| `ADMIN_PASSWORD` | ✅ | 默认管理员密码 |
-| `NEXT_PUBLIC_APP_NAME` | ❌ | 应用名称 |
-| `NEXT_PUBLIC_APP_URL` | ❌ | 部署后的 Vercel 域名，如 `https://your-app.vercel.app` |
-
-> **注意**：`NEXT_PUBLIC_` 开头的变量会暴露给浏览器，敏感信息不要使用此前缀。
-
-### Vercel 部署后验证
-
-- [ ] 访问部署域名，首页正常加载
-- [ ] 注册/登录功能正常
-- [ ] 设置页配置 AI 模型后可正常调用
-- [ ] 暗色模式正常
-- [ ] 移动端响应式正常
-
----
-
-## 15.3 Docker 部署（可选）
-
-### Dockerfile
-
-```dockerfile
-FROM node:18-alpine AS base
-
-FROM base AS deps
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
-
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN npm run build
-
-FROM base AS runner
-WORKDIR /app
-ENV NODE_ENV production
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
-EXPOSE 3000
-CMD ["node", "server.js"]
+```env
+NODE_ENV=production
+PORT=3001
+API_PUBLIC_URL=https://api.offer.example.com
+WEB_PUBLIC_URL=https://offer.example.com
+CORS_ORIGINS=https://offer.example.com,https://counterattack-offer.vercel.app
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/counterattack_offer
+JWT_ACCESS_SECRET=replace-with-long-random-secret
+JWT_REFRESH_SECRET=replace-with-long-random-secret
+APP_KEY_ENCRYPTION_SECRET=base64-32-byte-secret
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=replace-with-strong-password
 ```
 
-### docker-compose.yml
+## 15.4 Nginx 反向代理
 
-```yaml
-version: '3.8'
-services:
-  app:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - JWT_SECRET=${JWT_SECRET}
-      - ADMIN_EMAIL=${ADMIN_EMAIL}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-    restart: unless-stopped
+```nginx
+server {
+  listen 443 ssl http2;
+  server_name api.offer.example.com;
+
+  location / {
+    proxy_pass http://127.0.0.1:3001;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+  }
+}
 ```
 
-### 构建与运行
+SSE 接口如出现缓冲，需要为 AI 流式接口关闭代理缓冲：
 
-```bash
-docker compose up -d --build
+```nginx
+location /api/v1/ai/ {
+  proxy_pass http://127.0.0.1:3001;
+  proxy_buffering off;
+  proxy_cache off;
+}
 ```
 
----
+## 15.5 CORS 生产配置
 
-## 15.4 next.config.ts 配置
+NestJS：
 
 ```typescript
-import type { NextConfig } from 'next';
-
-const nextConfig: NextConfig = {
-  /* 图片优化 */
-  images: {
-    formats: ['image/avif', 'image/webp'],
+app.enableCors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('CORS origin denied'));
   },
-
-  /* 生产环境移除 X-Powered-By 头 */
-  poweredByHeader: false,
-
-  /* 安全头 + 静态资源缓存 */
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-        ],
-      },
-      {
-        source: '/fonts/(.*)',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-        ],
-      },
-    ];
-  },
-};
-
-export default nextConfig;
+  credentials: true,
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id', 'X-Client-Version'],
+});
 ```
 
-> **Vercel 部署**：无需添加 `output: 'standalone'`，该选项仅用于 Docker 部署。Vercel 使用自己的构建系统，自动处理 Serverless Function 打包。
+生产检查：
 
----
+- Vercel 默认域名加入白名单
+- 自定义前端域名加入白名单
+- 本地开发域名只在非生产环境加入
+- 不使用 `origin: "*"` 搭配 `credentials: true`
 
-## 15.5 生产检查清单
+## 15.6 PostgreSQL 备份
 
-- [ ] 环境变量已正确配置
-- [ ] JWT_SECRET 足够强（≥32字符随机字符串）
-- [ ] ADMIN_PASSWORD 足够强
-- [ ] `npm run build` 无错误
-- [ ] Lighthouse Performance > 85
-- [ ] 所有页面暗色模式正常
-- [ ] 移动端响应式正常
-- [ ] AI 模型调用正常
+基础备份命令：
+
+```bash
+pg_dump "$DATABASE_URL" > backup-$(date +%F).sql
+```
+
+建议：
+
+- 每日自动备份
+- 至少保留 7 天
+- 备份文件加密
+- 每月至少一次恢复演练
+
+## 15.7 发布流程
+
+1. 合并代码到主分支
+2. 后端执行数据库迁移
+3. 部署 NestJS
+4. 验证 `/api/v1/health`
+5. 更新 Vercel 环境变量
+6. 部署前端
+7. 验证登录、刷新、AI 调用、SMTP 测试
+8. 检查 CORS 和审计日志
+
+## 15.8 回滚策略
+
+| 场景 | 回滚 |
+|------|------|
+| 前端错误 | Vercel 回滚上一部署 |
+| 后端错误 | PM2/Docker 回滚上一镜像 |
+| 数据库迁移错误 | 使用向前修复迁移，避免生产直接 down migration |
+| CORS 配置错误 | 更新后端环境变量并重启 |
+| SMTP 错误 | 管理员后台停用 SMTP 或回退旧配置 |
+

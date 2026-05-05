@@ -1,244 +1,250 @@
 # 13 — 开发任务拆分
 
-## Wave 1 — 项目骨架 + 设计系统 + JWT 认证
+## Wave 10 — NestJS 后端基础设施 + PostgreSQL
 
-### TASK-1.1 项目初始化
-
-| 字段 | 内容 |
-|------|------|
-| 目标 | 使用 `npx create-next-app` 初始化 Next.js 16 项目 |
-| 命令 | `npx -y create-next-app@latest ./ --typescript --app --eslint --src-dir --no-tailwind --import-alias "@/*"` |
-| 验收 | `npm run dev` 正常启动，访问 `localhost:3000` 显示默认页 |
-
-### TASK-1.2 安装依赖
+### TASK-10.1 创建后端应用
 
 | 字段 | 内容 |
 |------|------|
-| 依赖 | `jose bcryptjs uuid` |
-| 类型 | `@types/bcryptjs @types/uuid` |
-| 命令 | `npm install jose bcryptjs uuid && npm install -D @types/bcryptjs @types/uuid` |
+| 目标 | 新增 NestJS API 服务 |
+| 输出 | `apps/api` |
+| 验收 | `npm run start:dev` 可启动，`GET /api/v1/health` 返回成功 |
 
-### TASK-1.3 全局 CSS 设计系统
-
-| 字段 | 内容 |
-|------|------|
-| 目标 | 实现完整 Design Token 系统 |
-| 文件 | `src/app/globals.css` |
-| 内容 | 颜色、排版、间距、圆角、阴影、动画、暗色模式变量 |
-| 参考 | `docs/06_UI_UX_DESIGN_SYSTEM.md` |
-
-### TASK-1.4 基础 UI 组件
+### TASK-10.2 数据库与 Prisma
 
 | 字段 | 内容 |
 |------|------|
-| 目标 | 实现 Button, Card, Input, Tag, Modal 组件 |
-| 文件 | `src/components/ui/*.tsx` + 对应 CSS |
-| 参考 | `docs/08_COMPONENT_SPECIFICATION.md` |
+| 目标 | 接入 PostgreSQL 和 Prisma |
+| 输出 | `apps/api/prisma/schema.prisma` |
+| 验收 | 本地数据库迁移成功，Prisma Client 可查询 |
 
-### TASK-1.5 ThemeContext
-
-| 字段 | 内容 |
-|------|------|
-| 目标 | 主题状态管理 + ThemeToggle 组件 |
-| 文件 | `src/contexts/ThemeContext.tsx`, `src/components/ui/ThemeToggle.tsx` |
-| 参考 | `docs/10_STATE_MANAGEMENT.md` §10.2 |
-
-### TASK-1.6 JWT 工具
+### TASK-10.3 统一 API 基建
 
 | 字段 | 内容 |
 |------|------|
-| 目标 | 使用 jose 实现 JWT 签发/验证 |
-| 文件 | `src/lib/auth/jwt.ts` |
-| 参考 | `docs/05_AUTH_DESIGN.md` §5.2 |
+| 目标 | 统一响应、异常、RequestId、日志 |
+| 输出 | `common/filters`, `common/interceptors`, `common/middleware` |
+| 验收 | 错误响应符合 `ApiResponse<T>` |
 
-### TASK-1.7 用户 Repository
-
-| 字段 | 内容 |
-|------|------|
-| 目标 | 定义 IUserRepository 接口 + 内存实现 |
-| 文件 | `src/lib/repository/interface.ts`, `memory.ts`, `index.ts` |
-| 参考 | `docs/05_AUTH_DESIGN.md` §5.4 |
-
-### TASK-1.8 Auth API Routes
+### TASK-10.4 Swagger/OpenAPI
 
 | 字段 | 内容 |
 |------|------|
-| 目标 | 实现 login, register, me, logout |
-| 文件 | `src/app/api/auth/*/route.ts` |
-| 参考 | `docs/03_API_SPECIFICATION.md` §3.1 |
+| 目标 | 输出 API 文档 |
+| 输出 | `/api-docs` 或 `/docs` |
+| 验收 | 本地可打开 Swagger 页面 |
 
-### TASK-1.9 Proxy（路由保护）
-
-| 字段 | 内容 |
-|------|------|
-| 目标 | JWT 路由保护 |
-| 文件 | `middleware.ts` |
-| 参考 | `docs/05_AUTH_DESIGN.md` §5.3 |
-
-### TASK-1.10 AuthContext
+### TASK-10.5 CORS 白名单
 
 | 字段 | 内容 |
 |------|------|
-| 目标 | 认证状态管理 + useAuth Hook |
-| 文件 | `src/contexts/AuthContext.tsx`, `src/hooks/useAuth.ts` |
-
-### TASK-1.11 登录/注册页
-
-| 字段 | 内容 |
-|------|------|
-| 目标 | Auth 布局 + 登录表单 + 注册表单 |
-| 文件 | `src/app/(auth)/layout.tsx`, `login/page.tsx`, `register/page.tsx` |
-| 设计 | 居中卡片，渐变背景，精美表单 |
-
-### TASK-1.12 Dashboard Layout
-
-| 字段 | 内容 |
-|------|------|
-| 目标 | Header（Logo + ThemeToggle + 用户菜单）+ Sidebar 骨架 |
-| 文件 | `src/app/(dashboard)/layout.tsx`, `src/components/layout/Header.tsx`, `Sidebar.tsx` |
-
-### TASK-1.13 环境变量
-
-| 字段 | 内容 |
-|------|------|
-| 文件 | `.env.local.example` |
-| 内容 | JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD, NEXT_PUBLIC_APP_NAME |
+| 目标 | 支持 Vercel 前端访问独立后端 |
+| 输出 | `main.ts` CORS 配置 |
+| 验收 | `http://localhost:3000` 和配置的 Vercel 域名通过预检请求 |
 
 ---
 
-## Wave 2 — AI 服务层 + 模型管理
+## Wave 11 — 认证权限 + SMTP
 
-### TASK-2.1 ~ 2.9
+### TASK-11.1 用户与 Token 表
 
-参见 `docs/12_MVP_SCOPE_ROADMAP.md` Wave 2 任务清单。每个任务对应参考文档：`docs/04_AI_SERVICE_DESIGN.md`。
+| 字段 | 内容 |
+|------|------|
+| 目标 | 创建 `users`, `refresh_tokens`, `email_verification_tokens`, `password_reset_tokens` |
+| 验收 | 迁移成功，唯一邮箱约束生效 |
+
+### TASK-11.2 注册登录刷新登出
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 实现 `/auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/me` |
+| 验收 | Web Cookie 与移动端 Bearer 两种模式可用 |
+
+### TASK-11.3 邮箱验证
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 注册后发送验证邮件，验证后激活账号 |
+| 验收 | Token 单次使用，过期后不可用 |
+
+### TASK-11.4 找回密码
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 申请找回、重置密码、撤销会话 |
+| 验收 | 不暴露邮箱是否存在，重置后旧会话失效 |
+
+### TASK-11.5 SMTP 管理
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 管理员保存 SMTP、测试邮件 |
+| 验收 | SMTP 密码加密存储，测试结果入审计 |
 
 ---
 
-## Wave 3 — 核心业务前半段
+## Wave 12 — AI 模型管理 + 加密密钥
 
-### TASK-3.1 ~ 3.14
+### TASK-12.1 SecretService
 
-参见 `docs/12_MVP_SCOPE_ROADMAP.md` Wave 3 任务清单。
-- 类型定义参考：`docs/02_DATA_MODELS.md`
-- Prompt 参考：`docs/09_PROMPT_TEMPLATES.md`
-- API 参考：`docs/03_API_SPECIFICATION.md`
-- 组件参考：`docs/08_COMPONENT_SPECIFICATION.md`
+| 字段 | 内容 |
+|------|------|
+| 目标 | AES-256-GCM 加密/解密服务 |
+| 验收 | API Key 和 SMTP 密码均可复用，不输出明文 |
+
+### TASK-12.2 用户模型 API
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 用户模型 CRUD、测试、设默认 |
+| 验收 | 前端只看到 Key 掩码 |
+
+### TASK-12.3 管理员全局模型 API
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 管理员配置全局默认模型和 API Key |
+| 验收 | 学生无模型时可按策略 fallback |
+
+### TASK-12.4 AIClient 和调用日志
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | OpenAI 兼容调用、JSON 解析、日志记录 |
+| 验收 | 成功/失败调用均写入 `ai_call_logs` |
 
 ---
 
-## Wave 4 — 核心业务后半段
+## Wave 13 — 求职业务 API 迁移
 
-### TASK-4.1 ~ 4.9
+### TASK-13.1 学生档案 API
 
-参见 `docs/12_MVP_SCOPE_ROADMAP.md` Wave 4 任务清单。
+| 字段 | 内容 |
+|------|------|
+| 目标 | 个人档案和经历持久化 |
+| 验收 | 刷新页面和换设备后数据可恢复 |
+
+### TASK-13.2 求职流程 API
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | `career_flow_runs` 和 `career_flow_results` |
+| 验收 | 每个 AI 步骤结果可查询 |
+
+### TASK-13.3 AI 业务接口迁移
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 迁移旧 Next.js `/api/ai/*` 到 NestJS |
+| 验收 | 画像到报告全流程使用后端 API |
+
+### TASK-13.4 简历持久化
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 简历 CRUD、版本、复制 |
+| 验收 | 简历编辑器刷新不丢数据 |
 
 ---
 
-## Wave 5 — 首页 + 动画打磨
+## Wave 14 — 前端接入后端 + 管理员 UI
 
-### TASK-5.1 ~ 5.11
+### TASK-14.1 API Client
 
-参见 `docs/12_MVP_SCOPE_ROADMAP.md` Wave 5 任务清单。
+| 字段 | 内容 |
+|------|------|
+| 目标 | 新增 `src/lib/api` 封装 |
+| 验收 | 自动携带 Token、处理 refresh、统一错误 |
+
+### TASK-14.2 AuthContext 迁移
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 改接 NestJS `/auth/*` |
+| 验收 | Vercel 前端可登录独立后端 |
+
+### TASK-14.3 AI 设置页迁移
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | localStorage 模型迁移为后端模型 |
+| 验收 | API Key 不再进入前端持久化 |
+
+### TASK-14.4 业务页面迁移
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | Dashboard 各页面改接后端 API |
+| 验收 | 页面刷新后流程状态可恢复 |
+
+### TASK-14.5 管理员后台
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 用户、全局模型、SMTP、审计日志页面 |
+| 验收 | 非管理员不可访问 |
 
 ---
 
-## Wave 6 — 测试 + 部署
+## Wave 15 — 移动端 API 契约 + 部署
 
-### TASK-6.1 ~ 6.7
+### TASK-15.1 后端服务器部署
 
-参见 `docs/12_MVP_SCOPE_ROADMAP.md` Wave 6 任务清单。
+| 字段 | 内容 |
+|------|------|
+| 目标 | Docker/PM2 + Nginx + HTTPS |
+| 验收 | `https://api.offer.example.com/api/v1/health` 可访问 |
+
+### TASK-15.2 前端 Vercel 部署
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | Vercel 连接生产 API |
+| 验收 | 生产域名登录、刷新、AI 调用正常 |
+
+### TASK-15.3 OpenAPI 导出
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 冻结移动端 v1 API 契约 |
+| 验收 | 移动端可基于 OpenAPI 生成客户端 |
+
+### TASK-15.4 CORS 生产验证
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 验证 Vercel 域名和自定义域名 |
+| 验收 | OPTIONS 预检和 credentials 请求均通过 |
 
 ---
 
-## Wave 7 — 简历创建器
+## Wave 16 — 安全与运维
 
-### TASK-7.1 ~ 7.12
-
-参见 `docs/12_MVP_SCOPE_ROADMAP.md` Wave 7 任务清单。
-- 类型定义：`types/resume-builder.ts`
-- 设计文档：`docs/17_RESUME_BUILDER_DESIGN.md`
-- 组件规格：`docs/08_COMPONENT_SPECIFICATION.md` §8.3（SectionNavigator/SectionEditor/ResumePreview/EditorToolbar）
-- 状态管理：`docs/10_STATE_MANAGEMENT.md` §10.6（ResumeBuilderContext）
-
----
-
-## Wave 8 — 全站视觉升级 + 图标体系统一 + 国内资源替换
-
-### TASK-8.1 ~ 8.14
-
-参见 `docs/12_MVP_SCOPE_ROADMAP.md` Wave 8 任务清单。
-- 设计提示词：`docs/codex_prompts/wave8_prompt.md`
-- 组件参考：`docs/08_COMPONENT_SPECIFICATION.md`（Icon / IconSprite）
-- 设计系统参考：`docs/06_UI_UX_DESIGN_SYSTEM.md`
-- 架构参考：`docs/01_TECH_ARCHITECTURE.md`（middleware.ts 路由保护）
-
----
-
-## Wave 9 — 移除 Demo 模式 + JSON 解析修复 + 新模板 + 随机样式 + PDF 优化
-
-### TASK-9.1 移除 Demo 模式
+### TASK-16.1 限流
 
 | 字段 | 内容 |
 |------|------|
-| 目标 | 删除 Demo 模式和 Mock 数据，所有功能强制调用真实 AI 接口 |
-| 变更 | 移除首页 Demo 按钮、Dashboard Demo Banner、JobFlowContext LOAD_DEMO action、report 页面 Demo 自动加载 |
-| 验收 | 无法绕过 API Key 配置，所有 AI 模块均调用真实接口 |
+| 目标 | 登录、注册、AI、邮件接口限流 |
+| 验收 | 超限返回 `RATE_LIMITED` |
 
-### TASK-9.2 李同学数据改为表单填充
-
-| 字段 | 内容 |
-|------|------|
-| 目标 | 将李同学数据从 Demo 预填充改为表单快速填充 |
-| 变更 | profile 页面「填充李同学数据」按钮仅填充表单字段，点击「开始 AI 诊断」后调用真实 AI |
-| 验收 | 填充后表单显示李同学数据，提交后 AI 实时分析 |
-
-### TASK-9.3 JSON 解析容错
+### TASK-16.2 审计日志完善
 
 | 字段 | 内容 |
 |------|------|
-| 目标 | 修复 AI 返回 Markdown 围栏导致的 `Unexpected token` 错误 |
-| 新增 | `lib/utils/parse-json.ts` — `parseAIJson()` 函数 |
-| 变更 | 所有 7 个 AI API Route 使用 `parseAIJson()` 替代 `JSON.parse()` |
-| 验收 | AI 返回 ` ```json {...} ``` ` 格式时正常解析 |
+| 目标 | 敏感操作全记录 |
+| 验收 | 管理员后台可筛选查询 |
 
-### TASK-9.4 AI 综合建议显示优化
+### TASK-16.3 日志与监控
 
 | 字段 | 内容 |
 |------|------|
-| 目标 | 报告页面 AI 综合建议显示为正常文本而非 Markdown 原始格式 |
-| 变更 | 新增 `renderMarkdownToText()` 函数，将 Markdown 转为 React 元素 |
-| 验收 | 标题、列表、段落正常渲染，无 `#`、`*` 等 Markdown 符号 |
+| 目标 | 结构化日志、错误告警、慢请求 |
+| 验收 | 可定位 requestId 对应错误 |
 
-### TASK-9.5 修复简历编辑器跳回基本信息
-
-| 字段 | 内容 |
-|------|------|
-| 目标 | 修复编辑简历时每次保存都跳回「基本信息」面板的 bug |
-| 原因 | `SET_ACTIVE_RESUME` 每次重置 `activeSection` 为 `"basic"`；`useEffect` 依赖 `state.resumes` 导致重复触发 |
-| 变更 | 移除 `SET_ACTIVE_RESUME` 中的 `activeSection` 重置；`useEffect` 仅依赖 `resumeId` |
-| 验收 | 编辑任意模块时切换不会跳回基本信息 |
-
-### TASK-9.6 新增 3 个简历模板
+### TASK-16.4 备份与恢复
 
 | 字段 | 内容 |
 |------|------|
-| 目标 | 新增极简留白、时间轴、科技感 3 个差异化模板 |
-| 新增 | `components/resume-templates/minimal/`、`timeline/`、`tech/` |
-| 注册 | 更新 `registry.ts`，总计 10 个模板 |
-| 验收 | 模板选择弹窗显示 10 个模板，切换正常 |
+| 目标 | PostgreSQL 定时备份 |
+| 验收 | 有恢复演练记录 |
 
-### TASK-9.7 随机样式功能
-
-| 字段 | 内容 |
-|------|------|
-| 目标 | 在简历编辑工具栏新增「随机样式」按钮 |
-| 变更 | `EditorToolbar.tsx` 新增 `handleRandomStyle()` 函数 |
-| 验收 | 点击后随机切换模板、字体和主题色 |
-
-### TASK-9.8 PDF 导出优化
-
-| 字段 | 内容 |
-|------|------|
-| 目标 | 导出 PDF 时隐藏导航栏等 UI，文件名为「姓名 - 简历.pdf」 |
-| 变更 | `dashboard.css` 添加 `@media print` 隐藏 header/sidebar/stepnav；`EditorToolbar.tsx` 设置 `document.title` |
-| 验收 | 导出 PDF 只显示简历内容，文件名包含姓名 |
