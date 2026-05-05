@@ -160,3 +160,37 @@ X-Platform: ios
 - 不在本地保存 API Key 明文
 - 截图、日志和崩溃上报不得包含 Token 和模型 Key
 
+## 9.9 OpenAPI 与契约验证
+
+后端本地导出 OpenAPI v1：
+
+```bash
+npm --workspace backend run openapi:export
+```
+
+导出文件：
+
+```text
+docs/openapi/openapi-v1.json
+```
+
+生产环境下载地址：
+
+```text
+https://api.offer.example.com/docs/openapi.json
+```
+
+移动端接入说明维护在：
+
+```text
+docs/mobile/MOBILE_API_INTEGRATION.md
+```
+
+Bearer Token 冒烟验证：
+
+```bash
+API_BASE_URL=https://api.offer.example.com/api/v1 \
+MOBILE_TEST_EMAIL=student@example.com \
+MOBILE_TEST_PASSWORD='replace-with-password' \
+npm --workspace backend run verify:mobile
+```

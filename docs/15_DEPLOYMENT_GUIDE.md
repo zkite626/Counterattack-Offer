@@ -41,6 +41,17 @@ frontend
 
 前端构建只读取 `frontend/` 内的 Next.js 项目文件。
 
+### Vercel 项目设置
+
+1. 在 Vercel 新建 Project，Git 仓库选择当前仓库
+2. Framework Preset 选择 Next.js
+3. Root Directory 设置为 `frontend`
+4. Production 环境变量使用 `frontend/.env.production.example` 中的键名
+5. Domains 绑定 `offer.example.com`
+6. 自定义域名生效后，将 Vercel 默认域名和自定义域名同时加入后端 `CORS_ORIGINS`
+
+前端生产环境只允许 `NEXT_PUBLIC_` 变量；数据库、JWT、SMTP、AI Key 和加密主密钥不得配置到 Vercel。
+
 ## 15.3 后端服务器部署
 
 推荐服务器组件：
@@ -67,6 +78,54 @@ APP_KEY_ENCRYPTION_SECRET=base64-32-byte-secret
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=replace-with-strong-password
 ```
+
+仓库提供生产样例：
+
+```bash
+cp backend/.env.production.example backend/.env
+```
+
+复制后必须替换所有 `replace-with-*` 占位值，并确认 `.env` 不进入 Git。
+
+### PM2 部署
+
+```bash
+cd /opt/counterattack-offer/backend
+npm ci
+npm run prisma:generate
+npm run build
+npm run prisma:migrate
+sudo mkdir -p /var/log/counterattack-offer/api
+sudo chown -R "$USER":"$USER" /var/log/counterattack-offer
+pm2 start ecosystem.config.cjs --env production
+pm2 save
+pm2 startup
+```
+
+PM2 配置文件：`backend/ecosystem.config.cjs`。
+
+重启和回滚：
+
+```bash
+pm2 reload counterattack-offer-api
+pm2 logs counterattack-offer-api --lines 100
+```
+
+### Docker 部署
+
+如果服务器使用 Docker 镜像：
+
+```bash
+cd /opt/counterattack-offer/backend
+docker build -t counterattack-offer-api:$(git rev-parse --short HEAD) .
+docker run -d --name counterattack-offer-api \
+  --restart unless-stopped \
+  --env-file .env \
+  -p 127.0.0.1:3001:3001 \
+  counterattack-offer-api:$(git rev-parse --short HEAD)
+```
+
+PM2 和 Docker 二选一即可，生产只暴露 Nginx HTTPS，不直接开放 Node.js 端口。
 
 ## 15.4 Nginx 反向代理
 
@@ -96,6 +155,22 @@ location /api/v1/ai/ {
 }
 ```
 
+完整示例位于：
+
+```text
+deploy/nginx/api.offer.example.com.conf
+```
+
+启用 HTTPS：
+
+```bash
+sudo cp deploy/nginx/api.offer.example.com.conf /etc/nginx/sites-available/api.offer.example.com.conf
+sudo ln -s /etc/nginx/sites-available/api.offer.example.com.conf /etc/nginx/sites-enabled/api.offer.example.com.conf
+sudo nginx -t
+sudo systemctl reload nginx
+sudo certbot --nginx -d api.offer.example.com
+```
+
 ## 15.5 CORS 生产配置
 
 NestJS：
@@ -122,6 +197,17 @@ app.enableCors({
 - 本地开发域名只在非生产环境加入
 - 不使用 `origin: "*"` 搭配 `credentials: true`
 
+仓库脚本验证：
+
+```bash
+API_BASE_URL=https://api.offer.example.com/api/v1 \
+CORS_ALLOWED_ORIGINS=https://offer.example.com,https://counterattack-offer.vercel.app \
+CORS_DENIED_ORIGIN=https://evil.example.com \
+npm --workspace backend run verify:cors
+```
+
+该脚本会验证 OPTIONS 预检、`Access-Control-Allow-Credentials: true`、实际 GET 健康检查和非白名单 Origin 拒绝。
+
 ## 15.6 PostgreSQL 备份
 
 基础备份命令：
@@ -137,7 +223,86 @@ pg_dump "$DATABASE_URL" > backup-$(date +%F).sql
 - 备份文件加密
 - 每月至少一次恢复演练
 
-## 15.7 发布流程
+生产数据库初始化模板：
+
+```text
+deploy/postgres/provision-production-db.sql
+deploy/postgres/pg_hba.production.example.conf
+```
+
+执行迁移：
+
+```bash
+cd /opt/counterattack-offer/backend
+npm run prisma:migrate
+```
+
+备份脚本：
+
+```bash
+PGHOST=127.0.0.1 \
+PGPORT=5432 \
+PGDATABASE=counterattack_offer \
+PGUSER=counterattack_offer_app \
+PGPASSWORD='replace-with-password' \
+BACKUP_DIR=/var/backups/counterattack-offer/postgres \
+BACKUP_ENCRYPTION_PASSPHRASE='replace-with-backup-passphrase' \
+deploy/postgres/backup-postgres.sh
+```
+
+Crontab 示例：
+
+```cron
+15 2 * * * PGHOST=127.0.0.1 PGPORT=5432 PGDATABASE=counterattack_offer PGUSER=counterattack_offer_app PGPASSWORD=*** BACKUP_DIR=/var/backups/counterattack-offer/postgres BACKUP_ENCRYPTION_PASSPHRASE=*** /opt/counterattack-offer/deploy/postgres/backup-postgres.sh
+```
+
+恢复演练：
+
+```bash
+BACKUP_ENCRYPTION_PASSPHRASE='replace-with-backup-passphrase' \
+deploy/postgres/restore-backup-check.sh /var/backups/counterattack-offer/postgres/counterattack_offer-YYYYMMDDTHHMMSSZ.dump.enc
+```
+
+PostgreSQL 必须只监听 `127.0.0.1` 或内网地址；云安全组和防火墙必须拒绝公网 `5432`。
+
+## 15.7 OpenAPI 与移动端契约
+
+导出 OpenAPI JSON：
+
+```bash
+npm --workspace backend run openapi:export
+```
+
+输出文件：
+
+```text
+docs/openapi/openapi-v1.json
+```
+
+生产也可直接访问：
+
+```text
+https://api.offer.example.com/docs/openapi.json
+```
+
+移动端接入说明：
+
+```text
+docs/mobile/MOBILE_API_INTEGRATION.md
+```
+
+移动端 Bearer Token 验证：
+
+```bash
+API_BASE_URL=https://api.offer.example.com/api/v1 \
+MOBILE_TEST_EMAIL=student@example.com \
+MOBILE_TEST_PASSWORD='replace-with-password' \
+npm --workspace backend run verify:mobile
+```
+
+若要纳入真实 AI 调用验收，测试账号需先具备用户模型或可用全局模型，然后增加 `MOBILE_VERIFY_AI=true`。
+
+## 15.8 发布流程
 
 1. 合并代码到主分支
 2. 后端执行数据库迁移
@@ -148,7 +313,25 @@ pg_dump "$DATABASE_URL" > backup-$(date +%F).sql
 7. 验证登录、刷新、AI 调用、SMTP 测试
 8. 检查 CORS 和审计日志
 
-## 15.8 回滚策略
+上线验收命令建议：
+
+```bash
+curl -fsS https://api.offer.example.com/api/v1/health
+npm --workspace backend run verify:cors
+npm --workspace backend run verify:mobile
+```
+
+人工验收项：
+
+- 注册验证邮件可收到并激活账号
+- 找回密码邮件可收到，重置后旧会话失效
+- 用户模型配置可创建、测试、设置默认和删除
+- 用户无模型时可 fallback 到全局默认模型
+- AI 画像到报告全流程可完成
+- 管理员后台可访问用户、SMTP、全局模型、统计和审计日志
+- 审计日志包含管理员敏感操作
+
+## 15.9 回滚策略
 
 | 场景 | 回滚 |
 |------|------|

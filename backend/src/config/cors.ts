@@ -8,6 +8,8 @@ const allowedHeaders = [
   'X-Request-Id',
   'X-Client-Type',
   'X-Client-Version',
+  'X-Idempotency-Key',
+  'X-Platform',
 ];
 
 const allowedMethods = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'];
@@ -41,7 +43,8 @@ export function createCorsOptions(
         return;
       }
 
-      callback(new Error(`CORS origin not allowed: ${origin}`), false);
+      // 非白名单 Origin 不返回 CORS 许可头，由浏览器拒绝，避免生产日志出现预检噪声。
+      callback(null, false);
     },
     credentials: true,
     allowedHeaders,
