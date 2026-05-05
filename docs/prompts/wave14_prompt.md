@@ -14,6 +14,10 @@
 - docs/archive/frontend-mvp/06_UI_UX_DESIGN_SYSTEM.md
 - docs/archive/frontend-mvp/08_COMPONENT_SPECIFICATION.md
 
+## 技能辅助建议
+
+鼓励根据任务使用相关 Codex Skills/Plugins 辅助开发。本 Wave 涉及前端目录迁移、API 接入、管理员 UI 和浏览器验证，可优先使用前端应用、UI/UX、浏览器测试、系统化调试、验证和代码审查相关技能；技能建议必须遵守 Vanilla CSS、响应式、暗色模式和安全规范。
+
 ## 目标
 
 1. 新增统一 API Client
@@ -23,6 +27,13 @@
 5. 验证 Vercel 前端访问独立后端的 CORS 和 Cookie
 
 ## 任务
+
+### 14.0 前端目录迁移
+
+- 将当前 Next.js 前端代码整体迁移到 `frontend/`
+- `frontend/` 内保留 `package.json`, `src/`, `public/`, `next.config.ts`
+- 根目录只保留项目管理脚本、文档和 workspaces 配置
+- Vercel Root Directory 指向 `frontend`
 
 ### 14.1 API Client
 

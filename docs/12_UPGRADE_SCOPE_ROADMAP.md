@@ -24,7 +24,7 @@
 
 | # | 任务 | 输出 |
 |---|------|------|
-| 10.1 | 创建 `apps/api` NestJS 项目 | `apps/api/` |
+| 10.1 | 创建 `backend/` NestJS 项目 | `backend/` |
 | 10.2 | 配置 Prisma + PostgreSQL | `prisma/schema.prisma` |
 | 10.3 | 实现 ConfigModule 环境变量校验 | `config/` |
 | 10.4 | 实现统一响应和异常过滤器 | `common/filters` |
@@ -107,6 +107,7 @@ Next.js 前端改接独立后端 API，并新增管理员后台页面。
 
 | # | 任务 |
 |---|------|
+| 14.0 | 将现有前端代码迁移到 `frontend/`，保持 Next.js 构建通过 |
 | 14.1 | 新增 `src/lib/api` |
 | 14.2 | AuthContext 改接 `/auth/*` |
 | 14.3 | AIContext 改接 `/ai/models` |
@@ -156,4 +157,3 @@ Next.js 前端改接独立后端 API，并新增管理员后台页面。
 | 16.5 | 数据库慢查询和索引检查 |
 | 16.6 | 安全头和 CORS 回归测试 |
 | 16.7 | 密钥轮换文档 |
-

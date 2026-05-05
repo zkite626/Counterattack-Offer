@@ -12,6 +12,10 @@
 - docs/11_SSD_WAVE_DEVELOPMENT.md
 - docs/12_UPGRADE_SCOPE_ROADMAP.md
 
+## 技能辅助建议
+
+鼓励根据任务使用相关 Codex Skills/Plugins 辅助开发。本 Wave 可优先使用系统化调试、数据库/后端最佳实践、OpenAPI 文档、验证和代码审查相关技能；技能建议必须服从项目文档、CORS、安全和验收规范。
+
 ## 前置条件
 
 旧 Next.js 全栈 MVP 文档已归档到 `docs/archive/frontend-mvp/`。本 Wave 不迁移前端业务页面，只搭建后端基础设施。
@@ -27,7 +31,7 @@
 
 ### 10.1 创建后端项目
 
-- 在目标结构中新增 `apps/api`
+- 在目标结构中新增 `backend/`
 - 使用 TypeScript 严格模式
 - 建立模块目录：auth/users/ai/model-config/career-flow/resume/mail/admin/audit
 
@@ -67,4 +71,3 @@
 - `localhost:3000` 预检请求通过
 - 配置的 Vercel 域名预检请求通过
 ```
-

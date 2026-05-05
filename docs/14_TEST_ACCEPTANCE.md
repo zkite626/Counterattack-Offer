@@ -50,6 +50,7 @@
 
 | # | 测试项 | 验收标准 | 状态 |
 |---|--------|----------|------|
+| T14-00 | 前端目录 | Next.js 项目位于 `frontend/`，根目录只做项目管理 | 待实现 |
 | T14-01 | API Client | 统一处理成功、错误、401 refresh | 待实现 |
 | T14-02 | Vercel 登录 | Vercel 前端可登录独立后端 | 待实现 |
 | T14-03 | 模型设置页 | 不再使用 localStorage 保存 Key | 待实现 |
@@ -88,4 +89,3 @@
 | SameSite | 生产环境 Refresh Cookie 使用 `SameSite=None; Secure` |
 | Origin 拒绝 | 非白名单 Origin 被拒绝 |
 | 移动端 | Bearer Token 请求不依赖 Cookie |
-

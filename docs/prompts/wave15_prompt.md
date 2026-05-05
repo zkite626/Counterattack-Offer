@@ -14,6 +14,10 @@
 - docs/16_SECURITY_NOTES.md
 - docs/17_OPERATIONS_OBSERVABILITY.md
 
+## 技能辅助建议
+
+鼓励根据任务使用相关 Codex Skills/Plugins 辅助开发。本 Wave 涉及 Vercel、服务器部署、CORS、OpenAPI 和移动端契约，可优先使用部署排障、GitHub/CI、系统化调试、浏览器验证、验证和代码审查相关技能；技能建议必须服从生产安全、备份和回滚规范。
+
 ## 目标
 
 1. 前端部署到 Vercel
@@ -41,7 +45,7 @@
 
 ### 15.3 前端 Vercel
 
-- 配置 Root Directory
+- 配置 Root Directory 为 `frontend`
 - 配置 `NEXT_PUBLIC_API_BASE_URL`
 - 绑定自定义域名
 
@@ -78,4 +82,3 @@
 - 数据库备份可运行
 - CORS 配置不使用通配符
 ```
-

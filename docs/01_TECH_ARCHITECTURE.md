@@ -29,32 +29,38 @@ Mobile App / Mini Program / Future Clients
         └── Same /api/v1 contract
 ```
 
-## 1.2 Monorepo 目标结构
+## 1.2 单仓双目录目标结构
 
-升级后建议采用单仓多应用结构，保留现有前端代码并新增后端服务：
+升级后采用一个 Git 仓库统一管理前后端，但业务代码分为两个顶层目录：`frontend/` 和 `backend/`。这样既方便整体项目管理，也避免前后端代码边界混乱。
 
 ```
-apps/
-├── web/                         # Next.js 前端（由当前项目迁移而来）
-│   ├── src/app/
-│   ├── src/components/
-│   ├── src/contexts/
-│   └── src/lib/api/
-├── api/                         # NestJS 后端
-│   ├── src/main.ts
-│   ├── src/app.module.ts
-│   ├── src/modules/
-│   │   ├── auth/
-│   │   ├── users/
-│   │   ├── ai/
-│   │   ├── model-config/
-│   │   ├── career-flow/
-│   │   ├── resume/
-│   │   ├── mail/
-│   │   ├── admin/
-│   │   └── audit/
+counterattack-offer/
+├── frontend/                    # Next.js 前端（由当前项目迁移而来）
+│   ├── package.json
+│   ├── next.config.ts
+│   ├── public/
+│   └── src/
+│       ├── app/
+│       ├── components/
+│       ├── contexts/
+│       └── lib/api/
+├── backend/                     # NestJS 后端
+│   ├── package.json
+│   ├── src/
+│   │   ├── main.ts
+│   │   ├── app.module.ts
+│   │   └── modules/
+│   │       ├── auth/
+│   │       ├── users/
+│   │       ├── ai/
+│   │       ├── model-config/
+│   │       ├── career-flow/
+│   │       ├── resume/
+│   │       ├── mail/
+│   │       ├── admin/
+│   │       └── audit/
 │   └── prisma/
-└── mobile/                      # 未来移动端，当前只预留 API 契约
+├── mobile/                      # 未来移动端，当前只预留 API 契约或示例
 
 packages/
 ├── shared/                      # DTO、错误码、常量、类型
@@ -65,7 +71,26 @@ docs/
 └── ...                          # 当前升级文档
 ```
 
-> 如果第一阶段不重构 monorepo，也可以先在仓库根目录新增 `backend/` 或 `apps/api/`，待后续 Wave 再迁移 `apps/web/`。文档以最终目标结构为准。
+根目录可使用 npm workspaces 管理：
+
+```json
+{
+  "private": true,
+  "workspaces": ["frontend", "backend", "packages/*"],
+  "scripts": {
+    "dev:frontend": "npm --workspace frontend run dev",
+    "dev:backend": "npm --workspace backend run start:dev",
+    "build:frontend": "npm --workspace frontend run build",
+    "build:backend": "npm --workspace backend run build"
+  }
+}
+```
+
+后续迁移顺序：
+
+1. 先将当前 Next.js 代码整体迁移到 `frontend/`
+2. 再在 `backend/` 新建 NestJS 服务
+3. 根目录保留项目级文档、脚本和工作区配置
 
 ## 1.3 部署拓扑
 
@@ -202,4 +227,3 @@ ADMIN_PASSWORD=replace-with-strong-password
 NEXT_PUBLIC_API_BASE_URL=https://api.offer.example.com/api/v1
 NEXT_PUBLIC_APP_NAME=逆袭Offer
 ```
-

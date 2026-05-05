@@ -33,7 +33,13 @@ NEXT_PUBLIC_APP_NAME=逆袭Offer
 npm run build
 ```
 
-若迁移为 monorepo，Vercel Root Directory 应指向 `apps/web`。
+Vercel Root Directory 应指向：
+
+```text
+frontend
+```
+
+前端构建只读取 `frontend/` 内的 Next.js 项目文件。
 
 ## 15.3 后端服务器部署
 
@@ -151,4 +157,3 @@ pg_dump "$DATABASE_URL" > backup-$(date +%F).sql
 | 数据库迁移错误 | 使用向前修复迁移，避免生产直接 down migration |
 | CORS 配置错误 | 更新后端环境变量并重启 |
 | SMTP 错误 | 管理员后台停用 SMTP 或回退旧配置 |
-

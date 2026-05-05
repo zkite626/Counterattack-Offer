@@ -13,6 +13,10 @@
 - docs/archive/frontend-mvp/03_API_SPECIFICATION.md
 - docs/archive/frontend-mvp/09_PROMPT_TEMPLATES.md
 
+## 技能辅助建议
+
+鼓励根据任务使用相关 Codex Skills/Plugins 辅助开发。本 Wave 涉及旧 API 迁移、Prompt 迁移和业务结果持久化，可优先使用系统化调试、OpenAI 文档查询、后端/API 设计、验证和代码审查相关技能；技能建议必须保持旧前端输出类型兼容。
+
 ## 目标
 
 1. 学生档案和经历持久化
@@ -69,4 +73,3 @@
 - AI JSON 围栏响应可解析
 - 所有接口都有权限校验
 ```
-

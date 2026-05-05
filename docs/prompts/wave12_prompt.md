@@ -12,6 +12,10 @@
 - docs/07_ADMIN_CONSOLE_DESIGN.md
 - docs/16_SECURITY_NOTES.md
 
+## 技能辅助建议
+
+鼓励根据任务使用相关 Codex Skills/Plugins 辅助开发。本 Wave 涉及 AI 模型、API Key 加密和管理员配置，可优先使用 OpenAI 官方文档查询、系统化调试、安全检查、验证和代码审查相关技能；技能建议不得绕过密钥加密、日志脱敏和审计要求。
+
 ## 目标
 
 1. 用户可管理自己的 OpenAI 兼容模型
@@ -72,4 +76,3 @@
 - 模型测试成功/失败状态正确
 - AI 调用日志记录耗时、状态、Token 用量
 ```
-

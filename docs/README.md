@@ -9,9 +9,11 @@
 - 前端继续使用 Next.js 16，可部署到 Vercel
 - 后端新增 NestJS API 服务，部署在独立服务器
 - 数据库使用 PostgreSQL，承载用户、模型、求职流程、简历和审计数据
+- 仓库采用单项目管理前后端：`frontend/` 存放前端，`backend/` 存放后端
 - 每个用户可设置自己的 OpenAI 兼容模型和 API Key
 - 管理员可设置全局默认模型、全局 API Key、SMTP 邮箱和用户管理策略
 - API 设计面向 Web、移动端和未来第三方客户端复用
+- 开发过程鼓励使用相关 Codex Skills/Plugins 辅助规格梳理、实现、调试、测试、代码审查和部署排障
 
 ## 文档索引
 

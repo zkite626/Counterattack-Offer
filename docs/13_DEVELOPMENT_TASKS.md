@@ -7,7 +7,7 @@
 | 字段 | 内容 |
 |------|------|
 | 目标 | 新增 NestJS API 服务 |
-| 输出 | `apps/api` |
+| 输出 | `backend/` |
 | 验收 | `npm run start:dev` 可启动，`GET /api/v1/health` 返回成功 |
 
 ### TASK-10.2 数据库与 Prisma
@@ -15,7 +15,7 @@
 | 字段 | 内容 |
 |------|------|
 | 目标 | 接入 PostgreSQL 和 Prisma |
-| 输出 | `apps/api/prisma/schema.prisma` |
+| 输出 | `backend/prisma/schema.prisma` |
 | 验收 | 本地数据库迁移成功，Prisma Client 可查询 |
 
 ### TASK-10.3 统一 API 基建
@@ -149,6 +149,14 @@
 
 ## Wave 14 — 前端接入后端 + 管理员 UI
 
+### TASK-14.0 前端目录迁移
+
+| 字段 | 内容 |
+|------|------|
+| 目标 | 将当前 Next.js 前端代码整体迁移到 `frontend/` |
+| 输出 | `frontend/package.json`, `frontend/src`, `frontend/public`, `frontend/next.config.ts` |
+| 验收 | 在 `frontend/` 内运行构建通过，Vercel Root Directory 指向 `frontend` |
+
 ### TASK-14.1 API Client
 
 | 字段 | 内容 |
@@ -247,4 +255,3 @@
 |------|------|
 | 目标 | PostgreSQL 定时备份 |
 | 验收 | 有恢复演练记录 |
-
