@@ -8,7 +8,7 @@
 | Wave 2 | AI 服务层 + 模型管理 | AI 调用链路跑通 | 可添加模型、测试连接、调用AI |
 | Wave 3 | 核心业务前半段 | 信息→画像→转译→JD→匹配 | 5个页面可走通 |
 | Wave 4 | 核心业务后半段 | 简历→面试→计划→报告 | 全流程闭环 |
-| Wave 5 | 首页 + 演示模式 + 打磨 | 精美首页，一键演示 | 视觉惊艳，Demo 流畅 |
+| Wave 5 | 首页 + 动画打磨 | 精美首页，清晰转化路径 | 视觉完整，注册/登录流畅 |
 | Wave 6 | 测试 + 部署 + 优化 | 上线可用 | Lighthouse>85, 无Bug |
 | Wave 7 | 简历创建器 | 编辑+预览+导出简历 | 三栏编辑器，3个模板，AI预填充，PDF导出 |
 | Wave 8 | 全站视觉升级 | Emoji→IconFont、国内资源、样式统一 | 全站无emoji图标、本地字体、暗色/响应式完美 |
@@ -26,7 +26,7 @@
 |---|------|----------|
 | 1.1 | Next.js 16 项目初始化（TypeScript, App Router） | `package.json`, `tsconfig.json`, `next.config.ts` |
 | 1.2 | 全局 CSS 设计系统（Design Tokens + 暗色模式） | `globals.css` |
-| 1.3 | Google Fonts 引入（Inter + Noto Sans SC + Outfit） | `layout.tsx` |
+| 1.3 | 本地字体声明（Inter + Noto Sans SC + Outfit） | `globals.css`, `public/fonts/` |
 | 1.4 | 基础 UI 组件（Button, Card, Input, Tag, Modal） | `components/ui/` |
 | 1.5 | ThemeContext + ThemeToggle | `contexts/ThemeContext.tsx` |
 | 1.6 | JWT 工具（jose 签发/验证） | `lib/auth/jwt.ts` |
@@ -132,17 +132,17 @@
 
 ---
 
-## 12.6 Wave 5 — 首页 + 演示模式 + 动画打磨
+## 12.6 Wave 5 — 首页 + 动画打磨
 
 ### 任务清单
 
 | # | 任务 |
 |---|------|
-| 5.1 | 首页 Hero 区（渐变背景 + 核心文案 + CTA） |
+| 5.1 | 首页 Hero 区（全屏首屏 + 品牌 Logo + 核心文案 + CTA） |
 | 5.2 | 首页痛点区（卡片网格） |
-| 5.3 | 首页解决方案区（步骤流） |
+| 5.3 | 首页解决方案区（`1-2-3 / 4-5-6` 六步路径） |
 | 5.4 | 首页核心功能区（功能卡片） |
-| 5.5 | 一键体验按钮（Demo 模式） |
+| 5.5 | 注册/登录 CTA（真实 AI 流程入口） |
 | 5.6 | 页面过渡动画（slideUp, fadeIn） |
 | 5.7 | 卡片入场动画（Intersection Observer） |
 | 5.8 | 分数动画（计数递增） |
@@ -221,14 +221,14 @@
 | 8.3 | 全面替换 Emoji 为 IconFont 图标 | 首页/侧边栏/StepNav/功能页/认证页/错误页 全部替换 |
 | 8.4 | 新增缺失的 IconSprite 图标 | 补充 fire/award/book/chat/handshake/puzzle 等图标 |
 | 8.5 | 全站样式统一 | 卡片/按钮/间距/排版/空状态/Loading 统一规范 |
-| 8.6 | 首页视觉增强 | Logo 展示、痛点卡片色条、步骤流连线、功能卡片渐变 |
+| 8.6 | 首页视觉增强 | 全屏 Hero、路径插画背景、痛点卡片色条、六步路径箭头、移动端响应式 |
 | 8.7 | Dashboard 侧边栏视觉优化 | Logo、导航项图标、当前页高亮、移动端动画 |
 | 8.8 | 功能页面逐页美化 | 10+ 个功能页逐一检查并优化（参照统一样式规范） |
 | 8.9 | 认证页面美化 | 登录/注册页 Logo + 输入框图标 + Loading 态 |
 | 8.10 | 错误和空状态页面美化 | 404/Error/Loading 页面统一品牌风格 |
 | 8.11 | 暗色模式全面适配 | 所有新增样式验证暗色模式 |
 | 8.12 | 响应式全面检查 | 375px ~ 1536px 全断点验证 |
-| 8.13 | ~~修复 middleware 弃用警告~~ | ✅ 已完成：`middleware.ts` → `proxy.ts`，导出函数名 `proxy` |
+| 8.13 | 路由保护检查 | 当前仍使用 `middleware.ts` 导出 `middleware`，需在升级 Next 约定时再迁移 |
 | 8.14 | 构建验证 | `npm run build` 无报错/警告，逐页验证亮色/暗色/响应式 |
 
 ### 验收标准
@@ -238,8 +238,7 @@
 - Google Fonts 替换为本地字体，国内可正常加载
 - `/favicon.ico` 和 `/logo-square.png`、`/logo-wide.png` 在 `public/` 下正确引用
 - 侧边栏和首页正确展示品牌 Logo
-- `npm run build` 无 middleware 弃用警告
+- `npm run build` 通过；若 Next.js 版本提示 Proxy 约定，再执行 `middleware.ts` → `proxy.ts` 迁移
 - 暗色模式下所有图标、卡片、背景正常
 - 响应式在 375px ~ 1536px 范围内正常
 - Lighthouse Performance > 90, Accessibility > 95
-

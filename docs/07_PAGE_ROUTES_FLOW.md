@@ -4,7 +4,7 @@
 
 | # | 页面 | 路由 | 布局 | 认证 | 说明 |
 |---|------|------|------|------|------|
-| 0 | 首页 | `/` | Landing | ❌ | Hero + 痛点 + 方案 + CTA |
+| 0 | 首页 | `/` | Landing | ❌ | 全屏 Hero + 痛点 + 六步路径 + 功能区 + CTA |
 | A1 | 登录 | `/login` | Auth | ❌ | 邮箱+密码 |
 | A2 | 注册 | `/register` | Auth | ❌ | 邮箱+密码+姓名 |
 | 1 | 学生信息 | `/profile` | Dashboard | ✅ | 表单 + 一键导入 |
@@ -25,7 +25,7 @@
 Dashboard Layout 顶部固定步骤条：
 
 ```
-📝 基础信息 → 🔍 AI画像 → 🔄 经历转译 → 💼 JD解析 → 📊 人岗匹配 → 📄 简历优化 → 🎤 面试训练 → 📅 能力计划 → 📋 汇总报告
+user 基础信息 → diagnosis AI画像 → translate 经历转译 → job JD解析 → match 人岗匹配 → resume 简历优化 → interview 面试训练 → plan 能力计划 → report 汇总报告
 ```
 
 步骤状态：
@@ -62,21 +62,21 @@ Dashboard Layout 顶部固定步骤条：
 ```
 Logo + 逆袭Offer
 ──────────────
-📝 我的求职起点
-🔍 AI求职画像
-🔄 经历能力转译
-💼 岗位需求解析
-📊 匹配避坑雷达
-📄 可信简历优化
-🎤 AI面试追问
-📅 突围行动计划
-📋 求职报告
+user 我的求职起点
+diagnosis AI求职画像
+translate 经历能力转译
+job 岗位需求解析
+match 匹配避坑雷达
+resume 可信简历优化
+interview AI面试追问
+plan 突围行动计划
+report 求职报告
 ──────────────
-📄 简历创建器
+resume-builder 简历创建器
 ──────────────
-⚙️ 模型设置
-👤 个人信息
-🚪 退出登录
+settings 模型设置
+user 个人信息
+logout 退出登录
 ```
 
 ### 底部导航栏（移动端）

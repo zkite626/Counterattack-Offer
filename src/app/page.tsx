@@ -39,6 +39,14 @@ const FEATURES: { icon: IconName; title: string; desc: string; link: string }[] 
   { icon: "trending", title: "能力提升计划", desc: "针对匹配差距生成个性化提升路线图，按时间线推进你的求职竞争力。", link: "/plan" },
 ];
 
+/* ── Hero 悬浮图标装饰 ── */
+const HERO_FLOATERS: { icon: IconName; className: string }[] = [
+  { icon: "document", className: "home-hero__floater--doc" },
+  { icon: "briefcase", className: "home-hero__floater--briefcase" },
+  { icon: "user-group", className: "home-hero__floater--group" },
+  { icon: "clipboard", className: "home-hero__floater--clipboard" },
+];
+
 /* ── 导航栏组件 ── */
 function HomeNav() {
   const router = useRouter();
@@ -53,7 +61,16 @@ function HomeNav() {
 
   return (
     <nav className={`home-nav ${scrolled ? "home-nav--scrolled" : ""}`}>
-      <span className="home-nav__brand">逆袭Offer</span>
+      <button
+        className="home-nav__brand"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        aria-label="返回首页顶部"
+      >
+        <picture>
+          <source srcSet="/logo-wide-dark.webp" type="image/webp" />
+          <img src="/logo-wide-dark.png" alt="逆袭Offer" className="home-nav__brand-image" />
+        </picture>
+      </button>
       <div className="home-nav__actions">
         <ThemeToggle />
         {isAuthenticated ? (
@@ -66,7 +83,7 @@ function HomeNav() {
         ) : (
           <>
             <button
-              className="home-nav__btn home-nav__btn--primary"
+              className="home-nav__btn home-nav__btn--ghost"
               onClick={() => router.push("/register")}
             >
               注册
@@ -104,14 +121,15 @@ function PainCard({ icon, title, desc, index }: { icon: IconName; title: string;
 /* ── 流程步骤组件 ── */
 function SolutionStep({ icon, title, desc, index }: { icon: IconName; title: string; desc: string; index: number }) {
   const { ref, isInView } = useInView();
+  const stepNumber = index + 1;
 
   return (
     <div
       ref={ref}
-      className={`home-solution__step ${isInView ? "home-solution__step--visible" : ""}`}
+      className={`home-solution__step home-solution__step--${stepNumber} ${isInView ? "home-solution__step--visible" : ""}`}
       style={isInView ? { animationDelay: `${index * 100}ms` } : undefined}
     >
-      <div className="home-solution__step-number">{index + 1}</div>
+      <div className="home-solution__step-number">{stepNumber}</div>
       <span className="home-solution__step-icon"><Icon name={icon} size="1.5em" /></span>
       <h3 className="home-solution__step-title">{title}</h3>
       <p className="home-solution__step-desc">{desc}</p>
@@ -133,14 +151,12 @@ function FeatureCard({ icon, title, desc, link, index }: { icon: IconName; title
       <div className="home-feature-card__icon"><Icon name={icon} size="2.5rem" /></div>
       <h3 className="home-feature-card__title">{title}</h3>
       <p className="home-feature-card__desc">{desc}</p>
-      <span
+      <button
         className="home-feature-card__link"
         onClick={() => router.push(link)}
-        role="button"
-        tabIndex={0}
       >
         了解更多 <Icon name="arrow-right" size="1em" />
-      </span>
+      </button>
     </div>
   );
 }
@@ -174,12 +190,24 @@ export default function HomePage() {
         <div className="home-hero__glow home-hero__glow--2" />
         <div className="home-hero__glow home-hero__glow--3" />
 
+        <div className="home-hero__art" aria-hidden="true" />
+        <div className="home-hero__orbit" aria-hidden="true">
+          {HERO_FLOATERS.map((item) => (
+            <span key={item.className} className={`home-hero__floater ${item.className}`}>
+              <Icon name={item.icon} size="1.35em" />
+            </span>
+          ))}
+        </div>
+
         {/* Hero 内容 */}
         <div className="home-hero__content">
-          <picture>
-            <source srcSet="/logo-wide-dark.webp" type="image/webp" />
-            <img src="/logo-wide-dark.png" alt="逆袭Offer" className="home-hero__logo" />
-          </picture>
+          <h1 className="home-hero__sr-title">逆袭Offer：AI 求职突围智能体</h1>
+          <div className="home-hero__brand-lockup" aria-hidden="true">
+            <picture>
+              <source srcSet="/logo-wide-dark.webp" type="image/webp" />
+              <img src="/logo-wide-dark.png" alt="" className="home-hero__logo" />
+            </picture>
+          </div>
           <p className="home-hero__subtitle">面向低经验大学生的 AI 求职突围智能体</p>
           <p className="home-hero__tagline">
             不是每个大学生都有耀眼实习，但每段真实经历都可能藏着岗位价值。
@@ -191,7 +219,7 @@ export default function HomePage() {
                   className="home-hero__btn-primary"
                   onClick={() => router.push("/register")}
                 >
-                  开始我的求职突围
+                  开始我的求职突围 <Icon name="arrow-right" size="1em" />
                 </button>
                 <button
                   className="home-hero__btn-demo"
@@ -205,7 +233,7 @@ export default function HomePage() {
                 className="home-hero__btn-primary"
                 onClick={() => router.push("/profile")}
               >
-                进入工作台
+                进入工作台 <Icon name="arrow-right" size="1em" />
               </button>
             )}
           </div>
@@ -276,7 +304,7 @@ export default function HomePage() {
             className="home-cta__btn"
             onClick={() => isAuthenticated ? router.push("/profile") : router.push("/register")}
           >
-            立即开始 →
+            立即开始 <Icon name="arrow-right" size="1em" />
           </button>
           <div className="home-cta__badges">
             <span className="home-cta__badge">

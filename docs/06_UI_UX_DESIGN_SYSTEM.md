@@ -242,7 +242,7 @@ function applyTheme(theme: Theme) {
 
 ### 切换按钮
 
-Header 右上角提供三态切换：☀️ 亮色 / 🌙 暗色 / 🖥️ 跟随系统
+Header 右上角提供三态切换：`sun` 亮色 / `moon` 暗色 / `monitor` 跟随系统，全部通过 `<Icon>` 组件渲染。
 
 ---
 
@@ -339,15 +339,32 @@ Noto Sans SC 声明了 `unicode-range` 限定 CJK + Latin 范围，浏览器按�
 
 ---
 
-## 6.7 图标方案
+## 6.7 首页 Landing 规范
+
+首页当前由 `src/app/page.tsx` + `src/app/home.css` 实现，作为公开入口和品牌第一屏。
+
+| 区域 | 当前规范 |
+|------|----------|
+| Hero | 使用 `100svh` 全屏首屏，Logo 置于主文案上方，CTA 居中或桌面左对齐 |
+| Hero 视觉 | 深蓝渐变、星点纹理、粒子光效、`/images/home-hero-road.png` 路径插画铺满背景 |
+| 移动端 Hero | 内容垂直居中，Logo/副标题/按钮收紧，背景图 `cover` 铺满并保持主视觉不裁断 |
+| 痛点卡片 | 6 张居中卡片，顶部色条区分重点，图标使用统一圆形图标容器 |
+| 六步路径 | 桌面和平板为 `1-2-3 / 4-5-6` 两行网格，箭头表示同一行的顺序连接 |
+| 功能卡片 | 6 张功能卡片，卡片内容全断点居中，底部链接使用 `arrow-right` 图标 |
+| 暗色模式 | 卡片图标统一使用夜间图标底色、边框和阴影，避免浅底/彩底混用 |
+
+---
+
+## 6.8 图标方案
 
 使用 IconFont SVG Sprite 系统，通过 `Icon` + `IconSprite` 组件统一管理图标。
 
 | 用途 | 方案 |
 |------|------|
 | 通用图标 | `<Icon name="xxx" />` 组件 + SVG Sprite |
-| 步骤图标 | Emoji (📝✅📊💼🎯📄🎤📅📋) |
-| 状态图标 | Emoji (✅❌⚠️💡🔒) |
+| 步骤图标 | `<Icon name="user/diagnosis/translate/job/match/resume/interview/plan/report" />` |
+| 状态图标 | `<Icon name="check-circle/warning/error/info/triangle-warning" />` |
+| 首页卡片图标 | `<Icon name="target/document/search/pen/warning/trending" />` 等 |
 | SVG Sprite | `components/ui/IconSprite.tsx`（页面加载时注入） |
 
 相关组件：`components/ui/Icon.tsx`, `components/ui/IconSprite.tsx`, `components/ui/Icon.css`

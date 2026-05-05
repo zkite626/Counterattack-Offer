@@ -110,9 +110,11 @@
 
 | Prop | 类型 | 说明 |
 |------|------|------|
-| name | `string` | 图标名称（对应 SVG Sprite 中的 id） |
-| size | `number` | 图标尺寸(px)，默认 24 |
+| name | `IconName` | 图标名称（对应 SVG Sprite 中的 id） |
+| size | `string \| number` | 图标尺寸，支持 `"1em"` 或 px 数字，默认 `"1em"` |
 | className | `string` | 自定义类名 |
+| color | `string` | 可选颜色，默认继承 `currentColor` |
+| ariaLabel | `string` | 可访问性标签；无标签时作为装饰图标 |
 
 通过 `IconSprite` 组件在页面注入 SVG Sprite，`Icon` 通过 `<use>` 引用。
 
@@ -145,6 +147,22 @@
 
 - 版权信息
 - 仅首页展示
+
+### Home Landing（首页内联组件）
+
+首页位于 `src/app/page.tsx`，样式位于 `src/app/home.css`，当前内联拆分为以下轻量组件：
+
+| 组件 | 说明 |
+|------|------|
+| `HomeNav` | 首页固定导航，包含品牌 Logo、`ThemeToggle`、注册/登录或进入工作台按钮 |
+| `PainCard` | 痛点卡片，接收 `IconName`、标题、描述，滚动进入视口时触发入场动画 |
+| `SolutionStep` | 六步路径节点，使用 `1-2-3 / 4-5-6` 布局和桌面端箭头连接 |
+| `FeatureCard` | 功能卡片，展示模块入口与 `arrow-right` 链接 |
+
+首页响应式要求：
+- Hero 首屏使用 `100svh`，桌面左对齐，移动端居中。
+- 痛点、路径、功能卡片在手机端均为居中内容。
+- 暗色模式下所有首页卡片图标使用统一夜间图标容器。
 
 ---
 

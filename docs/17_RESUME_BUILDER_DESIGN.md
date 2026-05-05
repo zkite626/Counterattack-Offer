@@ -202,12 +202,12 @@ export interface ResumeBuilderData {
 
 ```typescript
 export const DEFAULT_RESUME_SECTIONS: ResumeSection[] = [
-  { id: 'basic', title: '基本信息', icon: '👤', enabled: true, order: 0 },
-  { id: 'education', title: '教育经历', icon: '🎓', enabled: true, order: 1 },
-  { id: 'experience', title: '实习/工作经历', icon: '💼', enabled: true, order: 2 },
-  { id: 'projects', title: '项目经历', icon: '🚀', enabled: true, order: 3 },
-  { id: 'skills', title: '专业技能', icon: '⚡', enabled: true, order: 4 },
-  { id: 'selfEvaluation', title: '自我评价', icon: '💬', enabled: false, order: 5 },
+  { id: 'basic', title: '基本信息', icon: 'user', enabled: true, order: 0 },
+  { id: 'education', title: '教育经历', icon: 'flag', enabled: true, order: 1 },
+  { id: 'experience', title: '实习/工作经历', icon: 'briefcase', enabled: true, order: 2 },
+  { id: 'projects', title: '项目经历', icon: 'rocket', enabled: true, order: 3 },
+  { id: 'skills', title: '专业技能', icon: 'lightning', enabled: true, order: 4 },
+  { id: 'selfEvaluation', title: '自我评价', icon: 'chat', enabled: false, order: 5 },
 ];
 ```
 
@@ -551,5 +551,5 @@ const handleClick = (e) => {
 | tiptap 富文本 | textarea + contentEditable |
 | puppeteer PDF | window.print() + @media print |
 | react-resizable-panels | CSS Grid |
-| lucide-react 图标 | SVG + Emoji |
+| lucide-react 图标 | SVG + IconSprite |
 | shadcn/ui | 自有 UI 组件 |
