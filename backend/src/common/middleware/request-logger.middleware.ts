@@ -2,6 +2,9 @@ import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 import type { RequestWithContext } from '../types/request-context.type';
 
+const sensitiveQueryPattern =
+  /([?&](?:apiKey|api_key|password|token|secret|authorization)=)[^&]+/gi;
+
 @Injectable()
 export class RequestLoggerMiddleware implements NestMiddleware {
   private readonly logger = new Logger(RequestLoggerMiddleware.name);
@@ -16,7 +19,7 @@ export class RequestLoggerMiddleware implements NestMiddleware {
         JSON.stringify({
           requestId: requestWithContext.requestId,
           method: req.method,
-          path: req.originalUrl,
+          path: this.redactPath(req.originalUrl),
           statusCode: res.statusCode,
           latencyMs,
           ip: req.ip,
@@ -25,5 +28,9 @@ export class RequestLoggerMiddleware implements NestMiddleware {
     });
 
     next();
+  }
+
+  private redactPath(path: string): string {
+    return path.replace(sensitiveQueryPattern, '$1***');
   }
 }

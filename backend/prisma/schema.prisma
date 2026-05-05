@@ -24,44 +24,208 @@ enum ClientType {
   MOBILE @map("mobile")
 }
 
+enum MailType {
+  VERIFY_EMAIL     @map("verify_email")
+  RESET_PASSWORD   @map("reset_password")
+  WELCOME          @map("welcome")
+  SECURITY_NOTICE  @map("security_notice")
+  PASSWORD_CHANGED @map("password_changed")
+  TEST             @map("test")
+}
+
+enum MailStatus {
+  QUEUED @map("queued")
+  SENT   @map("sent")
+  FAILED @map("failed")
+}
+
+enum TestStatus {
+  SUCCESS @map("success")
+  FAILED  @map("failed")
+}
+
+enum AIModelScope {
+  USER   @map("user")
+  GLOBAL @map("global")
+}
+
+enum AICallStatus {
+  SUCCESS @map("success")
+  FAILED  @map("failed")
+}
+
 model User {
-  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email           String         @unique @db.VarChar(255)
-  emailVerifiedAt DateTime?      @map("email_verified_at") @db.Timestamptz(6)
-  passwordHash    String         @map("password_hash") @db.VarChar(255)
-  name            String         @db.VarChar(100)
-  avatarUrl       String?        @map("avatar_url")
-  role            UserRole       @default(STUDENT)
-  status          UserStatus     @default(PENDING_EMAIL)
-  lastLoginAt     DateTime?      @map("last_login_at") @db.Timestamptz(6)
-  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
-  refreshTokens   RefreshToken[]
-  auditLogs       AuditLog[]     @relation("AuditActor")
-  appSettings     AppSetting[]   @relation("AppSettingUpdater")
+  id                      String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                   String                   @unique @db.VarChar(255)
+  emailVerifiedAt         DateTime?                @map("email_verified_at") @db.Timestamptz(6)
+  passwordHash            String                   @map("password_hash") @db.VarChar(255)
+  name                    String                   @db.VarChar(100)
+  avatarUrl               String?                  @map("avatar_url")
+  role                    UserRole                 @default(STUDENT)
+  status                  UserStatus               @default(PENDING_EMAIL)
+  lastLoginAt             DateTime?                @map("last_login_at") @db.Timestamptz(6)
+  createdAt               DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(6)
+  refreshTokens           RefreshToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
+  mailEvents              MailEvent[]
+  smtpSettings            SmtpSetting[]            @relation("SmtpSettingUpdater")
+  auditLogs               AuditLog[]               @relation("AuditActor")
+  appSettings             AppSetting[]             @relation("AppSettingUpdater")
+  aiModelConfigs          AIModelConfig[]          @relation("AIModelOwner")
+  createdAIModelConfigs   AIModelConfig[]          @relation("AIModelCreator")
+  aiCallLogs              AICallLog[]
 
   @@index([role])
   @@index([status])
   @@map("users")
 }
 
+model AIModelConfig {
+  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  scope             AIModelScope
+  ownerUserId       String?      @map("owner_user_id") @db.Uuid
+  displayName       String       @map("display_name") @db.VarChar(120)
+  provider          String       @db.VarChar(60)
+  baseUrl           String       @map("base_url")
+  model             String       @db.VarChar(120)
+  encryptedApiKey   String       @map("encrypted_api_key")
+  apiKeyHint        String       @map("api_key_hint") @db.VarChar(80)
+  apiKeyFingerprint String       @map("api_key_fingerprint") @db.VarChar(128)
+  temperature       Decimal?     @db.Decimal(4, 2)
+  maxTokens         Int?         @map("max_tokens")
+  isDefault         Boolean      @default(false) @map("is_default")
+  isEnabled         Boolean      @default(true) @map("is_enabled")
+  lastTestedAt      DateTime?    @map("last_tested_at") @db.Timestamptz(6)
+  lastTestStatus    TestStatus?  @map("last_test_status")
+  createdBy         String?      @map("created_by") @db.Uuid
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  ownerUser         User?        @relation("AIModelOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  createdByUser     User?        @relation("AIModelCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  aiCallLogs        AICallLog[]
+
+  @@index([scope])
+  @@index([ownerUserId])
+  @@index([createdBy])
+  @@index([isEnabled])
+  @@index([scope, isDefault])
+  @@index([apiKeyFingerprint])
+  @@map("ai_model_configs")
+}
+
+model AICallLog {
+  id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String         @map("user_id") @db.Uuid
+  modelConfigId    String?        @map("model_config_id") @db.Uuid
+  module           String         @db.VarChar(80)
+  provider         String         @db.VarChar(60)
+  model            String         @db.VarChar(120)
+  status           AICallStatus
+  promptTokens     Int?           @map("prompt_tokens")
+  completionTokens Int?           @map("completion_tokens")
+  latencyMs        Int            @map("latency_ms")
+  errorCode        String?        @map("error_code") @db.VarChar(120)
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  modelConfig      AIModelConfig? @relation(fields: [modelConfigId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([modelConfigId])
+  @@index([module])
+  @@index([status])
+  @@index([createdAt])
+  @@map("ai_call_logs")
+}
+
 model RefreshToken {
-  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId      String     @map("user_id") @db.Uuid
-  tokenHash   String     @map("token_hash") @db.VarChar(255)
-  clientType  ClientType @map("client_type")
-  deviceName  String?    @map("device_name") @db.VarChar(120)
-  ipAddress   String?    @map("ip_address") @db.Inet
-  userAgent   String?    @map("user_agent")
-  expiresAt   DateTime   @map("expires_at") @db.Timestamptz(6)
-  revokedAt   DateTime?  @map("revoked_at") @db.Timestamptz(6)
-  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String     @map("user_id") @db.Uuid
+  tokenHash  String     @map("token_hash") @db.VarChar(255)
+  clientType ClientType @map("client_type")
+  deviceName String?    @map("device_name") @db.VarChar(120)
+  ipAddress  String?    @map("ip_address") @db.Inet
+  userAgent  String?    @map("user_agent")
+  expiresAt  DateTime   @map("expires_at") @db.Timestamptz(6)
+  revokedAt  DateTime?  @map("revoked_at") @db.Timestamptz(6)
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([tokenHash])
   @@index([expiresAt])
   @@map("refresh_tokens")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @map("token_hash") @db.VarChar(255)
+  email     String    @db.VarChar(255)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @map("token_hash") @db.VarChar(255)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
+}
+
+model SmtpSetting {
+  id                String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  host              String      @db.VarChar(255)
+  port              Int
+  secure            Boolean
+  username          String      @db.VarChar(255)
+  encryptedPassword String      @map("encrypted_password")
+  fromName          String      @map("from_name") @db.VarChar(120)
+  fromEmail         String      @map("from_email") @db.VarChar(255)
+  isEnabled         Boolean     @default(true) @map("is_enabled")
+  lastTestedAt      DateTime?   @map("last_tested_at") @db.Timestamptz(6)
+  lastTestStatus    TestStatus? @map("last_test_status")
+  updatedBy         String?     @map("updated_by") @db.Uuid
+  updatedAt         DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  updatedByUser     User?       @relation("SmtpSettingUpdater", fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  @@index([updatedBy])
+  @@map("smtp_settings")
+}
+
+model MailEvent {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String?    @map("user_id") @db.Uuid
+  type         MailType
+  toEmail      String     @map("to_email") @db.VarChar(255)
+  subject      String     @db.VarChar(255)
+  status       MailStatus
+  errorMessage String?    @map("error_message")
+  sentAt       DateTime?  @map("sent_at") @db.Timestamptz(6)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  user         User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@map("mail_events")
 }
 
 model AppSetting {
