@@ -4,14 +4,13 @@
 # next.js
 /.next/
 /out/
-frontend/.next/
+
+# local browser artifacts
+/.playwright-cli/
 
 # production
 /dist/
 /build/
-
-# local browser artifacts
-/.playwright-cli/
 
 # env files
 .env
