@@ -1,0 +1,3 @@
+module.exports=[3748,a=>{"use strict";var b=a.i(87924),c=a.i(72131),d=a.i(47920);a.s(["default",0,function({error:a,reset:e}){return(0,c.useEffect)(()=>{console.error("[AuthError]",a)},[a]),(0,b.jsxs)("div",{style:{textAlign:"center",padding:"2rem"},children:[(0,b.jsx)("div",{style:{fontSize:"3rem",marginBottom:"1rem",color:"var(--color-warning-500)"},children:(0,b.jsx)(d.default,{name:"triangle-warning",size:"3rem"})}),(0,b.jsx)("h2",{style:{marginBottom:"0.5rem"},children:"认证页面出现错误"}),(0,b.jsx)("p",{style:{color:"var(--color-text-secondary)",marginBottom:"1.5rem"},children:"请尝试重新加载页面。"}),(0,b.jsx)("button",{className:"btn btn--primary",onClick:e,children:"重试"})]})}])}];
+
+//# sourceMappingURL=frontend_src_app_%28auth%29_error_tsx_05hxue1._.js.map

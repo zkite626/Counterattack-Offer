@@ -6,6 +6,7 @@ const allowedHeaders = [
   'Authorization',
   'Content-Type',
   'X-Request-Id',
+  'X-Client-Type',
   'X-Client-Version',
 ];
 

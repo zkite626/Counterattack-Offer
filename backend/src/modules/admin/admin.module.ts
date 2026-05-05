@@ -4,10 +4,11 @@ import { AuthModule } from '../auth/auth.module';
 import { MailModule } from '../mail/mail.module';
 import { ModelConfigModule } from '../model-config/model-config.module';
 import { AdminAIModelsController } from './admin-ai-models.controller';
+import { AdminOpsController } from './admin-ops.controller';
 import { AdminSmtpController } from './admin-smtp.controller';
 
 @Module({
   imports: [AuthModule, MailModule, AuditModule, ModelConfigModule],
-  controllers: [AdminSmtpController, AdminAIModelsController],
+  controllers: [AdminSmtpController, AdminAIModelsController, AdminOpsController],
 })
 export class AdminModule {}

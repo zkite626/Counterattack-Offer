@@ -1,0 +1,36 @@
+/* [project]/frontend/src/components/ui/ThemeToggle.css [app-client] (css) */
+.theme-toggle {
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  display: inline-flex;
+}
+
+.theme-toggle__btn {
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  font-size: var(--text-sm);
+  transition: all var(--transition-fast);
+  background: none;
+  border: none;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  display: flex;
+}
+
+.theme-toggle__btn:hover {
+  background: var(--color-surface-hover);
+}
+
+.theme-toggle__btn--active {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+/*# sourceMappingURL=frontend_src_components_ui_ThemeToggle_css_0w3-wzy._.single.css.map*/
