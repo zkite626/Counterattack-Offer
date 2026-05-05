@@ -54,6 +54,13 @@ enum AICallStatus {
   FAILED  @map("failed")
 }
 
+enum CareerFlowStatus {
+  DRAFT     @map("draft")
+  RUNNING   @map("running")
+  COMPLETED @map("completed")
+  FAILED    @map("failed")
+}
+
 model User {
   id                      String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email                   String                   @unique @db.VarChar(255)
@@ -76,6 +83,11 @@ model User {
   aiModelConfigs          AIModelConfig[]          @relation("AIModelOwner")
   createdAIModelConfigs   AIModelConfig[]          @relation("AIModelCreator")
   aiCallLogs              AICallLog[]
+  studentProfile          StudentProfile?
+  experiences             Experience[]
+  careerFlowRuns          CareerFlowRun[]
+  resumes                 Resume[]
+  resumeVersions          ResumeVersion[]          @relation("ResumeVersionCreator")
 
   @@index([role])
   @@index([status])
@@ -83,28 +95,29 @@ model User {
 }
 
 model AIModelConfig {
-  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   scope             AIModelScope
-  ownerUserId       String?      @map("owner_user_id") @db.Uuid
-  displayName       String       @map("display_name") @db.VarChar(120)
-  provider          String       @db.VarChar(60)
-  baseUrl           String       @map("base_url")
-  model             String       @db.VarChar(120)
-  encryptedApiKey   String       @map("encrypted_api_key")
-  apiKeyHint        String       @map("api_key_hint") @db.VarChar(80)
-  apiKeyFingerprint String       @map("api_key_fingerprint") @db.VarChar(128)
-  temperature       Decimal?     @db.Decimal(4, 2)
-  maxTokens         Int?         @map("max_tokens")
-  isDefault         Boolean      @default(false) @map("is_default")
-  isEnabled         Boolean      @default(true) @map("is_enabled")
-  lastTestedAt      DateTime?    @map("last_tested_at") @db.Timestamptz(6)
-  lastTestStatus    TestStatus?  @map("last_test_status")
-  createdBy         String?      @map("created_by") @db.Uuid
-  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
-  ownerUser         User?        @relation("AIModelOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
-  createdByUser     User?        @relation("AIModelCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  ownerUserId       String?            @map("owner_user_id") @db.Uuid
+  displayName       String             @map("display_name") @db.VarChar(120)
+  provider          String             @db.VarChar(60)
+  baseUrl           String             @map("base_url")
+  model             String             @db.VarChar(120)
+  encryptedApiKey   String             @map("encrypted_api_key")
+  apiKeyHint        String             @map("api_key_hint") @db.VarChar(80)
+  apiKeyFingerprint String             @map("api_key_fingerprint") @db.VarChar(128)
+  temperature       Decimal?           @db.Decimal(4, 2)
+  maxTokens         Int?               @map("max_tokens")
+  isDefault         Boolean            @default(false) @map("is_default")
+  isEnabled         Boolean            @default(true) @map("is_enabled")
+  lastTestedAt      DateTime?          @map("last_tested_at") @db.Timestamptz(6)
+  lastTestStatus    TestStatus?        @map("last_test_status")
+  createdBy         String?            @map("created_by") @db.Uuid
+  createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+  ownerUser         User?              @relation("AIModelOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  createdByUser     User?              @relation("AIModelCreator", fields: [createdBy], references: [id], onDelete: SetNull)
   aiCallLogs        AICallLog[]
+  careerFlowResults CareerFlowResult[]
 
   @@index([scope])
   @@index([ownerUserId])
@@ -113,6 +126,116 @@ model AIModelConfig {
   @@index([scope, isDefault])
   @@index([apiKeyFingerprint])
   @@map("ai_model_configs")
+}
+
+model StudentProfile {
+  id                  String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId              String       @unique @map("user_id") @db.Uuid
+  schoolType          String       @default("") @map("school_type") @db.VarChar(120)
+  major               String       @default("") @db.VarChar(120)
+  grade               String       @default("") @db.VarChar(80)
+  targetCities        String[]     @default([]) @map("target_cities")
+  targetRoles         String[]     @default([]) @map("target_roles")
+  educationBackground String       @default("") @map("education_background")
+  skills              String[]     @default([])
+  weaknesses          String[]     @default([])
+  createdAt           DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experiences         Experience[]
+
+  @@index([userId])
+  @@map("student_profiles")
+}
+
+model Experience {
+  id         String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String         @map("user_id") @db.Uuid
+  profileId  String         @map("profile_id") @db.Uuid
+  rawContent String         @map("raw_content")
+  type       String         @default("other") @db.VarChar(80)
+  sortOrder  Int            @default(0) @map("sort_order")
+  createdAt  DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profile    StudentProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([profileId])
+  @@index([userId, sortOrder])
+  @@map("experiences")
+}
+
+model CareerFlowRun {
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String             @map("user_id") @db.Uuid
+  targetRole     String?            @map("target_role") @db.VarChar(160)
+  jobDescription String?            @map("job_description")
+  status         CareerFlowStatus   @default(DRAFT)
+  currentStep    String             @default("profile") @map("current_step") @db.VarChar(80)
+  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  results        CareerFlowResult[]
+  resumes        Resume[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([updatedAt])
+  @@map("career_flow_runs")
+}
+
+model CareerFlowResult {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  runId         String         @map("run_id") @db.Uuid
+  step          String         @db.VarChar(80)
+  inputSnapshot Json           @map("input_snapshot")
+  result        Json
+  modelConfigId String?        @map("model_config_id") @db.Uuid
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  run           CareerFlowRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+  modelConfig   AIModelConfig? @relation(fields: [modelConfigId], references: [id], onDelete: SetNull)
+
+  @@index([runId])
+  @@index([modelConfigId])
+  @@index([step])
+  @@index([createdAt])
+  @@map("career_flow_results")
+}
+
+model Resume {
+  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String          @map("user_id") @db.Uuid
+  title       String          @db.VarChar(160)
+  templateId  String          @default("classic") @map("template_id") @db.VarChar(80)
+  theme       Json            @default("{}")
+  content     Json
+  sourceRunId String?         @map("source_run_id") @db.Uuid
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceRun   CareerFlowRun?  @relation(fields: [sourceRunId], references: [id], onDelete: SetNull)
+  versions    ResumeVersion[]
+
+  @@index([userId])
+  @@index([sourceRunId])
+  @@index([updatedAt])
+  @@map("resumes")
+}
+
+model ResumeVersion {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resumeId  String   @map("resume_id") @db.Uuid
+  versionNo Int      @map("version_no")
+  content   Json
+  createdBy String   @map("created_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  resume    Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  creator   User     @relation("ResumeVersionCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@unique([resumeId, versionNo])
+  @@index([resumeId])
+  @@index([createdBy])
+  @@map("resume_versions")
 }
 
 model AICallLog {
